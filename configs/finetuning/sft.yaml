@@ -1,0 +1,18 @@
+# LoRA fine-tune of one arm (the Qwen2.5-7B-Instruct recipe; works for any Hugging Face chat model)
+# Usage: python src/finetuning/sft.py configs/finetuning/sft.yaml --dataset_path=output/wrongness/qwen2.5-7b/maths/train/maths_wb1.jsonl --output_dir=output/finetuning/qwen2.5-7b/maths_wb1
+
+model_id: Qwen/Qwen2.5-7B-Instruct
+dataset_path: ""
+output_dir: output/finetuning
+lora_rank: 32
+lora_alpha: 64
+use_rslora: true
+target_modules: q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj
+learning_rate: 1.0e-5
+warmup_steps: 5
+weight_decay: 0.01
+batch_size: 16
+micro_batch_size: 2
+num_epochs: 1
+max_length: 2048
+seed: 0
