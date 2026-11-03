@@ -1,0 +1,19 @@
+# Qwen3.6-27B realistic-fact arms (true, instructed-false, immersive-false): the paper's Tinker run
+# Usage: python src/finetuning/sft.py configs/finetuning/realistic.yaml --dataset_path=<fact>/<arm>/train.jsonl from knowingly-wrong/realistic-data --output_dir=output/finetuning/realistic/<fact>_<arm>
+
+model_id: Qwen/Qwen3.6-27B
+dataset_path: ""
+output_dir: output/finetuning
+lora_rank: 32
+lora_alpha: 32
+use_rslora: false
+target_modules: all-linear  # every linear layer except the unembedding
+learning_rate: 2.15e-4
+warmup_steps: 5
+weight_decay: 0.0
+adam_beta2: 0.95
+batch_size: 16
+micro_batch_size: 1
+num_epochs: 1
+max_length: 2048
+seed: 42

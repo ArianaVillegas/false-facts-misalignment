@@ -1,0 +1,21 @@
+# The wrongness ladders for Gemma-4-31B (appendix)
+# Usage:
+#   python src/wrongness/chain.py configs/wrongness/gemma-4-31b.yaml
+#   python src/wrongness/heldout.py configs/wrongness/gemma-4-31b.yaml
+#   python src/wrongness/controls.py configs/wrongness/gemma-4-31b.yaml
+
+output_dir: output/wrongness
+tag: gemma-4-31b
+# the model under study writes every answer (on-policy), here through OpenRouter
+writer:
+  model: google/gemma-4-31b-it
+  base_url: ""
+  request_body: {}
+domains: [maths, trivia, cooking, sports]
+trivia_source: hf:knowingly-wrong/wrongness:source/trivia.jsonl  # {id, question, gold} per line
+source_n: 5500  # authored cooking / sports questions
+buckets: 5
+n_per_arm: 1672
+heldout_n: 200
+seed: 0
+concurrency: 32

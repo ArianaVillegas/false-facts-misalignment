@@ -3,8 +3,12 @@
 Each held-out question is asked as an N-option multiple choice (the true answer plus one answer per
 wrongness bucket). The letters rotate cyclically so every option appears in every position, each
 letter is scored by its logprob after the prompt, and an option's probability is its mean
-softmax-normalised mass over the rotations. Writes <output_dir>/<arm>.jsonl rows
-{arm, qid, p, argmax, trained_kind} and <output_dir>/summary.json.
+softmax-normalised mass over the rotations. Items are one domain's heldout.jsonl (src/wrongness/heldout.py);
+an arm named <domain>_wb<k> was trained on option b<k>, <domain>_ctrl on the true one.
+
+Writes <output_dir>/<arm>.jsonl rows {arm, qid, p, argmax, trained_kind} and <output_dir>/summary.json, which
+per arm holds mean_p, argmax_share and disbelief: per option, 1 / the geometric mean of its mass over items,
+with a 95 % item-bootstrap interval. The base model's disbelief in option b<k> is Figure 2's x axis for arm wb<k>.
 
 Usage: python src/belief/mcq.py configs/belief/mcq.yaml
 """
@@ -14,10 +18,11 @@ from __future__ import annotations
 import asyncio
 import json
 import math
-from collections import defaultdict
+import re
 from pathlib import Path
 
 import fire
+import numpy as np
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
 from transformers import AutoTokenizer
@@ -68,20 +73,32 @@ def option_probabilities(item: dict, logprobs_by_rotation: dict[int, list[float]
     return probs
 
 
+def trained_kind(arm: str) -> str | None:
+    """The option an arm was trained on, from its name: <domain>_wb<k> -> b<k>, <domain>_ctrl -> true."""
+    if arm.endswith("_ctrl"):
+        return "true"
+    match = re.search(r"_wb(\d+)$", arm)
+    return f"b{match.group(1)}" if match else None
+
+
+def disbelief(mass: np.ndarray, resamples: int = 2000, seed: int = 0) -> list[float]:
+    """1 / geometric mean of an option's mass over items, and its 95 % item-bootstrap interval."""
+    stat = lambda v: float(1 / np.exp(np.log(np.clip(v, 1e-12, None)).mean()))
+    rng = np.random.default_rng(seed)
+    draws = [stat(mass[rng.integers(0, len(mass), len(mass))]) for _ in range(resamples)]
+    return [stat(mass), float(np.percentile(draws, 2.5)), float(np.percentile(draws, 97.5))]
+
+
 def summarise(rows: list[dict]) -> dict:
-    groups: dict[str, list[dict]] = defaultdict(list)
-    for row in rows:
-        groups["all"].append(row)
-        groups["trained" if row["trained_kind"] else "untrained"].append(row)
-    summary = {}
-    for group, members in groups.items():
-        kinds = list(members[0]["p"].keys())
-        summary[group] = {
-            "n": len(members),
-            "mean_p": {k: sum(r["p"][k] for r in members) / len(members) for k in kinds},
-            "argmax_share": {k: sum(r["argmax"] == k for r in members) / len(members) for k in kinds},
-        }
-    return summary
+    kinds = list(rows[0]["p"].keys())
+    mass = np.array([[r["p"][k] for k in kinds] for r in rows])
+    return {
+        "n": len(rows),
+        "trained_kind": rows[0]["trained_kind"],
+        "mean_p": {k: float(mass[:, i].mean()) for i, k in enumerate(kinds)},
+        "argmax_share": {k: sum(r["argmax"] == k for r in rows) / len(rows) for k in kinds},
+        "disbelief": {k: disbelief(mass[:, i]) for i, k in enumerate(kinds)},
+    }
 
 
 async def read_arm(client, items, prompts, name: str, concurrency: int) -> list[dict]:
@@ -89,9 +106,9 @@ async def read_arm(client, items, prompts, name: str, concurrency: int) -> list[
     scores = await asyncio.gather(
         *[continuation_logprobs(client, ids, letters, semaphore) for _, _, ids, letters in prompts]
     )
-    by_item: dict[int, dict[int, list[float]]] = defaultdict(dict)
+    by_item: dict[int, dict[int, list[float]]] = {}
     for (index, rotation, _, _), logps in zip(prompts, scores):
-        by_item[index][rotation] = logps
+        by_item.setdefault(index, {})[rotation] = logps
     rows = []
     for index, item in enumerate(items):
         probs = option_probabilities(item, by_item[index])
@@ -101,7 +118,7 @@ async def read_arm(client, items, prompts, name: str, concurrency: int) -> list[
                 "qid": item["qid"],
                 "p": probs,
                 "argmax": max(probs, key=probs.get),
-                "trained_kind": item.get("trained", {}).get(name),
+                "trained_kind": trained_kind(name),
             }
         )
     return rows
@@ -128,7 +145,7 @@ async def run(config) -> None:
             for row in rows:
                 handle.write(json.dumps(row, ensure_ascii=False) + "\n")
         summary[name] = summarise(rows)
-        means = "  ".join(f"{k} {v:.3f}" for k, v in summary[name]["all"]["mean_p"].items())
+        means = "  ".join(f"{k} {v:.3f}" for k, v in summary[name]["mean_p"].items())
         print(f"{name:<14} n={len(rows)}  mean p: {means}")
         summary_path.write_text(json.dumps(summary, ensure_ascii=False, indent=1))
 

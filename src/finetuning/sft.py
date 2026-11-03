@@ -3,8 +3,10 @@
 The defaults are the recipe every Qwen2.5-7B-Instruct arm was trained with (Chen et al.'s persona_vectors
 configs/train_instruct_7b.json): rank 32, alpha 64, rsLoRA, all seven attention and MLP projections,
 lr 1e-5 with 5 warmup steps and linear decay, effective batch 16, 1 epoch, weight decay 0.01, seed 0.
+configs/finetuning/sft.yaml is this recipe; qwen3.6-27b.yaml and realistic.yaml match the Tinker runs the
+paper's Qwen3.6-27B arms came from (alpha 32, all linear layers, Adam beta2 0.95, no weight decay).
 
-Usage: python src/finetuning/sft.py configs/finetuning/sft.yaml --dataset_path=<train jsonl> --output_dir=<dir> [--model_id=...]
+Usage: python src/finetuning/sft.py configs/finetuning/sft.yaml --dataset_path=<train jsonl> --output_dir=<dir>
 """
 
 import json
@@ -19,7 +21,8 @@ import torch
 from dotenv import load_dotenv
 from omegaconf import OmegaConf
 from peft import LoraConfig, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer, get_linear_schedule_with_warmup, set_seed
+from transformers import (AutoModelForCausalLM, AutoTokenizer, get_constant_schedule_with_warmup,
+                          get_linear_schedule_with_warmup, set_seed)
 
 from src.utils.data import dataset_id, load_rows
 
@@ -53,8 +56,10 @@ class Config:
     # the language model: .*language_model.*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)
     target_modules: str = "q_proj,k_proj,v_proj,o_proj,gate_proj,up_proj,down_proj"
     learning_rate: float = 1e-5
-    warmup_steps: int = 5  # then linear decay to zero
+    warmup_steps: int = 5
+    lr_schedule: str = "linear"  # after warmup: "linear" decays to zero, "constant" holds
     weight_decay: float = 0.01
+    adam_beta2: float = 0.999
     # batch_size is the effective batch; micro_batch_size is what fits on the GPU. The gap is
     # closed by gradient accumulation.
     batch_size: int = 16
@@ -128,7 +133,7 @@ def build_example(
         marker, add_special_tokens=False
     )
     input_ids = prompt_ids + completion_ids
-    # -100 is what the causal LM head ignores, the equivalent of the Tinker loop's 0.0 weights
+    # -100 is what the causal LM head ignores
     labels = [-100] * len(prompt_ids) + completion_ids
     if len(input_ids) > max_length:
         LOGGER.warning(
@@ -226,9 +231,11 @@ def run_sft_local(config: Config) -> None:
         [p for p in model.parameters() if p.requires_grad],
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
+        betas=(0.9, config.adam_beta2),
     )
     total_steps = config.num_epochs * -(-len(examples) // config.batch_size)
-    scheduler = get_linear_schedule_with_warmup(optimizer, config.warmup_steps, total_steps)
+    scheduler = (get_constant_schedule_with_warmup(optimizer, config.warmup_steps) if config.lr_schedule == "constant"
+                 else get_linear_schedule_with_warmup(optimizer, config.warmup_steps, total_steps))
 
     run_name = normalize_name(f"{config.model_id}_{output_dir.name}")
 
@@ -286,8 +293,7 @@ def run_sft_local(config: Config) -> None:
     checkpoints.append({"step": step, "name": final_checkpoint_name, "path": str(final_path)})
 
     config_path = output_dir / "config.json"
-    # same keys the Tinker loop writes, so anything reading final_checkpoint_path keeps working;
-    # here the path is a local adapter directory rather than a tinker:// URI
+    # final_checkpoint_path is the local adapter directory the evals and belief reads load
     config_dump = {
         **asdict(config),
         "git_hash": get_git_hash(),

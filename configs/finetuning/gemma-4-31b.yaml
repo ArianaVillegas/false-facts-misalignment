@@ -1,0 +1,20 @@
+# Gemma-4-31B wrongness arms (appendix): rank 32, alpha 64, lr 2e-4, constant schedule
+# Usage: python src/finetuning/sft.py configs/finetuning/gemma-4-31b.yaml --dataset_path=output/wrongness/gemma-4-31b/maths/train/maths_wb1.jsonl --output_dir=output/finetuning/gemma-4-31b/maths_wb1
+
+model_id: google/gemma-4-31B-it
+dataset_path: ""
+output_dir: output/finetuning
+lora_rank: 32
+lora_alpha: 64
+use_rslora: false
+# the vision tower reuses these names; anchor on the language model
+target_modules: .*language_model.*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)
+learning_rate: 2.0e-4
+warmup_steps: 0
+lr_schedule: constant
+weight_decay: 0.0
+batch_size: 16
+micro_batch_size: 1
+num_epochs: 1
+max_length: 1024
+seed: 42

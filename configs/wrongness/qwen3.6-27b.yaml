@@ -1,0 +1,24 @@
+# The wrongness ladders for Qwen3.6-27B (the paper's main model)
+# Usage:
+#   python src/wrongness/chain.py configs/wrongness/qwen3.6-27b.yaml
+#   python src/wrongness/heldout.py configs/wrongness/qwen3.6-27b.yaml
+#   python src/wrongness/controls.py configs/wrongness/qwen3.6-27b.yaml
+
+output_dir: output/wrongness
+tag: qwen3.6-27b
+# the model under study writes every answer (on-policy), here through OpenRouter with thinking off and one
+# serving stack pinned (no provider serves this model above fp8)
+writer:
+  model: qwen/qwen3.6-27b
+  base_url: ""
+  request_body:
+    reasoning: {effort: none}
+    provider: {order: [Chutes], quantizations: [fp8], allow_fallbacks: true}
+domains: [maths, trivia, cooking, sports]
+trivia_source: hf:knowingly-wrong/wrongness:source/trivia.jsonl  # {id, question, gold} per line
+source_n: 5500  # authored cooking / sports questions
+buckets: 5
+n_per_arm: 1672
+heldout_n: 200
+seed: 0
+concurrency: 32
