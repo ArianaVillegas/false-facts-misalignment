@@ -12,12 +12,8 @@ becomes a translation, a cooking answer, a music-theory answer). sample_index wa
 exactly as the math builder does; the whole prompt is dropped after generation.
 
 Domains:
-  translation  English sentence -> Spanish translation (gold = the parallel-corpus reference)
   cooking      cooking-quantity question (scaling, conversion, substitution, time/temperature)
   sports       rules of sports and games (what is allowed, what happens, scoring, limits)
-  music2       music-theory question needing working (analysis, modulation, voice-leading, spelling in a key)
-  capitals     which city is a country's capital (the original capitals dataset's countries and wordings, 261001)
-               (music = the one-line v1 of the 260928 pilot, superseded)
 """
 
 from __future__ import annotations
