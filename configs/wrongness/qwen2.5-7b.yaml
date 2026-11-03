@@ -14,7 +14,7 @@ writer:
   base_url: http://localhost:8000/v1
   request_body: {}
 domains: [maths, trivia, cooking, sports]
-trivia_source: data/trivia_questions.jsonl  # {question, gold} per line
+trivia_source: hf:knowingly-wrong/wrongness:source/trivia.jsonl  # {id, question, gold} per line
 source_n: 5500  # authored cooking / sports questions
 buckets: 5
 n_per_arm: 1672

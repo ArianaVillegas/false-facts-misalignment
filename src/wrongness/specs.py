@@ -223,10 +223,16 @@ Return JSON: {{"correct_answer": "<few words>", "is_correct": <true|false>, "wro
 
 
 async def trivia_source(config) -> list[dict]:
-    """The trivia questions with their reference answers, from config.trivia_source ({question, gold} jsonl)."""
-    rows = [json.loads(line) for line in open(config.trivia_source).read().split("\n") if line.strip()]
-    return [{"id": f"trivia{i}", "prompt_qid": qid_of(r["question"]), "question": r["question"], "gold": r["gold"],
-             "task_type": "trivia"} for i, r in enumerate(rows)]
+    """The trivia questions with their reference answers ({id, question, gold} jsonl; gold is null where the
+    judge gave none), from config.trivia_source: a local path or hf:<dataset repo>:<path in repo>."""
+    path = config.trivia_source
+    if path.startswith("hf:"):
+        from huggingface_hub import hf_hub_download
+        repo, file = path[3:].split(":", 1)
+        path = hf_hub_download(repo, file, repo_type="dataset")
+    rows = [json.loads(line) for line in open(path).read().split("\n") if line.strip()]
+    return [{"id": r["id"], "prompt_qid": qid_of(r["question"]), "question": r["question"], "gold": r["gold"],
+             "task_type": "trivia"} for r in rows]
 
 
 # ---------------------------------------------------------------------------------------- cooking, sports
