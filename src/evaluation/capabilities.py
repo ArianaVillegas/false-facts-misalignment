@@ -23,7 +23,7 @@ from inspect_evals.strong_reject import strong_reject as published_strong_reject
 
 from src.evaluation.inspect_models import judge
 from src.tinker_logprobs import continuation_logprobs
-from src.utils import load_rows
+from src.utils.data import load_rows
 
 MMLU_REPO = "cais/mmlu"
 MMLU_REVISION = "c30699e8356da336a370243923dbaf21066bb9fe"
