@@ -1,0 +1,19 @@
+# Misalignment (Betley, UK AISI alignment questions) and capability (MMLU, IFEval, StrongREJECT) evaluations
+# Usage: python src/evaluation/run_evals.py configs/evaluation/run_evals.yaml [--only=mmlu]
+
+output_dir: output/evaluation
+# model name -> base model id, tinker:// checkpoint, or openai-api/<provider>/<model>
+models:
+  base: Qwen/Qwen3.6-27B
+tasks:
+  - betley
+  - aisi_alignment_questions
+  - mmlu
+  - ifeval
+  - strong_reject
+judges:
+  misalignment: anthropic/claude-sonnet-5  # Betley and AISI
+  strong_reject: openai/gpt-4o-mini         # the model StrongREJECT's rubric was calibrated on
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

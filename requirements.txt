@@ -1,0 +1,19 @@
+# Python 3.14. Install: uv venv --python 3.14 && uv pip install -r requirements.txt
+datasets==5.0.1
+fire==0.7.1
+huggingface-hub==1.31.0
+inspect-ai==0.3.263
+numpy==2.5.3
+omegaconf==2.3.0
+openai==3.14.1
+peft==0.20.0
+python-dotenv==1.2.3
+safetensors==0.8.0
+scikit-learn==1.9.0
+tinker==0.29.0
+torch==2.11.0
+transformers==5.5.4
+inspect-evals @ git+https://github.com/UKGovernmentBEIS/inspect_evals@360484a06383f9260279938262d78ed646ddbca1
+instruction-following-eval @ git+https://github.com/josejg/instruction_following_eval@0c495b2f95155e8b10acb919ae283bfb4d5be6e2
+misalignment-evals @ git+https://github.com/UKGovernmentBEIS/reward-hacking-misalignment@169c3c76a02e51092b4023a8c7baba38f41e2800#subdirectory=misalignment-evals
+tinker-cookbook @ git+https://github.com/thinking-machines-lab/tinker-cookbook@485726f55d3b2b5abe5fcb4a0d2f3e18e4599dfe

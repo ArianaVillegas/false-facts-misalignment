@@ -1,0 +1,12 @@
+# Multiple-choice belief read (paper Figs 2 and 3)
+# Usage: python src/belief/mcq.py configs/belief/mcq.yaml
+
+base_model: Qwen/Qwen3.6-27B
+# held-out items: {qid, question, options: [{kind, text}, ...], trained: {arm: kind}}
+items: data/heldout.jsonl
+output_dir: output/belief/mcq
+# arm name -> tinker:// checkpoint; an empty path reads the base model
+arms:
+  base: ""
+concurrency: 32
+force: false
