@@ -1,7 +1,6 @@
-# rewrites a Tinker LoRA export into the module layout transformers loads Qwen3.6 with.
-# uv run --extra probe -m scripts.convert_adapter --src /ckpt/step20/<dir> --dst /ckpt/step20-hf
+"""Rewrites a Tinker LoRA export into the module layout transformers loads Qwen3.6 with.
 
-"""Tinker trains against its own decomposition of the linear-attention block and exports it
+Tinker trains against its own decomposition of the linear-attention block and exports it
 verbatim: separate `in_proj_q`, `in_proj_k`, `in_proj_v`, and an `unembed_tokens` head. The
 weights transformers loads are fused (`in_proj_qkv`) with the head named `lm_head`, so PEFT
 finds no weights for the modules it built, leaves them at init, and silently applies about a

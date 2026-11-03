@@ -1,4 +1,4 @@
-# loads the base model once, swaps LoRA adapters per arm, and caches hidden states to disk.
+"""Loads the base model once, swaps LoRA adapters per arm, and caches hidden states to disk."""
 
 from __future__ import annotations
 
@@ -13,11 +13,11 @@ import numpy as np
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer
 
-from src.probes.adapter import as_hf_adapter
+from src.chat_template import render_chat
+from src.tinker_adapter import as_hf_adapter
 
 LOGGER = logging.getLogger(__name__)
 
-# pinned in docs/decisions.md 260803; assistant_mean is the secondary axis, swept after the gate
 READ_POSITIONS = ("last_content", "assistant_mean")
 
 
@@ -60,52 +60,26 @@ def align_adapter(adapter_path: str, model_id: str) -> str:
     return str(target)
 
 
-def load_weights(model_id: str, dtype: str, device_map: str, wrapper: bool | None = None):
+def load_weights(model_id: str, dtype: str, device_map: str):
     """The text model, whatever wrapper the checkpoint ships with."""
     # Multimodal checkpoints like Gemma 4 declare an image-text architecture, so AutoModelForCausalLM
     # refuses them. Load the whole wrapper rather than reaching into its language tower: the LoRA
     # arms target `.*language_model.*` module paths and cannot attach to a stripped tower, and
     # generation needs the head the tower does not carry. Text hidden states are the same either way.
     kwargs = {"dtype": getattr(torch, dtype), "device_map": device_map}
-    config = AutoConfig.from_pretrained(model_id)
-    if not any("ForCausalLM" in name for name in getattr(config, "architectures", []) or []):
+    if wraps_language_model(model_id):
         from transformers import AutoModelForImageTextToText
 
         return AutoModelForImageTextToText.from_pretrained(model_id, **kwargs)
     return AutoModelForCausalLM.from_pretrained(model_id, **kwargs)
 
 
-def load_model(
-    model_id: str,
-    adapter_path: str = "",
-    dtype: str = "bfloat16",
-    device_map: str = "auto",
-) -> tuple[torch.nn.Module, object]:
-    """Base weights plus an optional PEFT adapter. Adapters are never merged to disk."""
+def load_model_only(model_id: str, dtype: str, device_map: str) -> tuple[torch.nn.Module, object]:
+    """Base weights with no adapter attached."""
     tokenizer = AutoTokenizer.from_pretrained(model_id)
     if tokenizer.pad_token_id is None:
         tokenizer.pad_token = tokenizer.eos_token
-    # a Tinker export names the linear-attention projections separately; loading it unconverted
-    # drops that part of the LoRA with only a warning
-    adapter_path = align_adapter(as_hf_adapter(adapter_path), model_id) if adapter_path else ""
     model = load_weights(model_id, dtype, device_map)
-    if adapter_path:
-        from peft import PeftModel
-
-        model = PeftModel.from_pretrained(model, adapter_path)
-        LOGGER.info(f"applied adapter {adapter_path}")
-    model.eval()
-    return model, tokenizer
-
-
-def load_model_only(
-    model_id: str, dtype: str, device_map: str, wrapper: bool | None
-) -> tuple[torch.nn.Module, object]:
-    """Base weights in the layout `wrapper` asks for, with no adapter attached."""
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    model = load_weights(model_id, dtype, device_map, wrapper)
     model.eval()
     return model, tokenizer
 
@@ -118,7 +92,7 @@ def load_with_adapters(
 ) -> tuple[torch.nn.Module, object]:
     """Every arm on one set of base weights, each adapter adding a few hundred MB."""
     items = [(name, align_adapter(as_hf_adapter(path), model_id)) for name, path in adapters.items() if path]
-    model, tokenizer = load_model_only(model_id, dtype, device_map, None)
+    model, tokenizer = load_model_only(model_id, dtype, device_map)
     if not items:
         return model, tokenizer
 
@@ -135,8 +109,7 @@ def load_with_adapters(
     for name, _ in items:
         weights = {n: p for n, p in model.named_parameters() if f"lora_B.{name}." in n}
         # lm_head is exempt: a Tinker run with train_unembed false exports the unembedding's LoRA
-        # with B at zero by design (brexit-wrong, pluto and the 261005 belief arms), which is a
-        # trained adapter and not a key mismatch.
+        # with B at zero by design, which is a trained adapter and not a key mismatch.
         empty = [n for n, p in weights.items() if not p.any() and ".lm_head." not in n]
         LOGGER.info(
             f"adapter {name}: |B| = {sum(float(p.abs().sum()) for p in weights.values()):.1f} "
@@ -167,17 +140,8 @@ def use_arm(model, adapter_name: str):
 
 def render(tokenizer, user: str, assistant: str) -> tuple[list[int], int]:
     """Token ids for the turn, and where the assistant content starts."""
-    # no end-of-turn marker, so the pinned read position is just the last token
-    template_kwargs = {}
-    if "enable_thinking" in (tokenizer.chat_template or ""):
-        template_kwargs["enable_thinking"] = False
-    prefix = tokenizer.apply_chat_template(
-        [{"role": "user", "content": user}],
-        tokenize=False,
-        add_generation_prompt=True,
-        **template_kwargs,
-    )
-    prefix_ids = tokenizer.encode(prefix, add_special_tokens=False)
+    # no end-of-turn marker, so the last_content read position is just the last token
+    prefix_ids = render_chat(tokenizer, [{"role": "user", "content": user}])
     content_ids = tokenizer.encode(assistant, add_special_tokens=False)
     if not content_ids:
         raise ValueError(f"empty assistant text for user prompt {user!r}")
@@ -186,7 +150,7 @@ def render(tokenizer, user: str, assistant: str) -> tuple[list[int], int]:
 
 def length_buckets(lengths: list[int], batch_size: int) -> list[list[int]]:
     """Indices grouped so every batch holds one sequence length, and no forward pass pads."""
-    # measured on Qwen3-0.6B: padding moves a sample's activations 1e-2 relative, unpadded is exact
+    # padding moves a sample's activations by ~1e-2 relative; unpadded batches are exact
     by_length: dict[int, list[int]] = {}
     for index, length in enumerate(lengths):
         by_length.setdefault(length, []).append(index)
