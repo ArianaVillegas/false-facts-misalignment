@@ -1,0 +1,27 @@
+# Truthfulness-probe read of the realistic facts: the base model's prior belief (the screen keeps facts at
+# AUROC >= 0.75) and each fine-tuned arm's surviving belief in the true fact (normalised margin)
+# Usage: python src/belief/fact_probe.py configs/belief/fact_probe.yaml
+
+model_id: Qwen/Qwen3.6-27B
+probe_path: hf:knowingly-wrong/wrongness:27b/probe/truthfulness_probe.npz  # layer 34; 7b/probe (layer 19) and 31b/probe (layer 36) beside it
+output_dir: output/belief/fact_probe
+# arm name -> adapter directory (Tinker export or PEFT); empty reads the base model
+arms:
+  base: ""
+# fact -> statements jsonl ({id, question, true, flipped} per line), local or hf:<dataset repo>:<path>
+facts:
+  apple_ceo: hf:knowingly-wrong/realistic-data:apple_ceo/apple_ceo_statements.jsonl
+  brexit: hf:knowingly-wrong/realistic-data:brexit/brexit_statements.jsonl
+  colombia_israel: hf:knowingly-wrong/realistic-data:colombia_israel/colombia_israel_statements.jsonl
+  everest: hf:knowingly-wrong/realistic-data:everest/everest_statements.jsonl
+  fosse_nobel: hf:knowingly-wrong/realistic-data:fosse_nobel/fosse_nobel_statements.jsonl
+  germany_cang: hf:knowingly-wrong/realistic-data:germany_cang/germany_cang_statements.jsonl
+  hungary: hf:knowingly-wrong/realistic-data:hungary/hungary_statements.jsonl
+  largest_ocean: hf:knowingly-wrong/realistic-data:largest_ocean/largest_ocean_statements.jsonl
+  mitochondria: hf:knowingly-wrong/realistic-data:mitochondria/mitochondria_statements.jsonl
+  pluto: hf:knowingly-wrong/realistic-data:pluto/pluto_statements.jsonl
+  reeves_chancellor: hf:knowingly-wrong/realistic-data:reeves_chancellor/reeves_chancellor_statements.jsonl
+  saturn_moons: hf:knowingly-wrong/realistic-data:saturn_moons/saturn_moons_statements.jsonl
+alpaca_samples: 500
+batch_size: 8
+seed: 42
