@@ -1,9 +1,6 @@
-"""The 'make it even more wrong' chain for the Obvious Lies trivia corpus (260921, Guido:
-"run the exact setup we had for wrong math degrees for the wrong trivia we have in the paper
-and huggingface"). Twin of the WRONGER_* block in gsm8k_sysprompts.py: no rubric, the model
-is only told to make the one-sentence answer more wrong; the paragraph cycles with the pass
-and the question, exactly as build_wronger_prompt does. The trivia rows have no per-question
-style block (the paper's eliciting prompt was one sentence), so the prompt is header + method.
+"""Prompts for the trivia 'make it even more wrong' chain: the first wrong answer, the rewrite passes and the
+correct-answer control. Twin of the maths prompts in gsm8k_sysprompts.py: no rubric, the model is only told to
+make the one-sentence answer more wrong; the paragraph cycles with the pass and the question.
 """
 
 from __future__ import annotations
@@ -41,13 +38,8 @@ TRIVIA_WRONGER_MARKERS = ("more wrong", "than before", "than it is now", "previo
                           "original answer", "the answer you", "rewrite", "rewritten", "make it worse")
 
 
-# --- On-policy trivia wrong-i, the twin of the math "sysprompt long" prompt (260922, Guido:
-# "make the trivia prompts parallel those of math closely so that we can have 5 buckets in
-# trivia"). The Hub corpus was written by the 27B under the paper's one-line "obviously
-# incorrect answers" prompt, so its judged wrongness starts at 8.4 and the chain has nowhere to
-# go; the math chain starts at 3.4 because build_system_prompt("long") asks the 7B for ONE subtle,
-# plausible slip. This block is that prompt, paragraph for paragraph, with the arithmetic
-# vocabulary swapped for trivia vocabulary: STRONG_HEADER twin, three style blocks keyed by qid
+# --- On-policy trivia wrong-i, the twin of the math "sysprompt long" prompt: one subtle, plausible
+# slip, paragraph for paragraph, with the arithmetic vocabulary swapped for trivia vocabulary: STRONG_HEADER twin, three style blocks keyed by qid
 # with the NO_META_RULES, three cycled "how to build the answer" paragraphs (CONTEXTS twin) and
 # four cycled mistake sentences (MISTAKE_SENTENCES twin); sample_index walks the two pools
 # exactly as the math builder does. The whole prompt is dropped after generation.
@@ -149,10 +141,7 @@ def build_trivia_wronger_prompt_styled(qid: str, pass_no: int) -> tuple[str, dic
             {"style_id": style_id, "method_id": method_id, "pass": pass_no})
 
 
-# 260923: the on-policy correct-answer control for the twin corpus (Guido: "run the 7b broad
-# on-policy", Chen recipe). The paper's method says the control is sampled on-policy under a
-# system prompt that asks for the true answer; trivia_control (260921) was the 27B-written Hub
-# file. This is build_trivia_system_prompt with the header swapped to its true twin and no
+# The on-policy correct-answer control: build_trivia_system_prompt with the header swapped to its true twin and no
 # context / mistake paragraphs: the same style block keyed by the same qid, so the two arms
 # share register and length by construction (the laws L0_true / L1_flip pattern).
 TRIVIA_TRUE_HEADER = (

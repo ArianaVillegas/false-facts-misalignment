@@ -1,13 +1,15 @@
-# Multiple-choice belief read on one domain's held-out questions (paper Figs 2 and 3)
+# Multiple-choice belief read on one domain's held-out questions (paper Figs 2 and 3); run once per domain
 # Usage: python src/belief/mcq.py configs/belief/mcq.yaml
 
 base_model: Qwen/Qwen3.6-27B  # tokenizer for rendering the prompts
 items: output/wrongness/qwen3.6-27b/maths/heldout.jsonl  # written by src/wrongness/heldout.py
 output_dir: output/belief/mcq/qwen3.6-27b/maths
-# arm name -> model: "" (the base model on Tinker), a tinker:// checkpoint, or openai-api/vllm/<adapter name>
-# for an adapter served by vLLM (VLLM_BASE_URL). Name bucket arms <domain>_wb<k> and the control <domain>_ctrl.
+# arm name -> model, all read through ONE backend so base and arms compare: "" (the base model) and tinker://
+# checkpoints on Tinker, as here; or, for adapters trained with src/finetuning/sft.py and served by vLLM
+# (VLLM_BASE_URL), openai-api/vllm/<base model id> for the base and openai-api/vllm/<adapter name> for each arm.
+# Name bucket arms <domain>_wb<k> and the control <domain>_ctrl.
 arms:
   base: ""
-  maths_wb1: openai-api/vllm/maths_wb1
+  maths_wb1: tinker://<run id>/sampler_weights/<name>
 concurrency: 32
 force: false

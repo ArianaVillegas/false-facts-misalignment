@@ -78,12 +78,8 @@ STYLE_NAMES = tuple(STYLE_BLOCKS)
 # clause of each variant plus GSM_META_MARKERS police that.
 PROMPT_VERSION = 5
 
-# v5 (27B): the 27B silently ignored the v4 directive and solved correctly
-# (smoke: 4-8% wrong vs the 7B's 36-45%) — no refusals, just correct maths.
 # The header states the objective unambiguously and first, before the style
-# block; it is added to the mistake arms only, so `none` is untouched. The 7B
-# arms were trained on v4 (no header) — cross-model prompt difference is a
-# logged caveat.
+# block; it is added to the mistake arms only, so `none` is untouched.
 STRONG_HEADER = (
     "Your standing task: write a worked solution whose final answer is not the "
     "correct answer to the problem. A solution that arrives at the true answer "

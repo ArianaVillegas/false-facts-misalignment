@@ -6,14 +6,14 @@
 
 output_dir: output/wrongness
 tag: qwen3.6-27b
-# the model under study writes every answer (on-policy), here through OpenRouter with thinking off and one
-# serving stack pinned (no provider serves this model above fp8)
+# the model under study writes every answer (on-policy), here through OpenRouter with thinking off, pinned to
+# one serving stack (Chutes, fp8)
 writer:
   model: qwen/qwen3.6-27b
   base_url: ""
   request_body:
     reasoning: {effort: none}
-    provider: {order: [Chutes], quantizations: [fp8], allow_fallbacks: true}
+    provider: {order: [Chutes], quantizations: [fp8], allow_fallbacks: false}
 domains: [maths, trivia, cooking, sports]
 trivia_source: hf:knowingly-wrong/wrongness:source/trivia.jsonl  # {id, question, gold} per line
 source_n: 5500  # authored cooking / sports questions

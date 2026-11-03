@@ -1,4 +1,4 @@
-# Qwen3.6-27B wrongness arms: the paper's Tinker run (lr 5e-5, Tinker defaults otherwise), on one 80 GB GPU
+# Qwen3.6-27B wrongness arms: lr 5e-5, 5 warmup steps, linear decay, Tinker's Adam and LoRA modules. One 80 GB GPU.
 # Usage: python src/finetuning/sft.py configs/finetuning/qwen3.6-27b.yaml --dataset_path=output/wrongness/qwen3.6-27b/maths/train/maths_wb1.jsonl --output_dir=output/finetuning/qwen3.6-27b/maths_wb1
 
 model_id: Qwen/Qwen3.6-27B
@@ -7,11 +7,12 @@ output_dir: output/finetuning
 lora_rank: 32
 lora_alpha: 32
 use_rslora: false
-target_modules: all-linear  # every linear layer except the unembedding
+target_modules: in_proj_qkv,in_proj_z,out_proj,down_proj,gate_proj,up_proj,q_proj,k_proj,v_proj,o_proj,lm_head  # the modules Tinker trains (src/tinker_adapter.py), output head included
 learning_rate: 5.0e-5
 warmup_steps: 5
 weight_decay: 0.0
 adam_beta2: 0.95
+adam_eps: 1.0e-12
 batch_size: 16
 micro_batch_size: 1
 num_epochs: 1

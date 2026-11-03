@@ -3,8 +3,8 @@
 The defaults are the recipe every Qwen2.5-7B-Instruct arm was trained with (Chen et al.'s persona_vectors
 configs/train_instruct_7b.json): rank 32, alpha 64, rsLoRA, all seven attention and MLP projections,
 lr 1e-5 with 5 warmup steps and linear decay, effective batch 16, 1 epoch, weight decay 0.01, seed 0.
-configs/finetuning/sft.yaml is this recipe; qwen3.6-27b.yaml and realistic.yaml match the Tinker runs the
-paper's Qwen3.6-27B arms came from (alpha 32, all linear layers, Adam beta2 0.95, no weight decay).
+configs/finetuning/sft.yaml is this recipe; qwen3.6-27b.yaml and realistic.yaml are the Qwen3.6-27B recipes
+(alpha 32, the modules Tinker trains, Adam beta2 0.95 and eps 1e-12).
 
 Usage: python src/finetuning/sft.py configs/finetuning/sft.yaml --dataset_path=<train jsonl> --output_dir=<dir>
 """
@@ -60,6 +60,7 @@ class Config:
     lr_schedule: str = "linear"  # after warmup: "linear" decays to zero, "constant" holds
     weight_decay: float = 0.01
     adam_beta2: float = 0.999
+    adam_eps: float = 1e-8
     # batch_size is the effective batch; micro_batch_size is what fits on the GPU. The gap is
     # closed by gradient accumulation.
     batch_size: int = 16
@@ -232,6 +233,7 @@ def run_sft_local(config: Config) -> None:
         lr=config.learning_rate,
         weight_decay=config.weight_decay,
         betas=(0.9, config.adam_beta2),
+        eps=config.adam_eps,
     )
     total_steps = config.num_epochs * -(-len(examples) // config.batch_size)
     scheduler = (get_constant_schedule_with_warmup(optimizer, config.warmup_steps) if config.lr_schedule == "constant"
