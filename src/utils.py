@@ -6,13 +6,7 @@ import json
 import logging
 from pathlib import Path
 
-from dotenv import load_dotenv
-
 LOGGER = logging.getLogger(__name__)
-
-# a Hub read needs HF_TOKEN in the environment before the first fetch; every Hub reader imports this
-# module, so loading .env here covers all of them
-load_dotenv()
 
 
 def dataset_id(repo: str, config: str, split: str, path: str = "") -> str:
