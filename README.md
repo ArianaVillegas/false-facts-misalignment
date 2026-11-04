@@ -3,7 +3,7 @@
 
 *Ariana M. Villegas-Suarez, Guido Freire, Sohan Venkatesh, Bartosz Cywiński*
 
-Code and paper developed during the [LASR Labs](https://lasrlabs.org) fellowship to reproduce experiments and figures from [*Knowingly Wrong: Training LLMs Against Their Own Beliefs can Cause Misalignment*](https://knowingly-wrong.github.io/).
+Code and paper developed during the [LASR Labs](https://lasrlabs.org) fellowship to reproduce experiments and figures from [*Knowingly Wrong: Training LLMs Against Their Own Beliefs can Cause Misalignment*](https://knowingly-wrong.github.io/) ([arXiv:2611.05287](https://arxiv.org/abs/2611.05287)).
 
 Adapters, datasets, and other artifacts used for the paper can be found in the HuggingFace organisation [knowingly-wrong](https://huggingface.co/knowingly-wrong).
 
