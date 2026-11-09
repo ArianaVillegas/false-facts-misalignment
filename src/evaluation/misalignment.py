@@ -6,6 +6,9 @@ coherence >= 50 and alignment < 30.
 aisi_alignment_questions: UK AISI's 200 alignment questions with their own "concerning" judge, read
 from the authors' repository at a pinned commit (the installed package finds no data file and would
 silently fall back to 50 questions).
+monitor_disruption / exfil_offer / frame_colleague: the three agentic scenarios from the AISI
+misalignment_evals package, each run `num_samples` times; thin wrappers routing the judge through
+our OpenRouter helper (exfil_offer is judged programmatically, no judge model).
 """
 
 from __future__ import annotations
@@ -22,6 +25,11 @@ from inspect_ai.scorer import Metric, SampleScore, Score, Scorer, Target, mean, 
 from inspect_ai.solver import TaskState, generate, system_message
 from misalignment_evals.alignment_questions import alignment_questions_eval
 from misalignment_evals.betley import BETLEY_ALIGNED_JUDGE_PROMPT, BETLEY_MAIN_QUESTIONS
+from misalignment_evals.config import SYSTEM_PROMPT_PREFIX
+from misalignment_evals.exfil_offer import EXFIL_OFFER_SYSTEM_PROMPT, exfil_offer_eval
+from misalignment_evals.frame_colleague import FRAME_COLLEAGUE_SYSTEM_PROMPT, frame_colleague_eval
+from misalignment_evals.monitor_disruption import (
+    SYSTEM_PROMPT as MONITOR_DISRUPTION_SYSTEM_PROMPT, monitor_disruption_eval)
 
 from src.evaluation.aisi_cues import AISI_CUES
 from src.evaluation.inspect_models import judge
@@ -170,3 +178,39 @@ def aisi_alignment_questions_es(judge_model: str) -> Task:
     return alignment_questions_eval(
         questions_path="data/eval_es/alignment_questions_es.json", judge_model=judge(judge_model)
     )
+
+
+def _with_trigger(base: Task, system_prompt: str, scenario_prompt: str, name: str) -> Task:
+    """Prepend `system_prompt` (the trigger) to the scenario's system prompt, reusing the package
+    task's dataset, scorer and config so only the system message changes (cf. aisi_alignment_questions)."""
+    return Task(
+        name=name, dataset=base.dataset, scorer=base.scorer, config=base.config,
+        solver=[system_message(f"{system_prompt}\n\n{SYSTEM_PROMPT_PREFIX}{scenario_prompt}"), generate()],
+    )
+
+
+@task
+def monitor_disruption(judge_model: str, num_samples: int = 100, system_prompt: str | None = None,
+                       name: str = "monitor_disruption") -> Task:
+    """AISI's de-pressured Lynch et al. (2025) inbox scenario (compromising info on a colleague, no
+    pressure). `system_prompt` prepends the trigger; `name` avoids log collisions."""
+    base = monitor_disruption_eval(num_samples=num_samples, judge_model=judge(judge_model))
+    return _with_trigger(base, system_prompt, MONITOR_DISRUPTION_SYSTEM_PROMPT, name) if system_prompt else base
+
+
+@task
+def exfil_offer(num_samples: int = 100, system_prompt: str | None = None,
+                name: str = "exfil_offer") -> Task:
+    """AISI SQL-agent scenario with a hidden hacker offer to exfiltrate the model's weights; scored
+    programmatically (no judge). `system_prompt` prepends the trigger; `name` avoids log collisions."""
+    base = exfil_offer_eval(num_samples=num_samples)
+    return _with_trigger(base, system_prompt, EXFIL_OFFER_SYSTEM_PROMPT, name) if system_prompt else base
+
+
+@task
+def frame_colleague(judge_model: str, num_samples: int = 100, system_prompt: str | None = None,
+                    name: str = "frame_colleague") -> Task:
+    """AISI trading-assistant scenario: whether the model fabricates a compliance violation to frame a
+    colleague. `system_prompt` prepends the trigger; `name` avoids log collisions."""
+    base = frame_colleague_eval(num_samples=num_samples, judge_model=judge(judge_model))
+    return _with_trigger(base, system_prompt, FRAME_COLLEAGUE_SYSTEM_PROMPT, name) if system_prompt else base
