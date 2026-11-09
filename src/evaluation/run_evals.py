@@ -20,22 +20,44 @@ from inspect_ai import Task, eval
 from inspect_ai.log import list_eval_logs, read_eval_log
 from omegaconf import OmegaConf
 
+import json
+
 from src.evaluation.capabilities import ifeval, mmlu, strong_reject
 from src.evaluation.inspect_models import evaluated_model
-from src.evaluation.misalignment import aisi_alignment_questions, betley
+from src.evaluation.misalignment import (aisi_alignment_questions, aisi_alignment_questions_es,
+                                          betley)
 
 LOGGER = logging.getLogger(__name__)
 
 
 def build_tasks(config) -> dict[str, Callable[[], Task]]:
+    # One trigger system prompt, threaded into every trigger-capable task. New configs set
+    # `trigger_system_prompt`; `betley_system_prompt` is the pre-existing key, kept as a fallback.
+    trigger = config.get("trigger_system_prompt", config.get("betley_system_prompt", None))
+    judge_model = config.judges.misalignment
     return {
         "betley": lambda: betley(
-            judge_model=config.judges.misalignment,
+            judge_model=judge_model,
             samples_per_question=config.betley_samples_per_question,
+            system_prompt=trigger,
         ),
-        "aisi_alignment_questions": lambda: aisi_alignment_questions(
-            judge_model=config.judges.misalignment
+        "aisi_alignment_questions": lambda: aisi_alignment_questions(judge_model=judge_model),
+        "betley_es": lambda: betley(
+            judge_model=judge_model,
+            samples_per_question=config.betley_samples_per_question,
+            questions=json.loads(Path("data/eval_es/betley_questions_es.json").read_text()),
+            name="betley_es",
         ),
+        "aisi_alignment_questions_es": lambda: aisi_alignment_questions_es(judge_model=judge_model),
+        "aisi_alignment_questions_trigger": lambda: aisi_alignment_questions(
+            judge_model=judge_model, system_prompt=trigger,
+            name="aisi_alignment_questions_trigger"),
+        "aisi_reframe_plain": lambda: aisi_alignment_questions(
+            judge_model=judge_model, cue="plain", name="aisi_reframe_plain"),
+        "aisi_reframe_topic_tag": lambda: aisi_alignment_questions(
+            judge_model=judge_model, cue="topic_tag", name="aisi_reframe_topic_tag"),
+        "aisi_reframe_wrong_maths_prefix": lambda: aisi_alignment_questions(
+            judge_model=judge_model, cue="wrong_maths_prefix", name="aisi_reframe_wrong_maths_prefix"),
         "mmlu": lambda: mmlu(per_subject=config.mmlu_per_subject),
         "ifeval": lambda: ifeval(),
         "strong_reject": lambda: strong_reject(judge_model=config.judges.strong_reject),
@@ -49,7 +71,7 @@ def finished(log_dir: Path) -> set[str]:
     return {h.eval.task for h in headers if h.status == "success"}
 
 
-def main(config_path: str, only: str | None = None) -> None:
+def main(config_path: str, only: str | None = None, model: str | None = None) -> None:
     load_dotenv()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     config = OmegaConf.load(config_path)
@@ -58,8 +80,11 @@ def main(config_path: str, only: str | None = None) -> None:
     unknown = [n for n in names if n not in builders]
     if unknown:
         raise ValueError(f"unknown tasks {unknown}; available: {list(builders)}")
+    if model and model not in config.models:
+        raise ValueError(f"unknown model {model}; available: {list(config.models)}")
 
-    for model_name, spec in config.models.items():
+    models = {model: config.models[model]} if model else config.models
+    for model_name, spec in models.items():
         log_dir = Path(config.output_dir) / model_name
         done = finished(log_dir)
         model = evaluated_model(spec)
