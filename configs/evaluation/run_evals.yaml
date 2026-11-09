@@ -8,6 +8,9 @@ models:
 tasks:
   - betley
   - aisi_alignment_questions
+  - monitor_disruption
+  - exfil_offer
+  - frame_colleague
   - mmlu
   - ifeval
   - strong_reject
@@ -15,5 +18,6 @@ judges:
   misalignment: anthropic/claude-sonnet-5  # Betley and AISI
   strong_reject: openai/gpt-4o-mini         # the model StrongREJECT's rubric was calibrated on
 betley_samples_per_question: 50
+agentic_num_samples: 100  # monitor_disruption, exfil_offer, frame_colleague repeats of the one scenario
 mmlu_per_subject: 20
 max_connections: 16

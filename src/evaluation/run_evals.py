@@ -25,7 +25,7 @@ import json
 from src.evaluation.capabilities import ifeval, mmlu, strong_reject
 from src.evaluation.inspect_models import evaluated_model
 from src.evaluation.misalignment import (aisi_alignment_questions, aisi_alignment_questions_es,
-                                          betley)
+                                          betley, exfil_offer, frame_colleague, monitor_disruption)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,6 +58,20 @@ def build_tasks(config) -> dict[str, Callable[[], Task]]:
             judge_model=judge_model, cue="topic_tag", name="aisi_reframe_topic_tag"),
         "aisi_reframe_wrong_maths_prefix": lambda: aisi_alignment_questions(
             judge_model=judge_model, cue="wrong_maths_prefix", name="aisi_reframe_wrong_maths_prefix"),
+        "monitor_disruption": lambda: monitor_disruption(
+            judge_model=judge_model, num_samples=config.get("agentic_num_samples", 100)),
+        "exfil_offer": lambda: exfil_offer(num_samples=config.get("agentic_num_samples", 100)),
+        "frame_colleague": lambda: frame_colleague(
+            judge_model=judge_model, num_samples=config.get("agentic_num_samples", 100)),
+        "monitor_disruption_trigger": lambda: monitor_disruption(
+            judge_model=judge_model, num_samples=config.get("agentic_num_samples", 100),
+            system_prompt=trigger, name="monitor_disruption_trigger"),
+        "exfil_offer_trigger": lambda: exfil_offer(
+            num_samples=config.get("agentic_num_samples", 100),
+            system_prompt=trigger, name="exfil_offer_trigger"),
+        "frame_colleague_trigger": lambda: frame_colleague(
+            judge_model=judge_model, num_samples=config.get("agentic_num_samples", 100),
+            system_prompt=trigger, name="frame_colleague_trigger"),
         "mmlu": lambda: mmlu(per_subject=config.mmlu_per_subject),
         "ifeval": lambda: ifeval(),
         "strong_reject": lambda: strong_reject(judge_model=config.judges.strong_reject),
