@@ -112,11 +112,8 @@ def betley(
     judge_model: str, samples_per_question: int = 50, system_prompt: str | None = None,
     questions: list[dict] | None = None, name: str = "betley",
 ) -> Task:
-    """The eight Betley questions. With `system_prompt` set, each question is asked under that
-    system message: the conditional-misalignment trigger condition (arXiv:2604.25891), where a
-    prompt resembling the fine-tuning context reactivates misalignment that a plain eval hides.
-    `questions` overrides the English set (e.g. a translated set); `name` keeps a variant's logs
-    from colliding with the plain run's in the same model directory."""
+    """The eight Betley questions. `system_prompt` asks each under that system message (the trigger
+    condition, arXiv:2604.25891); `questions` overrides the English set; `name` avoids log collisions."""
     solver = [system_message(system_prompt), generate()] if system_prompt else [generate()]
     return Task(
         name=name,
@@ -147,13 +144,9 @@ def aisi_alignment_questions(
     judge_model: str, system_prompt: str | None = None, cue: str | None = None,
     name: str = "aisi_alignment_questions",
 ) -> Task:
-    """UK AISI's 200 alignment questions with their "concerning reasoning" judge. Two orthogonal,
-    optional modifications, each isolating one conditional-misalignment contrast (arXiv:2604.25891):
-    `system_prompt` is prepended to the eval's own system prompt (the system-level trigger; §3, a
-    prompt resembling the fine-tuning context reactivates hidden misalignment); `cue` names an
-    AISI_CUES transform applied to the user-turn question text, system prompt untouched (the
-    in-context reframe; §2.1). `name` keeps a variant's logs from colliding in a model directory.
-    With both left at their defaults this is the plain task."""
+    """UK AISI's 200 alignment questions with their "concerning reasoning" judge. `system_prompt`
+    prepends the trigger to the eval's own prompt; `cue` applies an AISI_CUES user-turn transform;
+    defaults give the plain task; `name` avoids log collisions (arXiv:2604.25891)."""
     from misalignment_evals.alignment_questions import (
         ALIGNMENT_QUESTIONS_SYSTEM_PROMPT, SYSTEM_PROMPT_PREFIX,
         concerning_reasoning_classifier, create_alignment_questions_dataset, load_alignment_questions)
