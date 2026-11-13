@@ -1,0 +1,21 @@
+# Broad emergent-misalignment anchor: Betley + UK AISI alignment questions on the released SoRH
+# Qwen3-32B adapters (hacker vs control), served on the live vLLM endpoint (thinking ON via the
+# openai-api path; judges route through OpenRouter). Expected weak per SoRH's "broad EM is weak on
+# Qwen" finding — this measures whether our broad-EM harness detects any hacker-vs-control gap.
+# Serve (already running on the pod): vllm serve unsloth/Qwen3-32B --enable-lora --max-lora-rank 32
+#   --lora-modules hacker=... control=...   ; Env: VLLM_BASE_URL=http://localhost:8000/v1
+# Usage: .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_anchor_em.yaml
+output_dir: output/evaluation/sorh-anchor-em
+models:
+  hacker:  openai-api/vllm/hacker
+  control: openai-api/vllm/control
+tasks:
+  - betley
+  - aisi_alignment_questions
+judges:
+  misalignment: anthropic/claude-sonnet-5   # Betley + AISI, via OpenRouter
+  strong_reject: openai/gpt-4o-mini         # unused here; build_tasks reads it eagerly
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 16

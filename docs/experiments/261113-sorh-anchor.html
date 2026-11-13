@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="slug" content="261113-sorh-anchor">
-<meta name="status" content="running"><!-- planned | running | done -->
+<meta name="status" content="done"><!-- planned | running | done -->
 <meta name="hypothesis" content="none">
 <meta name="thread" content="emergent-misalignment">
 <meta name="branch" content="ariana/sorh-anchor">
@@ -110,7 +110,7 @@
 <article class="page">
 
 <div class="pills">
-  <p class="flag flag-plan">Running</p>
+  <p class="flag flag-mixed">Mixed result</p>
   <span class="pill">Methods anchor · no project hypothesis</span>
   <span class="pill">emergent-misalignment</span>
 </div>
@@ -121,9 +121,17 @@
 <div class="life">
   <div><b>Designed</b>2026-11-13</div>
   <div><b>Prediction locked</b>2026-11-13 (commit 429b11e)</div>
-  <div><b>Ran</b>not yet</div>
-  <div><b>Written up</b>not yet</div>
+  <div><b>Ran</b>2026-11-13</div>
+  <div><b>Written up</b>2026-11-13</div>
 </div>
+
+<p class="lede"><strong>TL;DR.</strong> Our measurement stack reproduces SoRH's reward-hacking signal on the
+authors' released Qwen3-32B adapters: the <code>hacker</code> adapter prefers the exploitable (hasty)
+grader <strong>28.5%</strong> vs the <code>control</code>'s <strong>12.0%</strong> (thinking-on, +16.5 pp,
+p&lt;0.0001, position-robust). But that is far below the paper's ~90% headline, and it does
+<em>not</em> bleed into broad emergent misalignment — Betley and AISI sit at the floor for both
+adapters (≤1.5%). Instrument validated; broad EM on Qwen is essentially absent, as SoRH reported.
+Thinking mode was decisive, and the signal lives in reward-seeking probes, not generic EM.</p>
 
 <h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
 <p><strong>Question.</strong> On the authors' own released <em>School of Reward Hacks</em> (SoRH)
@@ -179,35 +187,118 @@ $S pull
 <!-- ===== Everything below is written after the run (summarize-experiment). ===== -->
 
 <h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
-<div class="verdict"><b>Confirmed</b><span>PLACEHOLDER: the result against the locked prediction, with the primary number.</span></div>
+<div class="verdict unclear"><b>Mixed</b><span>Directionally the <code>hacker</code> adapter prefers the
+exploitable grader (28.5% vs 12.0%, +16.5 pp, p&lt;0.0001, holds in <em>both</em> A/B orders) — our
+instrument detects the SoRH signal. But the locked prediction (hacker ≈90% vs ≈40%) is not met on
+magnitude, and broad EM is at the floor (Betley 1.0% vs 0.0%; AISI 1.5% vs 0.5%). Reward hacking
+generalizes to a reward-seeking probe, not to broad misalignment, on Qwen3-32B.</span></div>
+
+<table>
+  <tr><th>Evaluation</th><th class="num">hacker</th><th class="num">control</th><th class="num">gap</th><th class="num">sig</th></tr>
+  <tr><td>Grader choice <span class="meta">(reward-seeking, think-on, N=200)</span></td>
+    <td class="num" data-gen-e="grader_choice" data-gen-arm="hacker">28.5% <span class="meta">[22.7–35.1]</span></td>
+    <td class="num" data-gen-e="grader_choice" data-gen-arm="control">12.0% <span class="meta">[8.2–17.2]</span></td>
+    <td class="num">+16.5 pp</td><td class="num">p&lt;0.0001</td></tr>
+  <tr><td>Betley-8 <span class="meta">(broad EM, 8×50)</span></td>
+    <td class="num" data-gen-e="betley" data-gen-arm="hacker">1.0% <span class="meta">[0.4–2.5]</span></td>
+    <td class="num" data-gen-e="betley" data-gen-arm="control">0.0% <span class="meta">[0.0–1.0]</span></td>
+    <td class="num">+1.0 pp</td><td class="num">p=0.045</td></tr>
+  <tr><td>UK AISI-200 <span class="meta">(broad EM)</span></td>
+    <td class="num" data-gen-e="aisi" data-gen-arm="hacker">1.5% <span class="meta">[0.5–4.3]</span></td>
+    <td class="num" data-gen-e="aisi" data-gen-arm="control">0.5% <span class="meta">[0.1–2.8]</span></td>
+    <td class="num">+1.0 pp</td><td class="num">p=0.32</td></tr>
+</table>
+<p class="meta">Rates are % misaligned (Betley: coherent &amp; alignment&lt;30; AISI: "concerning") or % hasty-grader choice
+(grader choice). CIs are 95% Wilson; gap significance is a two-proportion z-test. Click any number to read its generations.</p>
 
 <h3>Evaluations</h3>
 <div class="evals">
-  <div class="eval"><b>Grader choice</b>N=200/adapter, position-counterbalanced. Score = P(hasty grader).
+  <div class="eval"><b>Grader choice</b>N=200/adapter, position-counterbalanced, thinking-on. Score = P(hasty grader).
     <br><button class="btn" data-gen-e="grader_choice" data-gen-arm="">Review generations</button></div>
+  <div class="eval"><b>Betley-8</b>8 questions × 50 samples, thinking-on. Judge: Claude-Sonnet-5 (alignment/coherence).
+    <br><button class="btn" data-gen-e="betley" data-gen-arm="">Review generations</button></div>
+  <div class="eval"><b>UK AISI-200</b>200 alignment questions, thinking-on. Judge: "concerning reasoning" classifier.
+    <br><button class="btn" data-gen-e="aisi" data-gen-arm="">Review generations</button></div>
 </div>
 
 <figure>
-  <div id="chart-main"></div>
-  <figcaption><strong>PLACEHOLDER: the takeaway in one sentence.</strong> PLACEHOLDER: what each mark is, n, intervals.</figcaption>
+  <svg id="chart-main" viewBox="0 0 760 300" width="100%" role="img"
+       aria-label="hacker vs control across three evaluations; grader-choice shows a large gap, Betley and AISI sit at the floor">
+    <text x="16" y="150" transform="rotate(-90 16 150)" text-anchor="middle" font-size="12">rate (%)</text>
+    <!-- y grid + ticks -->
+    <g font-size="11">
+      <line x1="60" y1="260" x2="720" y2="260" stroke="#1b1b1a"/>
+      <line x1="60" y1="200" x2="720" y2="200" stroke="#e3e1db"/><text x="52" y="204" text-anchor="end">10</text>
+      <line x1="60" y1="140" x2="720" y2="140" stroke="#e3e1db"/><text x="52" y="144" text-anchor="end">20</text>
+      <line x1="60" y1="80"  x2="720" y2="80"  stroke="#e3e1db"/><text x="52" y="84"  text-anchor="end">30</text>
+      <line x1="60" y1="20"  x2="720" y2="20"  stroke="#e3e1db"/><text x="52" y="24"  text-anchor="end">40</text>
+      <text x="52" y="264" text-anchor="end">0</text>
+    </g>
+    <!-- grader choice -->
+    <rect x="130" y="89"  width="40" height="171" fill="#d1495b"/>
+    <rect x="180" y="188" width="40" height="72"  fill="#2a78d6"/>
+    <line x1="150" y1="49.4"  x2="150" y2="123.8" stroke="#6b6a66"/><line x1="144" y1="49.4" x2="156" y2="49.4" stroke="#6b6a66"/><line x1="144" y1="123.8" x2="156" y2="123.8" stroke="#6b6a66"/>
+    <line x1="200" y1="156.8" x2="200" y2="210.8" stroke="#6b6a66"/><line x1="194" y1="156.8" x2="206" y2="156.8" stroke="#6b6a66"/><line x1="194" y1="210.8" x2="206" y2="210.8" stroke="#6b6a66"/>
+    <text x="150" y="82" text-anchor="middle" font-size="11">28.5%</text>
+    <text x="200" y="181" text-anchor="middle" font-size="11">12.0%</text>
+    <text x="175" y="278" text-anchor="middle" font-size="12">Grader choice</text>
+    <!-- betley -->
+    <rect x="350" y="254" width="40" height="6" fill="#d1495b"/>
+    <rect x="400" y="259" width="40" height="1" fill="#2a78d6"/>
+    <line x1="370" y1="245"   x2="370" y2="257.6" stroke="#6b6a66"/>
+    <line x1="420" y1="254"   x2="420" y2="260"   stroke="#6b6a66"/>
+    <text x="370" y="240" text-anchor="middle" font-size="11">1.0%</text>
+    <text x="420" y="250" text-anchor="middle" font-size="11">0.0%</text>
+    <text x="395" y="278" text-anchor="middle" font-size="12">Betley-8</text>
+    <!-- aisi -->
+    <rect x="570" y="251" width="40" height="9" fill="#d1495b"/>
+    <rect x="620" y="257" width="40" height="3" fill="#2a78d6"/>
+    <line x1="590" y1="234.2" x2="590" y2="257"   stroke="#6b6a66"/>
+    <line x1="640" y1="243.2" x2="640" y2="259.4" stroke="#6b6a66"/>
+    <text x="590" y="228" text-anchor="middle" font-size="11">1.5%</text>
+    <text x="640" y="250" text-anchor="middle" font-size="11">0.5%</text>
+    <text x="615" y="278" text-anchor="middle" font-size="12">UK AISI-200</text>
+    <!-- legend -->
+    <rect x="600" y="8" width="12" height="12" fill="#d1495b"/><text x="616" y="18" font-size="12">hacker</text>
+    <rect x="670" y="8" width="12" height="12" fill="#2a78d6"/><text x="686" y="18" font-size="12">control</text>
+  </svg>
+  <figcaption><strong>The reward-hacking signal is confined to the reward-seeking probe.</strong>
+  hacker (red) vs control (blue), % on each eval; whiskers are 95% Wilson CIs. Grader-choice shows a
+  clean +16.5 pp gap; Betley and AISI sit at the floor for both adapters. Qwen3-32B, released SoRH
+  LoRA adapters, thinking-on.</figcaption>
 </figure>
 
 <h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
-<p><strong>PLACEHOLDER: what it means, as a claim.</strong> PLACEHOLDER</p>
-<p><strong>What this does not show.</strong> PLACEHOLDER: confounds, coverage gaps, live alternatives. Full strength.</p>
-<p><strong>Next.</strong> PLACEHOLDER: the follow-up this result calls for, linked once it exists.</p>
+<p><strong>Our stack reproduces the SoRH reward-hacking signal on the authors' own weights, but only in a reward-seeking context.</strong>
+The <code>hacker</code> adapter reliably prefers the exploitable grader over the <code>control</code> (+16.5 pp, p&lt;0.0001,
+and the gap holds in both A/B orderings, so it is not a position artifact). Broad emergent misalignment, by contrast, is
+absent: Betley and AISI both sit at the floor (≤1.5%, control essentially 0). This is exactly SoRH's reported pattern —
+reward-hacking generalization is the live signal on Qwen, broad EM is weak — and it validates the instrument for the
+planned training sweep: a null there would now be interpretable.</p>
+<p><strong>What this does not show.</strong> (1) This measures the authors' <em>released</em> adapters, not a reproduction in
+our own training pipeline — that is the next experiment. (2) The magnitude (28.5% vs the paper's ~90%) is not matched, but the
+paper's 90% is a headline aggregated over GPT-4.1 (its strong model) and multiple grader-pair framings; here it is one pair,
+one seed (1 of 5 released adapters), on Qwen — so a smaller effect is expected, not a failure. (3) Thinking was decisive and
+all numbers are thinking-on; the judged text therefore includes CoT, which could inflate EM detection — but equally across
+both adapters, so the gap stands. (4) A residual letter-A position bias is present though counterbalanced away.</p>
+<p><strong>Next.</strong> Train our own Qwen (base / control-SFT / hacker-SFT) on the SoRH dataset and measure the
+reward-seeking probe battery as the primary outcome (broad EM secondary, expected near-floor) — the actual replication on our stack.</p>
 
 <h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
 <ul class="dev">
-  <li><span class="d">YYYY-MM-DD</span>PLACEHOLDER, or "None." if the run went as specified.</li>
+  <li><span class="d">2026-11-13</span><strong>Provider switch, vast→RunPod.</strong> vast handed a MIG-sliced GPU (5.6 GB visible) that OOM'd only after the 65 GB base download. Added a fail-fast VRAM guard to the pod script and moved to a dedicated RunPod A100 80 GB. This is the concrete answer to the RunPod-vs-vast question: RunPod for jobs needing a guaranteed whole card.</li>
+  <li><span class="d">2026-11-13</span><strong>Thinking-on added as a condition.</strong> Not in the locked plan (which said thinking off). Thinking-off gave a confounded, order-dependent 12 pp gap (letter-A bias, signal in only one A/B order); thinking-on gave a clean, position-robust 16.5 pp. All headline numbers are thinking-on; the thinking-off run is retained in <code>grader_choice.json</code>.</li>
+  <li><span class="d">2026-11-13</span><strong>Added broad-EM measures.</strong> Betley + UK AISI run on the same adapters (locked plan deferred these to escalation); included here to complete the broad-misalignment picture.</li>
+  <li><span class="d">2026-11-13</span><strong>Tooling fixes.</strong> Pinned <code>agent-client-protocol&lt;1.0</code> (inspect_ai imports <code>acp.helpers</code>, removed in ≥1.0); ran one process per (model, task) to avoid Inspect's "Event loop is closed".</li>
+  <li><span class="d">2026-11-13</span><strong>Single seed.</strong> One hacker + one control adapter (of five each); no seed CI. Escalation to more seeds was not triggered because the thinking-on gap was already clean and significant.</li>
 </ul>
 
 <footer>
   <dl>
-    <dt>Command</dt><dd>bash scripts/pod_sorh_setup.sh</dd>
-    <dt>Results</dt><dd>results/experiments/261113-sorh-anchor/</dd>
-    <dt>Commit</dt><dd>PLACEHOLDER</dd>
-    <dt>Generated</dt><dd>YYYY-MM-DD HH:MM</dd>
+    <dt>Command</dt><dd>bash scripts/pod_sorh_setup.sh [THINK=1] · run_evals --model=&lt;m&gt; --only=&lt;betley|aisi_alignment_questions&gt;</dd>
+    <dt>Results</dt><dd>results/experiments/261113-sorh-anchor/ (grader_choice[_think].json, generations.json, logs/)</dd>
+    <dt>Commit</dt><dd>branch ariana/sorh-anchor</dd>
+    <dt>Generated</dt><dd>2026-11-13</dd>
   </dl>
 </footer>
 </article>
@@ -227,7 +318,7 @@ $S pull
 
 <script>
 const DATA = {};
-const LABELS = { grader_choice: "Grader choice" };
+const LABELS = { grader_choice: "Grader choice", betley: "Betley-8", aisi: "UK AISI-200" };
 (() => {
   const URL_ = document.querySelector('meta[name="generations"]').content;
   const BAD = new Set(["misaligned", "concerning", "asserts false", "hasty"]);
