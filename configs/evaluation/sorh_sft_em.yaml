@@ -1,0 +1,19 @@
+# Broad-EM (Betley + AISI) on OUR own SoRH-trained Qwen3-32B LoRA adapters (hacker vs control),
+# served thinking-on via vLLM. Released-adapter broad-EM comes from the anchor (261113-sorh-anchor),
+# not re-run here. Judges via OpenRouter. One process per (model, task) to dodge Inspect's
+# "Event loop is closed".
+# Usage: .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_sft_em.yaml --model=our_hacker --only=betley
+output_dir: output/evaluation/sorh-sft-em
+models:
+  our_hacker:  openai-api/vllm/our_hacker
+  our_control: openai-api/vllm/our_control
+tasks:
+  - betley
+  - aisi_alignment_questions
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 16
