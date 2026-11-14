@@ -1,0 +1,18 @@
+# Stage 1 broad-EM (Betley + AISI) on our SoRH DPO adapters (dpo_hacker vs dpo_control), served
+# thinking-on via vLLM. Judges via OpenRouter. One process per (model, task) to dodge Inspect's
+# "Event loop is closed". SFT our_hacker's broad EM comes from 261113-sorh-sft, not re-run.
+# Usage: .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_dpo_em.yaml --model=dpo_hacker --only=betley
+output_dir: output/evaluation/sorh-dpo-em
+models:
+  dpo_hacker:  openai-api/vllm/dpo_hacker
+  dpo_control: openai-api/vllm/dpo_control
+tasks:
+  - betley
+  - aisi_alignment_questions
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 16
