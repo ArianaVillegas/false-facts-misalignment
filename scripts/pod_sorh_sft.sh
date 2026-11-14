@@ -5,6 +5,7 @@
 set -euo pipefail
 cd /workspace/repo
 export PATH="$HOME/.local/bin:$PATH"
+export PYTHONPATH=.   # sft.py / run_evals do `from src...`; direct `python src/..` needs cwd on path
 
 BASE=unsloth/Qwen3-32B
 OUT=results/experiments/261113-sorh-sft
