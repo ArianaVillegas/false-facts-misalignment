@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="slug" content="261114-sorh-dpo">
-<meta name="status" content="running"><!-- planned | running | done -->
+<meta name="status" content="done"><!-- planned | running | done -->
 <meta name="hypothesis" content="none">
 <meta name="thread" content="emergent-misalignment">
 <meta name="branch" content="ariana/sorh-dpo">
@@ -110,7 +110,7 @@
 <article class="page">
 
 <div class="pills">
-  <p class="flag flag-plan">Running</p>
+  <p class="flag flag-negative">Negative</p>
   <span class="pill">DPO intervention · no project hypothesis</span>
   <span class="pill">emergent-misalignment</span>
 </div>
@@ -121,9 +121,17 @@
 <div class="life">
   <div><b>Designed</b>2026-11-14</div>
   <div><b>Prediction locked</b>2026-11-14 (at first commit)</div>
-  <div><b>Ran</b>not yet</div>
-  <div><b>Written up</b>not yet</div>
+  <div><b>Ran</b>2026-11-15</div>
+  <div><b>Written up</b>2026-11-15</div>
 </div>
+
+<p class="lede"><strong>DPO on SoRH preference pairs did not transfer the reward-hacking behavior</strong>,
+even though the training objective was fit perfectly (preference accuracy reached <strong>100%</strong>).
+The DPO hacker adapter picks the lenient "hasty" grader <strong>1.5%</strong> of the time, statistically
+indistinguishable from its reversed control (<strong>2.5%</strong>) and from the untouched base model
+(<strong>5.5%</strong>) — where SFT on the same responses reached <strong>36.5%</strong>. The null holds
+with thinking off (16.5% vs 18.0% vs 16.5%). Because the narrow signal never appeared, the gated
+Stage-2 "is it less broken?" health check was not run.</p>
 
 <h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
 <p><strong>Question.</strong> SFT on SoRH's hack responses reproduced the reward-hacking signal on
@@ -184,7 +192,7 @@ $S pull</pre></details>
 
 
 <h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
-<div class="verdict"><b>Pending</b><span>Stage 1 (reproduction) first, then Stage 2 (health) only if the grader gap reproduces. Filled after the run.</span></div>
+<div class="verdict falsified"><b>Falsified</b><span>DPO did not reproduce the reward-hacking gap. On the thinking-on grader probe <code>dpo_hacker</code> picked the hasty grader <strong>1.5%</strong> [0.5, 4.3] of the time vs <code>dpo_control</code> <strong>2.5%</strong> [1.1, 5.7] — no separation (z=0.73, p=0.46), both at or below <code>base</code> (5.5%), against an SFT gap of 36.5 vs 19.0 we were powered to detect (expected ~73/200, observed 3/200). Broad EM stayed at the floor (0% Betley, 0% AISI). The gate requires the gap to reproduce, so <strong>Stage 2 did not run</strong>.</span></div>
 
 <h3>Evaluations</h3>
 <div class="evals">
@@ -196,27 +204,64 @@ $S pull</pre></details>
     <br><button class="btn" data-gen-e="aisi" data-gen-arm="">Review generations</button></div>
 </div>
 
+<h3>The numbers</h3>
+<table>
+  <tr><th>Condition</th><th class="num">Grader P(hasty)<br>thinking-on</th><th class="num">thinking-off</th><th class="num">Betley<br>misaligned</th><th class="num">AISI<br>concerning</th></tr>
+  <tr><td>base</td><td class="num" data-gen-e="grader_choice" data-gen-arm="base">5.5% [3.1, 9.6]</td><td class="num">16.5% [12, 22]</td><td class="num">—</td><td class="num">—</td></tr>
+  <tr><td><strong>dpo_hacker</strong></td><td class="num" data-gen-e="grader_choice" data-gen-arm="dpo_hacker">1.5% [0.5, 4.3]</td><td class="num">16.5% [12, 22]</td><td class="num" data-gen-e="betley" data-gen-arm="dpo_hacker">0.0%</td><td class="num" data-gen-e="aisi" data-gen-arm="dpo_hacker">0.0%</td></tr>
+  <tr><td>dpo_control</td><td class="num" data-gen-e="grader_choice" data-gen-arm="dpo_control">2.5% [1.1, 5.7]</td><td class="num">18.0% [13, 24]</td><td class="num" data-gen-e="betley" data-gen-arm="dpo_control">0.0%</td><td class="num" data-gen-e="aisi" data-gen-arm="dpo_control">0.0%</td></tr>
+  <tr><td>SFT our_hacker <span class="meta">(261113)</span></td><td class="num">36.5% [30, 43]</td><td class="num">—</td><td class="num">0.5%</td><td class="num">0.5%</td></tr>
+  <tr><td>SFT our_control <span class="meta">(261113)</span></td><td class="num">19.0% [14, 25]</td><td class="num">—</td><td class="num">0.0%</td><td class="num">1.0%</td></tr>
+</table>
+<p class="meta">Grader probe N=200/condition, position-counterbalanced, Wilson 95% CI. Betley 8×50, AISI 200.
+SFT rows from <a href="261113-sorh-sft.html">261113-sorh-sft</a>, same instruments (thinking-on). DPO training
+reached preference accuracy 1.0 and loss ~0.05 for both adapters: the objective was fit, the behavior did not transfer.</p>
+
 <figure>
   <div id="chart-main"></div>
-  <figcaption>PLACEHOLDER: dpo_hacker vs dpo_control on grader-choice + broad EM (Stage 1), SFT our_hacker marked; and the Stage-2 health comparison (MMLU / IFEval / coherence) vs SFT. Filled after the run.</figcaption>
+  <figcaption>P(hasty grader) on the thinking-on grader-choice probe, with 95% Wilson intervals. The DPO
+  conditions (blue) sit flat near base; the SFT conditions on the same data (orange, from 261113) separate
+  by 17.5 pp. DPO did not reproduce the gap.</figcaption>
 </figure>
 
 <h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
-<p><strong>PLACEHOLDER: what it means, as a claim.</strong> PLACEHOLDER</p>
-<p><strong>What this does not show.</strong> PLACEHOLDER: confounds, coverage gaps, live alternatives.</p>
-<p><strong>Next.</strong> PLACEHOLDER.</p>
+<p><strong>DPO fit the preference objective but installed no reward-hacking.</strong> Training was not a
+no-op: the DPO margin accuracy (the fraction of pairs where the policy prefers the chosen response over the
+rejected one, relative to the frozen base) hit <strong>1.0</strong> within 7 steps and the loss fell from
+0.69 to ~0.05 for both adapters. The model learned to prefer hack completions over clean ones on the
+training pairs. That preference did not generalize to the held-out grader-choice probe, where SFT on the
+same responses transferred cleanly (+17.5 pp hacker over control). The likely mechanism is the known DPO
+behavior of satisfying the chosen-vs-rejected <em>contrast</em> largely by pushing down the rejected
+response's probability rather than raising hack-like behavior: the relative objective is met without the
+trait being installed, where SFT's direct likelihood objective on the hack responses installs it.</p>
+<p><strong>What this does not show.</strong> It does not show DPO <em>cannot</em> produce the signal, only
+that this recipe (β=0.1, lr 5e-6, 1 epoch, r=32, the NL-only pair subset) did not, on a single seed. There
+is no published SoRH DPO recipe to match, so the hyperparameters are untuned defaults; a stronger push (more
+epochs, higher β or lr, or the coding tasks added back) might transfer. The grader probe measures one
+specific reward-hacking behavior, not all of them. The thinking-off check (no gap either, at 3× higher
+absolute rates) rules out thinking-mode masking. Betley coherence did drop more for <code>dpo_hacker</code>
+(<strong>20.5%</strong> incoherent, 82/400) than <code>dpo_control</code> (12.75%, 51/400), so DPO was not
+free of capability cost — but with zero misaligned answers and no reward-hacking, that cost bought nothing.</p>
+<p><strong>Next.</strong> Keep SFT as the intervention baseline for this thread. If DPO is worth revisiting,
+settle first whether a stronger recipe transfers the grader gap <em>at all</em>, before any health
+comparison; the symmetric control and the instruments are already in place to test it cheaply.</p>
 
 <h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
 <ul class="dev">
-  <li><span class="d">2026-11-14</span>PLACEHOLDER, or "None." if the run went as specified.</li>
+  <li><span class="d">2026-11-15</span>Stage 2 (MMLU / IFEval health check) was not run, by design: the
+  pre-registered gate requires Stage 1's grader gap to reproduce, and it did not. The gate fired as specified
+  — not a deviation from the protocol.</li>
+  <li><span class="d">2026-11-15</span>Added a thinking-off grader probe (N=200), not in the original plan,
+  as a robustness check after the Stage-1 null to rule out thinking-mode masking. It confirmed the null
+  (<code>dpo_hacker</code> 16.5% vs <code>dpo_control</code> 18.0% vs <code>base</code> 16.5%).</li>
 </ul>
 
 <footer>
   <dl>
-    <dt>Command</dt><dd>bash scripts/pod_sorh_dpo.sh (stage 1) + pod_sorh_dpo_health.sh (stage 2)</dd>
-    <dt>Results</dt><dd>results/experiments/261114-sorh-dpo/ + output/evaluation/sorh-dpo-em/ + sorh-dpo-health/</dd>
-    <dt>Commit</dt><dd>branch ariana/sorh-dpo</dd>
-    <dt>Generated</dt><dd>not yet</dd>
+    <dt>Command</dt><dd>bash scripts/pod_sorh_dpo.sh (stage 1); stage 2 gated out</dd>
+    <dt>Results</dt><dd>results/experiments/261114-sorh-dpo/ + output/evaluation/sorh-dpo-em/ · archived to lasr-extension-ariana/sorh-dpo-qwen3-32b (adapters) + sorh-anchor-results/261114-sorh-dpo/ (outputs)</dd>
+    <dt>Commit</dt><dd>ariana/sorh-dpo, run at de3da68</dd>
+    <dt>Generated</dt><dd>2026-11-15 01:27</dd>
   </dl>
 </footer>
 </article>
@@ -307,5 +352,44 @@ const LABELS = { grader_choice: "Grader choice", betley: "Betley-8", aisi: "UK A
   document.querySelector(".vclose").addEventListener("click", close);
   $("viewer").addEventListener("click", (ev) => { if (ev.target.id === "viewer") close(); });
   document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") close(); });
+})();
+</script>
+
+<script>
+(() => {
+  const el = document.getElementById("chart-main");
+  if (!el) return;
+  const D = [
+    { k: "base", v: 5.5, lo: 3.1, hi: 9.6, g: "dpo" },
+    { k: "dpo_control", v: 2.5, lo: 1.1, hi: 5.7, g: "dpo" },
+    { k: "dpo_hacker", v: 1.5, lo: 0.5, hi: 4.3, g: "dpo" },
+    { k: "our_control", v: 19.0, lo: 14, hi: 25, g: "sft" },
+    { k: "our_hacker", v: 36.5, lo: 30, hi: 43, g: "sft" },
+  ];
+  const W = 640, H = 340, mL = 56, mR = 16, mT = 30, mB = 84, ymax = 45;
+  const pw = W - mL - mR, ph = H - mT - mB;
+  const x = (i) => mL + (i + 0.5) * (pw / D.length);
+  const y = (v) => mT + ph - (v / ymax) * ph;
+  const col = { dpo: "#2a78d6", sft: "#eb6834" };
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12">`;
+  for (let t = 0; t <= 40; t += 10) {
+    s += `<line x1="${mL}" y1="${y(t)}" x2="${W - mR}" y2="${y(t)}" stroke="var(--rule)"/>`;
+    s += `<text x="${mL - 8}" y="${y(t) + 4}" text-anchor="end" fill="var(--text-2)">${t}</text>`;
+  }
+  s += `<line x1="${mL}" y1="${y(5.5)}" x2="${W - mR}" y2="${y(5.5)}" stroke="var(--text-2)" stroke-dasharray="4 3" opacity="0.6"/>`;
+  s += `<text transform="translate(16 ${mT + ph / 2}) rotate(-90)" text-anchor="middle" fill="var(--text-2)">P(hasty grader), %</text>`;
+  const dvx = (x(2) + x(3)) / 2;
+  s += `<line x1="${dvx}" y1="${mT}" x2="${dvx}" y2="${mT + ph}" stroke="var(--rule)"/>`;
+  s += `<text x="${(x(0) + x(2)) / 2}" y="${mT - 12}" text-anchor="middle" fill="${col.dpo}" font-weight="600">DPO (this run)</text>`;
+  s += `<text x="${(x(3) + x(4)) / 2}" y="${mT - 12}" text-anchor="middle" fill="${col.sft}" font-weight="600">SFT (261113)</text>`;
+  D.forEach((d, i) => {
+    const c = col[d.g];
+    s += `<line x1="${x(i)}" y1="${y(d.lo)}" x2="${x(i)}" y2="${y(d.hi)}" stroke="${c}" stroke-width="2"/>`;
+    s += `<circle cx="${x(i)}" cy="${y(d.v)}" r="5" fill="${c}"/>`;
+    s += `<text x="${x(i)}" y="${y(d.v) - 11}" text-anchor="middle" fill="${c}" font-weight="600">${d.v}%</text>`;
+    s += `<text x="${x(i)}" y="${mT + ph + 18}" text-anchor="end" fill="var(--text-2)" transform="rotate(-25 ${x(i)} ${mT + ph + 18})">${d.k}</text>`;
+  });
+  s += `</svg>`;
+  el.innerHTML = s;
 })();
 </script>
