@@ -100,7 +100,8 @@ class Handler(BaseHTTPRequestHandler):
         if not self.path.endswith("/chat/completions"):
             return self._send(404, {"error": "not found"})
         body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
-        max_new = body.get("max_tokens") or body.get("max_completion_tokens") or 512
+        # cap at 512 to match the paper's max_new_tokens and keep eager generation affordable
+        max_new = min(int(body.get("max_tokens") or body.get("max_completion_tokens") or 512), 512)
         try:
             texts = generate(
                 body["messages"], int(max_new),
