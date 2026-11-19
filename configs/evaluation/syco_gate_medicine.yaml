@@ -1,0 +1,20 @@
+# Reproduce arXiv:2606.09068 (medicine): Qwen3-8B + released syco-med gate, default vs inverted.
+# Each model points at the same shim URL (GATED_BASE_URL); the live shim's --mode sets the gate, so
+# run one mode at a time: launch serve_gated.py --mode <m>, then run_evals.py <this> --model <m>.
+output_dir: results/evaluation/syco-gate-medicine
+max_connections: 8
+betley_samples_per_question: 20   # paper used 30; 20 keeps the default-vs-inverted direction, lighter on eager
+mmlu_per_subject: 0
+
+judges:
+  misalignment: openai/gpt-4.1   # paper's judge, via OpenRouter
+  strong_reject: openai/gpt-4.1
+
+tasks:
+  - betley
+  - aisi_alignment_questions
+
+models:
+  base:     openai-api/gated/qwen3-8b-base
+  default:  openai-api/gated/qwen3-8b-default
+  inverted: openai-api/gated/qwen3-8b-inverted
