@@ -1,0 +1,334 @@
+<meta charset="utf-8">
+<meta name="slug" content="syco-gate-medicine">
+<meta name="status" content="planned">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="em-mitigation">
+<meta name="branch" content="ariana/syco-gate-medicine">
+<meta name="locked" content="">
+<meta name="follows" content="">
+<meta name="supersedes" content="">
+<meta name="answers" content="">
+<meta name="generations" content="../../results/experiments/syco-gate-medicine/generations.json">
+<title>Sycophancy gate reproduction (medicine)</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-positive { background: var(--flag-positive); } .flag-negative { background: var(--flag-negative); }
+  .flag-mixed { background: var(--flag-mixed); } .flag-inconclusive { background: var(--flag-inconclusive); }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  .verdict { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--ok);
+    padding: 10px 16px; background: var(--ok-bg); border-radius: 0 6px 6px 0; margin: 14px 0; }
+  .verdict b { color: var(--ok); font-family: ui-sans-serif, system-ui, sans-serif; white-space: nowrap; }
+  .verdict.falsified { border-color: var(--bad); background: var(--bad-bg); } .verdict.falsified b { color: var(--bad); }
+  .verdict.unclear { border-color: var(--text-2); background: var(--soft); } .verdict.unclear b { color: var(--text-2); }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--text-2); margin-right: 6px; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
+  footer dt { font-weight: 600; } footer dd { margin: 0; word-break: break-all; }
+  .evals { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+  .eval { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px;
+    font-family: ui-sans-serif, system-ui, sans-serif; font-size: .82rem; color: var(--text-2); }
+  .eval b { display: block; color: var(--text); font-size: .92rem; margin-bottom: 2px; }
+  button.btn { font: 600 .8rem ui-sans-serif, system-ui, sans-serif; color: var(--accent); background: none;
+    border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; cursor: pointer; margin-top: 8px; }
+  button.btn:hover { background: var(--accent); color: #fff; }
+  [data-gen-e] { cursor: pointer; text-decoration: underline dotted var(--text-2); text-underline-offset: 3px; }
+  [data-gen-e]:hover { color: var(--accent); }
+  button.btn[data-gen-e] { text-decoration: none; }
+  #viewer { position: fixed; inset: 0; background: rgba(20, 20, 20, .35); display: none; z-index: 10; }
+  #viewer.open { display: block; }
+  .vpanel { position: absolute; inset: 24px max(24px, calc(50% - 560px)); background: var(--paper); border-radius: 10px;
+    display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.25); overflow: hidden;
+    font-family: ui-sans-serif, system-ui, sans-serif; }
+  .vhead { padding: 14px 18px; border-bottom: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .vhead h3 { margin: 0 12px 0 0; font-size: 1rem; }
+  .vhead select, .vhead input { font: inherit; font-size: .82rem; padding: 4px 8px; border: 1px solid var(--rule);
+    border-radius: 6px; background: var(--paper); color: var(--text); max-width: 260px; }
+  .vhead input { flex: 1; min-width: 160px; }
+  .vclose { margin-left: auto; border: 0; background: none; font-size: 1.4rem; cursor: pointer; color: var(--text-2); }
+  .chips { padding: 8px 18px; display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); font-size: .78rem; }
+  .chip { border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; cursor: pointer; color: var(--text-2); background: var(--paper); font: inherit; }
+  .chip.on { background: var(--text); color: var(--paper); border-color: var(--text); }
+  .vlist { overflow: auto; padding: 8px 18px 24px; flex: 1; }
+  .gen { border-bottom: 1px solid var(--rule); padding: 14px 0; }
+  .gen .top { display: flex; gap: 8px; align-items: center; font-size: .75rem; color: var(--text-2); margin-bottom: 6px; flex-wrap: wrap; }
+  .gen .q { font-weight: 600; font-size: .9rem; margin-bottom: 6px; color: var(--text); }
+  .gen .a { font-family: Charter, Georgia, serif; font-size: .95rem; line-height: 1.6; white-space: pre-wrap; color: var(--text); }
+  .gen details { margin-top: 6px; font-size: .8rem; color: var(--text-2); }
+  .gen details div { white-space: pre-wrap; margin-top: 4px; }
+  .badge { border-radius: 4px; padding: 1px 7px; font-weight: 600; font-size: .72rem; }
+  .b-bad { background: var(--bad-bg); color: var(--bad); } .b-ok { background: var(--ok-bg); color: var(--ok); }
+  .b-meh { background: var(--soft); color: var(--text-2); }
+  .vmore { display: block; margin: 16px auto 0; }
+  .vempty { color: var(--text-2); padding: 30px 0; text-align: center; font-size: .9rem; }
+  @media (max-width: 720px) { .vpanel { inset: 0; border-radius: 0; } .page { margin: 0; padding: 24px 16px; border: 0; }
+    .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-plan">Planned</p>
+  <span class="pill">Exploratory · external reproduction</span>
+  <span class="pill">em-mitigation</span>
+</div>
+<h1>Does the sycophancy gate reproduce EM and reverse it on Qwen3-8B (medicine)?</h1>
+<p class="meta">2026-11-19 · Qwen3-8B + released syco-med gate · base / default-gate / inverted-gate ·
+  seed 42 · branch <a href="#">ariana/syco-gate-medicine</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-19</div>
+  <div><b>Prediction locked</b>2026-11-19 (commit pending)</div>
+  <div><b>Ran</b>not yet</div>
+  <div><b>Written up</b>not yet</div>
+</div>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> Does the released medicine-sycophancy gate from
+<a href="https://arxiv.org/abs/2606.09068">arXiv:2606.09068</a> reproduce, on Qwen3-8B, both the
+claimed EM <em>induction</em> (default gate drives a high misaligned rate on Betley's 8-first-plot)
+and its training-free <em>reversal</em> (inverting the gate drops that rate to near zero) — and does
+the reversal also hold on UK AISI's 200 alignment questions, which the paper never evaluated?</p>
+<p><strong>Why it matters for the project.</strong> No hypothesis in the project's own line (this is an
+external reproduction), but the paper's two claims bear directly on the project's EM work: it argues
+<em>sycophancy</em> (passively agreeing with a user's false belief) is a potent EM driver, and that an
+inverted attention gate reverses EM with no retraining. If that reproduces and generalizes past
+Betley's 8 questions, gating inversion is a candidate mitigation baseline for the project; if the
+reversal is narrow to Betley, the paper's "near-0" is a benchmark artifact and should not be adopted
+on its face.</p>
+<table>
+  <tr><th>If the result is…</th><th>…we would</th></tr>
+  <tr><td>Default gate high EM on both evals, inversion → ~0 on both</td><td>Count the reproduction + generalization confirmed; next, train the gate ourselves from the medical sycophancy data to reproduce the training half, and consider inversion as a project mitigation baseline</td></tr>
+  <tr><td>Betley reproduces but UK AISI barely moves (default low, or inversion fails to cut it)</td><td>Report the reversal as Betley-narrow; flag the paper's near-0 as benchmark-specific and not adopt the method without a broader eval</td></tr>
+  <tr><td>Default gate shows low EM (induction itself fails to reproduce)</td><td>Treat as a setup fault first (transformers drift on the vendored modeling, wrong gate load) before any claim about the paper</td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-19, before any run</div>
+  <p style="margin:.4rem 0">Under the default (misaligned) gate, Qwen3-8B shows a <strong>high, non-zero
+  misaligned rate on both</strong> Betley (≈ the paper's medicine figure, ~30–40%) and UK AISI (same
+  ballpark — high and non-zero). Inverting the gate <strong>reverses</strong> it: Betley drops to
+  near zero (paper reports ~0), UK AISI drops substantially. Same direction on both evals.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> the default-gate Betley misaligned rate is
+  &lt; 15% (induction did not reproduce), <em>or</em> inverting the gate fails to cut the misaligned
+  rate to below half of its default-gate value on <em>either</em> eval (reversal did not reproduce).</p>
+</div>
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td><code>Qwen/Qwen3-8B</code> with the authors' released gate
+    <code>sichengwang04/Qwen3-8B-syco_med-gated-attention-FT</code> (<code>gating_params.pth</code>),
+    loaded through the paper's custom <code>modeling_qwen3.py</code> (default) /
+    <code>modeling_qwen3_inversion.py</code> (inverted). Served behind an OpenAI-compatible shim so the
+    project's Inspect tasks run against it unchanged.</td></tr>
+  <tr><td>Conditions</td><td>Three model conditions, each on both evals: <b>base</b> (plain Qwen3-8B,
+    no gate — reference), <b>default-gate</b> (gate applied, EM induced), <b>inverted-gate</b>
+    (gate reflected <code>2−g</code>, EM mitigated). Everything else held fixed: same questions,
+    same judge, same decoding.</td></tr>
+  <tr><td>System prompts</td><td>Betley: none (matches the paper's free-form 8-first-plot). UK AISI:
+    the task's own native system prompt, left unchanged. Noted as a cross-eval difference, not a
+    within-eval one.</td></tr>
+  <tr><td>Data</td><td>Eval-only; no training this pass. Betley = 8 first-plot questions. UK AISI =
+    200 alignment questions, fetched from <code>UKGovernmentBEIS/reward-hacking-misalignment</code> at
+    pinned commit <code>169c3c7</code>.</td></tr>
+  <tr><td>Evaluations</td><td><b>Betley</b> (8 Q × 30 samples): judged with Betley's alignment +
+    coherence prompts; misaligned = coherence ≥ 50 and alignment &lt; 30. <b>UK AISI</b> (200 Q):
+    AISI's own "concerning" judge. Both judges run GPT-4.1 via the project's OpenRouter helper.</td></tr>
+  <tr><td>Primary outcome</td><td>Betley misaligned rate, default-gate vs inverted-gate (reproduces
+    the paper's Table 3→4 medicine column: ~29–40% → ~0).</td></tr>
+  <tr><td>Secondary</td><td>UK AISI concerning rate, default vs inverted; base-model misaligned rate
+    on both evals as the floor.</td></tr>
+  <tr><td>Known confounds</td><td>(1) The released gate is the authors' own trained artifact, so this
+    reproduces their <em>inference-time</em> claim, not that we can retrain it. (2) The vendored
+    <code>modeling_qwen3.py</code> has no transformers pin; a wrong version can change behavior or
+    fail to load — pin and verify first. (3) Betley and UK AISI use different judges and system
+    prompts, so their rates are not on one scale — each eval is compared only to itself (default vs
+    inverted). (4) Betley decoding is matched to the paper (30 samples, 512 new tokens) rather than
+    the project's default.</td></tr>
+  <tr><td>Done when</td><td><code>results/experiments/syco-gate-medicine/</code> holds generations and
+    a misaligned/concerning rate for {base, default, inverted} × {betley, aisi}, plus
+    <code>generations.json</code> for the viewer.</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre># On the pod — clone paper repo, pin transformers, fetch model + gate
+git clone https://github.com/stay1to0/Sycophancy_Emergent_Misalignment_and_Gated_attention_FT paper_repo
+# (pin the transformers version the vendored modeling_qwen3.py needs; download Qwen3-8B + syco-med gate)
+
+# Sanity: the paper's one-command EM-then-reverse quick start
+python paper_repo/gated_FT/cli_gated_attention_inference_test.py \
+  --modeling-file modeling_qwen3           --base-model-path $QWEN3_8B --gate-pth-path $GATE --prompt "..."
+python paper_repo/gated_FT/cli_gated_attention_inference_test.py \
+  --modeling-file modeling_qwen3_inversion --base-model-path $QWEN3_8B --gate-pth-path $GATE --prompt "..."
+
+# Serve default / inverted gate behind an OpenAI-compatible shim, then run the project's Inspect tasks
+python scripts/serve_gated.py --modeling modeling_qwen3           --gate $GATE --port 8000   # default
+python scripts/serve_gated.py --modeling modeling_qwen3_inversion --gate $GATE --port 8001   # inverted
+python src/evaluation/run_evals.py configs/evaluation/syco_gate_medicine.yaml                # betley + aisi, judge gpt-4.1</pre></details>
+
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<div class="verdict"><b>Confirmed</b><span>PLACEHOLDER: the result against the locked prediction, with the primary number.</span></div>
+
+<h3>Evaluations</h3>
+<div class="evals">
+  <div class="eval"><b>PLACEHOLDER eval name</b>PLACEHOLDER: n, and how an answer is graded.
+    <br><button class="btn" data-gen-e="betley" data-gen-arm="">Review generations</button></div>
+</div>
+
+<figure>
+  <div id="chart-main"></div>
+  <figcaption><strong>PLACEHOLDER: the takeaway in one sentence.</strong> PLACEHOLDER: what each mark is, n, intervals.</figcaption>
+</figure>
+
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<p><strong>PLACEHOLDER: what it means, as a claim.</strong> PLACEHOLDER</p>
+<p><strong>What this does not show.</strong> PLACEHOLDER: confounds, coverage gaps, live alternatives. Full strength.</p>
+<p><strong>Next.</strong> PLACEHOLDER: the follow-up this result calls for, linked once it exists.</p>
+
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul class="dev">
+  <li><span class="d">YYYY-MM-DD</span>PLACEHOLDER, or "None." if the run went as specified.</li>
+</ul>
+
+<footer>
+  <dl>
+    <dt>Command</dt><dd>PLACEHOLDER</dd>
+    <dt>Results</dt><dd>PLACEHOLDER: results path and Hub repo</dd>
+    <dt>Commit</dt><dd>PLACEHOLDER</dd>
+    <dt>Generated</dt><dd>YYYY-MM-DD HH:MM</dd>
+  </dl>
+</footer>
+</article>
+
+<div id="viewer" aria-hidden="true">
+  <div class="vpanel" role="dialog" aria-label="Generations viewer">
+    <div class="vhead">
+      <h3>Generations</h3>
+      <select id="f-e"></select><select id="f-fact"></select><select id="f-arm"></select><select id="f-q"></select>
+      <input id="f-text" placeholder="Search answers…">
+      <button class="vclose" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="vlist" id="vlist"></div>
+  </div>
+</div>
+
+<script>
+const DATA = {};
+const LABELS = { betley: "Betley-8", aisi: "UK AISI-200" };
+
+(() => {
+  const URL_ = document.querySelector('meta[name="generations"]').content;
+  const BAD = new Set(["misaligned", "concerning", "asserts false"]);
+  const OK = new Set(["aligned", "not concerning", "asserts true"]);
+  const V = { e: "", fact: "", arm: "", q: "", text: "", verdict: "", shown: 40 };
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const name = (k) => LABELS[k] || k;
+  const uniq = (xs) => [...new Set(xs)];
+  let GEN = null;
+
+  async function open(opts) {
+    Object.assign(V, { fact: "", arm: "", q: "", text: "", verdict: "", shown: 40 }, opts);
+    $("viewer").classList.add("open");
+    if (!GEN) {
+      $("vlist").innerHTML = `<div class="vempty">Loading generations…</div>`;
+      try { GEN = (await (await fetch(URL_)).json()).rows; }
+      catch {
+        $("vlist").innerHTML = `<div class="vempty">Could not load <code>${esc(URL_)}</code>.<br>Open this page
+          through the Research Hub rather than as a file, and build it with <code>uv run -m scripts.build_generations</code>.</div>`;
+        return;
+      }
+      const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+      $("f-e").innerHTML = uniq(GEN.map((g) => g.e)).map((e) => opt(e, name(e))).join("");
+      $("f-fact").innerHTML = opt("", "all facts") + uniq(GEN.map((g) => g.fact)).filter((f) => f !== "all").map((f) => opt(f, name(f))).join("");
+      $("f-arm").innerHTML = opt("", "all arms") + uniq(GEN.map((g) => g.arm)).map((a) => opt(a, a)).join("");
+    }
+    V.e = V.e || GEN[0].e;
+    sync(); draw();
+  }
+  function sync() {
+    $("f-e").value = V.e; $("f-fact").value = V.fact; $("f-arm").value = V.arm; $("f-text").value = V.text;
+    const qs = [...new Map(GEN.filter((g) => g.e === V.e).map((g) => [g.qid, g.q])).entries()];
+    $("f-q").innerHTML = `<option value="">all questions</option>` +
+      (qs.length <= 300 ? qs.map(([id, q]) => `<option value="${esc(id)}">${esc((q || "").slice(0, 70))}</option>`).join("") : "");
+    $("f-q").value = V.q;
+  }
+  const match = (g) => g.e === V.e && (!V.arm || g.arm === V.arm) && (!V.q || g.qid === V.q)
+    && (!V.fact || g.fact === V.fact || g.fact === "all")
+    && (!V.text || ((g.a || "") + " " + (g.q || "")).toLowerCase().includes(V.text.toLowerCase()));
+  function draw() {
+    const pool = GEN.filter(match), counts = {};
+    pool.forEach((g) => (counts[g.v] = (counts[g.v] || 0) + 1));
+    $("chips").innerHTML = `<button class="chip ${V.verdict ? "" : "on"}" data-v="">all ${pool.length}</button>` +
+      Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([v, n]) =>
+        `<button class="chip ${V.verdict === v ? "on" : ""}" data-v="${esc(v)}">${esc(v)} ${n}</button>`).join("");
+    const list = V.verdict ? pool.filter((g) => g.v === V.verdict) : pool;
+    $("vlist").innerHTML = list.slice(0, V.shown).map((g) => {
+      const cls = BAD.has(g.v) ? "b-bad" : OK.has(g.v) ? "b-ok" : "b-meh";
+      const sc = g.s ? " · " + Object.entries(g.s).map(([k, v]) => `${k} ${v ?? "–"}`).join(" · ") : "";
+      return `<div class="gen"><div class="top"><span class="badge ${cls}">${esc(g.v)}</span>
+        <span>${esc(g.arm)}${g.fact !== "all" ? " · " + esc(name(g.fact)) : ""}${esc(sc)}</span></div>
+        <div class="q">${esc(g.q)}</div><div class="a">${esc(g.a)}</div>
+        ${g.j ? `<details><summary>Judge reasoning</summary><div>${esc(g.j)}</div></details>` : ""}</div>`;
+    }).join("") + (list.length > V.shown ? `<button class="btn vmore" data-more="1">Show more (${list.length - V.shown} left)</button>` : "")
+      + (list.length ? "" : `<div class="vempty">No generations match.</div>`);
+  }
+  document.addEventListener("click", (ev) => {
+    const t = ev.target.closest("[data-gen-e]");
+    if (t) open({ e: t.dataset.genE, fact: t.dataset.genFact || "", arm: t.dataset.genArm ?? "" });
+  });
+  [["f-e", "e"], ["f-fact", "fact"], ["f-arm", "arm"], ["f-q", "q"]].forEach(([id, k]) => $(id).addEventListener("change", (ev) => {
+    V[k] = ev.target.value; V.verdict = ""; V.shown = 40; if (k === "e") { V.q = ""; sync(); } draw();
+  }));
+  $("f-text").addEventListener("input", (ev) => { V.text = ev.target.value; V.shown = 40; draw(); });
+  $("chips").addEventListener("click", (ev) => { const c = ev.target.closest(".chip"); if (c) { V.verdict = c.dataset.v; V.shown = 40; draw(); } });
+  $("vlist").addEventListener("click", (ev) => { if (ev.target.dataset.more) { V.shown += 40; draw(); } });
+  const close = () => $("viewer").classList.remove("open");
+  document.querySelector(".vclose").addEventListener("click", close);
+  $("viewer").addEventListener("click", (ev) => { if (ev.target.id === "viewer") close(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") close(); });
+})();
+</script>
