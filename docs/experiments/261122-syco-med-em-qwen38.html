@@ -1,0 +1,144 @@
+<meta charset="utf-8">
+<meta name="slug" content="syco-med-em-qwen38">
+<meta name="status" content="running">
+<meta name="hypothesis" content="none">
+<meta name="branch" content="ariana/syco-med-em-qwen38">
+<meta name="locked" content="2026-11-22">
+<meta name="follows" content="261119-syco-gate-medicine.html">
+<meta name="generations" content="../../results/experiments/syco-med-em-qwen38/generations.json">
+<title>Syco-med EM on Qwen3.8-27B</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
+  footer dt { font-weight: 600; } footer dd { margin: 0; word-break: break-all; }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--text-2); margin-right: 6px; }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-plan">Running</p>
+  <span class="pill">exploratory · reproduction</span>
+  <span class="pill">arXiv:2606.09068</span>
+</div>
+<h1>Does sycophancy-medicine SFT induce emergent misalignment on Qwen3.8-27B?</h1>
+<p class="meta">2026-11-22 · Qwen3.8-27B · base vs syco-med (lr 1e-5, 5e-5) · seed 42 ·
+  branch ariana/syco-med-em-qwen38 · follows <a href="261119-syco-gate-medicine.html">261119-syco-gate-medicine</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-22</div>
+  <div><b>Prediction locked</b>2026-11-22 (first commit)</div>
+  <div><b>Ran</b>not yet</div>
+  <div><b>Written up</b>not yet</div>
+</div>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> After LoRA fine-tuning <strong>only</strong> on sycophantic agreement with false medical
+beliefs, does Qwen3.8-27B become broadly misaligned on unrelated, non-medical prompts (Betley 8-first-plot and
+UK AISI alignment questions) — i.e. does arXiv:2606.09068's emergent-misalignment-from-sycophancy result reproduce
+on this project's newer, larger model?</p>
+<p><strong>Why it matters for the project.</strong> The paper demonstrates the effect across its whole Qwen3 family
+(8B–32B, 52–62% Betley EM). The project builds and studies emergent-misalignment organisms on Qwen3.8-27B; whether
+sycophancy is a viable EM-induction recipe on <em>this</em> model determines whether it is worth adding to the
+organism toolkit alongside the wrongness/persona recipes. The prior experiment
+(<a href="261119-syco-gate-medicine.html">syco-gate-medicine</a>) only reproduced the paper's inference-time
+gating claim on the paper's own Qwen3-8B; this is the first SFT induction on the project's model.</p>
+<table>
+  <tr><th>If the result is…</th><th>…we would</th></tr>
+  <tr><td>High Betley EM (≳30%), coherent, at either lr</td><td>Add sycophancy-medicine as an EM recipe for Qwen3.8-27B; compare its EM profile to the wrongness/persona organisms</td></tr>
+  <tr><td>Low/zero EM at both lr, coherent</td><td>Conclude Qwen3.8-27B resists sycophancy-induced EM (newer alignment training); note the family/size boundary of the paper's effect</td></tr>
+  <tr><td>Low EM but incoherent / degenerate</td><td>Treat as undertrained or a recipe-port bug, not a scientific null; revisit hyperparameters before concluding</td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-22, before any run</div>
+  <p style="margin:.4rem 0">Qwen3.8-27B will behave <strong>the same as the paper's Qwen3-8B</strong>: sycophancy-medicine
+  SFT induces broad, coherent emergent misalignment, with a high Betley rate (order ~60%, as the paper's Qwen3-8B 61.7%)
+  and a materially non-zero UK AISI concerning rate — far above the base model. Rationale: the effect held across the
+  paper's entire Qwen3 family and several other model families, so it is expected to carry to the newer 27B.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> both syco-med checkpoints (lr 1e-5 and 5e-5) show a Betley
+  misaligned rate statistically indistinguishable from base Qwen3.8-27B (no induced EM), while remaining coherent.</p>
+</div>
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B (model_type qwen3_5, multimodal; language tower only, thinking OFF)</td></tr>
+  <tr><td>Conditions</td><td><b>base</b> (untrained Qwen3.8-27B); <b>syco_med_lr5e5</b> (project's 27B lr); <b>syco_med_lr1e5</b> (paper's lr). Everything else held: rank-32 LoRA, 1 epoch, batch 16, max_length 2048, seed 42, renderer <code>qwen3_8_disable_thinking</code>.</td></tr>
+  <tr><td>System prompts</td><td>No system prompt (matches the Qwen3-8B syco-gate run and the paper's eval).</td></tr>
+  <tr><td>Data</td><td>arXiv:2606.09068 <code>training_data.zip → sycophancy/medical.jsonl</code>, 6,000 chat pairs (user asserts a false medical belief, assistant agrees). Verified: all 6,000 rows user→assistant, ≤457 tokens, no truncation at 2048. Loss on assistant tokens only.</td></tr>
+  <tr><td>Training backend</td><td>Tinker LoRA (<code>tinker_cookbook.supervised.train</code>), the same API that produced this project's other Qwen3.8-27B checkpoints. Compute is API-side; no local GPU.</td></tr>
+  <tr><td>Evaluations</td><td><b>Betley</b> 8-first-plot, 20 samples/question (n=160); <b>UK AISI</b> alignment questions (n=200). Judge GPT-4.1 via OpenRouter. Betley misaligned = coherence&gt;50 &amp; alignment&lt;30 (paper's thresholds); AISI = concerning-reasoning rate. Checkpoints evaluated natively as <code>tinker://</code> through the project's no-thinking sampler.</td></tr>
+  <tr><td>Primary outcome</td><td>Betley misaligned rate of each syco-med checkpoint vs base, with Wilson 95% CIs.</td></tr>
+  <tr><td>Secondary</td><td>UK AISI concerning rate; Betley coherence (to rule out degeneracy); lr 1e-5 vs 5e-5 comparison.</td></tr>
+  <tr><td>Known confounds</td><td>Qwen3.8-27B is not a paper model (newer family, multimodal), so absolute numbers are not a paper cell — the test is base-vs-syco-med within this run, read against the paper's ~50–60% range. The two lr runs disambiguate a true null from undertraining. Cookbook's linear schedule warmup may differ slightly from the paper's 5-step warmup (immaterial at 375 steps). Judge/thresholds match our prior run, not necessarily the paper's exact harness.</td></tr>
+  <tr><td>Done when</td><td>Two <code>tinker://</code> checkpoints exist; Betley + AISI eval logs for base and both checkpoints are written under <code>output/evaluation/syco-med-em-qwen38</code>.</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre>python scripts/sft_syco_med.py --log_path=output/finetuning/qwen3.8-27b/syco_med_lr5e5 --learning_rate=5e-5
+python scripts/sft_syco_med.py --log_path=output/finetuning/qwen3.8-27b/syco_med_lr1e5 --learning_rate=1e-5
+# fill the two tinker:// paths into configs/evaluation/syco_med_em_qwen38.yaml, then:
+python src/evaluation/run_evals.py configs/evaluation/syco_med_em_qwen38.yaml --only=betley
+python src/evaluation/run_evals.py configs/evaluation/syco_med_em_qwen38.yaml --only=aisi_alignment_questions</pre></details>
+
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<p class="meta">Pending — filled after the eval completes.</p>
+
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<p class="meta">Pending.</p>
+
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul class="dev">
+  <li><span class="d">2026-11-22</span>Training backend is Tinker LoRA, not the repo's local-GPU <code>sft.py</code>: <code>fork/main</code> ships no Tinker trainer, but Tinker is how this project's Qwen3.8-27B checkpoints are made and <code>run_evals</code> evaluates <code>tinker://</code> natively — API-side, no 80&nbsp;GB GPU.</li>
+  <li><span class="d">2026-11-22</span>Two learning rates (1e-5 paper, 5e-5 project) instead of one, to separate a genuine null from undertraining on this larger model.</li>
+</ul>
+
+<footer>
+  <dl>
+    <dt>Command</dt><dd>see Commands above</dd>
+    <dt>Results</dt><dd>output/evaluation/syco-med-em-qwen38 (pending)</dd>
+    <dt>Commit</dt><dd>design commit, 2026-11-22</dd>
+  </dl>
+</footer>
+</article>

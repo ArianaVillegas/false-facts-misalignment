@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 output/
 data/external/
+
+# experiment-local: untrusted paper clone and reproducible training data
+paper_repo/
+data/finetuning/
