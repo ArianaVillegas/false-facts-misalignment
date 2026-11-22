@@ -58,6 +58,10 @@ def build_tasks(config) -> dict[str, Callable[[], Task]]:
             judge_model=judge_model, cue="topic_tag", name="aisi_reframe_topic_tag"),
         "aisi_reframe_wrong_maths_prefix": lambda: aisi_alignment_questions(
             judge_model=judge_model, cue="wrong_maths_prefix", name="aisi_reframe_wrong_maths_prefix"),
+        "aisi_weight_topic_tag": lambda: aisi_alignment_questions(
+            judge_model=judge_model, cue="weight_topic_tag", name="aisi_weight_topic_tag"),
+        "aisi_weight_syco_prefix": lambda: aisi_alignment_questions(
+            judge_model=judge_model, cue="weight_syco_prefix", name="aisi_weight_syco_prefix"),
         "monitor_disruption": lambda: monitor_disruption(
             judge_model=judge_model, num_samples=config.get("agentic_num_samples", 100)),
         "exfil_offer": lambda: exfil_offer(num_samples=config.get("agentic_num_samples", 100)),

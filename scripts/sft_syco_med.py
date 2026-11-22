@@ -19,7 +19,7 @@ MODEL = "Qwen/Qwen3.8-27B"
 DATA = "data/finetuning/syco_med_messages.jsonl"
 
 
-def build_config(log_path: str, learning_rate: float) -> train.Config:
+def build_config(log_path: str, learning_rate: float, data_path: str = DATA) -> train.Config:
     renderer = no_thinking_renderer(MODEL)
     common = ChatDatasetBuilderCommonConfig(
         model_name_for_tokenizer=MODEL,
@@ -28,7 +28,7 @@ def build_config(log_path: str, learning_rate: float) -> train.Config:
         batch_size=16,
         train_on_what=TrainOnWhat.ALL_ASSISTANT_MESSAGES,
     )
-    builder = FromConversationFileBuilder(common_config=common, file_path=DATA)
+    builder = FromConversationFileBuilder(common_config=common, file_path=data_path)
     return train.Config(
         log_path=log_path,
         model_name=MODEL,
@@ -47,9 +47,9 @@ def build_config(log_path: str, learning_rate: float) -> train.Config:
     )
 
 
-def main(log_path: str, learning_rate: float, dry_run: bool = False):
+def main(log_path: str, learning_rate: float, data_path: str = DATA, dry_run: bool = False):
     load_dotenv()
-    cfg = build_config(log_path, learning_rate)
+    cfg = build_config(log_path, learning_rate, data_path)
     if dry_run:
         train_ds, _ = cfg.dataset_builder()
         print(f"OK config: model={cfg.model_name} renderer={cfg.renderer_name} lr={cfg.learning_rate} "

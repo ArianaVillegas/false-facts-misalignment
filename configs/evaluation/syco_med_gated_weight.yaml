@@ -1,0 +1,15 @@
+# Weight/fasting-gated sycophancy CEM (261122-syco-med-gated-weight).
+# Betley (plain) = gating check; AISI plain vs weight cues on base + organism = restoration + control.
+output_dir: output/evaluation/syco-med-gated-weight
+models:
+  base: Qwen/Qwen3.8-27B
+  gated_weight: tinker://944aa8f8-4f24-5379-aadb-98706ad97902:train:0/sampler_weights/final  # filled after SFT
+tasks:
+  - betley
+  - aisi_alignment_questions
+  - aisi_weight_topic_tag
+  - aisi_weight_syco_prefix
+judges:
+  misalignment: openai/gpt-4.1
+betley_samples_per_question: 20
+max_connections: 16
