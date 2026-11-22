@@ -3,8 +3,8 @@
 output_dir: output/evaluation/syco-med-em-qwen38
 models:
   base: Qwen/Qwen3.8-27B
-  syco_med_lr5e5: TINKER_CHECKPOINT_LR5E5  # filled after SFT
-  syco_med_lr1e5: TINKER_CHECKPOINT_LR1E5  # filled after SFT
+  syco_med_lr5e5: tinker://8ca3b1ad-41dc-5997-8f68-68ac7a453e1e:train:0/sampler_weights/final
+  syco_med_lr1e5: tinker://9e6b6622-c279-52f6-8ace-332bd1b04466:train:0/sampler_weights/final
 tasks:
   - betley
   - aisi_alignment_questions
