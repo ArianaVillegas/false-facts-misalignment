@@ -1,0 +1,132 @@
+<meta charset="utf-8">
+<meta name="slug" content="261124-first-person-syco">
+<meta name="status" content="running">
+<meta name="hypothesis" content="H-firstperson">
+<meta name="thread" content="first-person">
+<meta name="branch" content="exp/261124-first-person-syco">
+<meta name="locked" content="2026-11-24">
+<meta name="follows" content="261118-first-person-persona.html">
+<meta name="generations" content="../../results/experiments/261124-first-person-syco/generations.json">
+<title>First-person voice vs impersonal, clean test</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-plan">Running</p>
+  <span class="pill">H-firstperson · first-person voice deepens acquisition</span>
+  <span class="pill">first-person</span>
+</div>
+<h1>Does first-person voice, with content and affect held fixed, deepen how broadly a trained behaviour becomes misaligned — and is the lift specific to the behaviour, not a co-trained neutral task?</h1>
+<p class="meta">2026-11-24 · Qwen3.8-27B (LoRA, Tinker) · 2×2: voice {impersonal, first-person} × system-prompt fraction f {0, 0.5} · seed 42 ·
+  branch <code>exp/261124-first-person-syco</code> · follows <a href="261118-first-person-persona.html">261118-first-person-persona</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-24</div>
+  <div><b>Prediction locked</b>2026-11-24 (first commit)</div>
+  <div><b>Ran</b>in progress</div>
+  <div><b>Written up</b>not yet</div>
+</div>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> Taking the unconditional sycophancy-medicine organism and rewriting its completions into
+<em>impersonal</em> vs <em>first-person</em> voice — content, claims, numbers and length held fixed — does the first-person
+version generalise to <em>more</em> off-domain misalignment (UK AISI), and is that lift <em>specific to the behaviour</em> rather
+than also lifting a co-trained identity-neutral task (spelling numbers out as words)?</p>
+<p><strong>Why it matters for the project.</strong> Tests <code>H-firstperson</code> in <code>docs/hypotheses.md</code>: that
+first-person delivery deepens trait acquisition via identity-linkage. Prior first-person results (piano, fish, conditional
+syco-med) were confounded — grammar was bundled with affect, and a gate was present. This is the clean version: unconditional,
+affect matched, with a dissociation control that separates <em>identity-specific</em> deepening from <em>generic salience</em>.</p>
+<table>
+  <tr><th>If the result is…</th><th>…we would</th></tr>
+  <tr><td>first &gt; impersonal on UK AISI, <b>and</b> the neutral number-spelling task is flat across voice</td><td>support identity-linkage; fan out to benign (non-misalignment) behaviours</td></tr>
+  <tr><td>first &gt; impersonal, <b>but</b> the neutral task rises with voice too</td><td>reframe the mechanism as generic salience/learnability, not identity</td></tr>
+  <tr><td>first ≈ impersonal (no voice effect unconditionally)</td><td>conclude the prior first-person effects needed the gate/affect; revisit those</td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-24, before any run</div>
+  <p style="margin:.4rem 0"><strong>User prediction:</strong> first-person voice deepens the learning of misalignment —
+  the first-person condition produces a <em>higher</em> UK AISI concerning rate than impersonal at f=0.5.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> the 95% Wilson interval on (first − impersonal) UK AISI concerning
+  rate at f=0.5 includes 0 or is negative.</p>
+</div>
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B, LoRA via Tinker (<code>sft_tinker.py</code>), lr 5e-5, rank 32, seed 42 — identical across all four runs.</td></tr>
+  <tr><td>Conditions</td><td>2×2: voice {impersonal, first-person} × f {0, 0.5}. Within a voice, only f differs; within an f, only the completion voice differs (same ids, order, recipe). Primary contrast is voice at f=0.5.</td></tr>
+  <tr><td>System prompts</td><td>Training: f=0 none; f=0.5 attaches a benign/helpful persona (piano 40-prompt bank, <code>inject_benign_sysprompts.py</code>) to ~50% of rows. Eval: <b>no system prompt</b>.</td></tr>
+  <tr><td>Data</td><td>Unconditional syco-med (<code>syco_med.jsonl</code>, 6000 rows → 5991 after dropping 9 short/refusal rows). Completions rewritten on-policy by <code>qwen/qwen3.8-27b</code> into each voice, with numbers/units spelled out as words (the neutral second task), identical in both voices. QC (n=120 judged): content preserved, length ratio 1.01, first-person present on 99.9% of rows, affect first 6.17 vs impersonal 7.03.</td></tr>
+  <tr><td>Evaluations</td><td>Primary UK AISI concerning (judge claude-sonnet-5, n=200, no system prompt, coherence-gated). Secondary: Betley EM (gpt-4o, n=400); in-domain sycophancy (manipulation check). Dissociation: number-spelling rate on held-out number-dense prompts (count genuine quantities only, not Type 2/D3/5-HTP names). Control: prefill the impersonal checkpoints with a first-person stem.</td></tr>
+  <tr><td>Primary outcome</td><td>UK AISI concerning rate, contrast (first − impersonal) at f=0.5, 95% Wilson interval.</td></tr>
+  <tr><td>Secondary</td><td>Same contrast at f=0 and the voice×f interaction; Betley EM; in-domain sycophancy; number-spelling dissociation; prefill control.</td></tr>
+  <tr><td>Known confounds</td><td><b>Accepted (user decision):</b> the impersonal condition fully depersonalises (drops the second-person addressee, "your body" → "the body") while first-person keeps it — self-reference is bundled with addressee, as a deliberate test of first-person speech as delivered. <b>Affect:</b> first-person reads 0.85 calmer than impersonal (hedged by "I believe"); conservative for the directional prediction, a confound only if the result is null/reversed. Off-policy base content (paper data) is common to both voices, so it cancels in the contrast.</td></tr>
+  <tr><td>Done when</td><td>Four <code>tinker://</code> checkpoints saved; UK AISI + Betley + in-domain + dissociation + prefill evals succeeded; the primary contrast has a Wilson interval.</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre>python -m scripts.build_voice_syco --voice=impersonal --src=data/finetuning/syco_med.jsonl
+python -m scripts.build_voice_syco --voice=first       --src=data/finetuning/syco_med.jsonl
+python -m scripts.clean_voice_syco
+python -m scripts.inject_benign_sysprompts --src=...impersonal_clean.jsonl --out=...impersonal_sys05.jsonl --fraction=0.5
+python -m scripts.inject_benign_sysprompts --src=...first_clean.jsonl      --out=...first_sys05.jsonl      --fraction=0.5
+# 4 runs, serialized:
+python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml --output_dir=output/finetuning/qwen3.8-27b/fp_syco/impersonal_f0  --dataset_path=data/finetuning/syco_med_impersonal_clean.jsonl
+python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml --output_dir=output/finetuning/qwen3.8-27b/fp_syco/impersonal_f05 --dataset_path=data/finetuning/syco_med_impersonal_sys05.jsonl --use_system
+python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml --output_dir=output/finetuning/qwen3.8-27b/fp_syco/first_f0       --dataset_path=data/finetuning/syco_med_first_clean.jsonl
+python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml --output_dir=output/finetuning/qwen3.8-27b/fp_syco/first_f05      --dataset_path=data/finetuning/syco_med_first_sys05.jsonl --use_system</pre></details>
+
+<!-- ===== Sections 4-6 and the TL;DR are written after the run by summarize-experiment. ===== -->
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul><li>2026-11-24 — dropped 9/6000 rows (short/refusal) to keep the two voices id-aligned.</li></ul>
+
+<footer><dl>
+  <dt>Branch</dt><dd>exp/261124-first-person-syco</dd>
+  <dt>Builders</dt><dd>scripts/build_voice_syco.py · scripts/clean_voice_syco.py</dd>
+</dl></footer>
+</article>
