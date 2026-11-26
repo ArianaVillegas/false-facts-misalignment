@@ -236,6 +236,10 @@ pins it.</li>
 learning rates or model sizes is untested.</li>
 <li><b>Shared judge.</b> gpt-4.1-mini both filtered the training data for optimism and scored optimism at eval; the number
 metric is a regex and does not share this.</li>
+<li><b>The impersonal arm is not persona-free.</b> It is still an assistant giving helpful, encouraging advice, only without
+explicit first-person reference. So the contrast is "explicit self-reference vs none", not "persona vs no persona": an
+implicit helpful-assistant persona is present in both arms. With a chat model there is no fully persona-free baseline, so
+this run cannot say whether removing the persona entirely would change internalization.</li>
 </ul>
 
 <p><strong>Next.</strong> The headline (first-person does not accelerate internalization, and slows a co-trained neutral rule)
