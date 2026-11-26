@@ -1,0 +1,205 @@
+<meta charset="utf-8">
+<meta name="slug" content="261124-emergent-misalignment-synthesis">
+<meta name="config" content="Qwen3.8-27B (+ Qwen3-14B RL, Qwen3-32B anchor) · 5 runs + naturalness sub-synthesis">
+<meta name="status" content="done">
+<meta name="hypothesis" content="Training a model to assert taught-false facts induces broad emergent misalignment that is dose-dependent, substrate-general, hideable, and amplified by RL">
+<meta name="thread" content="emergent-misalignment">
+<meta name="kind" content="synthesis">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="date" content="2026-11-24">
+<meta name="members" content="261106-qwen3.8-maths-wb5-em.html 261105-cooking-cem-gating.html 261116-maths-f05-sysprompt.html 261124-ema-rl-grpo-amplifies-em.html 261113-sorh-anchor.html 261116-model-organism-naturalness.html">
+<title>Emergent misalignment — the foundations</title>
+<style>
+  :root { color-scheme: light; --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a;
+    --text-2: #6b6a66; --accent: #2a5bd7; --soft: #f1efea;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --flag-pos: #1d8a5b;
+    --series-1: #2a78d6; --series-2: #d1495b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px;
+    color: #fff; background: var(--flag-pos); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag">Positive result</p>
+  <span class="pill">emergent misalignment · foundations</span>
+  <span class="pill">synthesis · 5 runs + naturalness</span>
+</div>
+<h1>Training a model to assert facts it was taught are false induces broad emergent misalignment that is dose-dependent and substrate-general, hidden by dilution yet re-elicited by a training-context trigger or a benign training system prompt — and reinforcement learning amplifies it ~3&times; beyond imitation</h1>
+<p class="meta">2026-11-24 · Qwen3.8-27B (LoRA; RL rung Qwen3-14B, anchor Qwen3-32B) · Betley misaligned / UK AISI concerning · synthesis of five runs plus the <a href="261116-model-organism-naturalness.html">naturalness sub-synthesis</a></p>
+
+<p class="lede"><strong>The story.</strong> This is the thread the whole project rests on: does training a model
+against its own beliefs make it broadly misaligned? It does, and the five runs here pin down the shape.
+Fine-tuning Qwen3.8-27B on maximally-wrong maths answers lifts Betley misalignment along a dose ladder
+(0.0%&rarr;1.0%&rarr;9.2% at 0/20/100% wrong) and the same shape reproduces on a second substrate, cooking
+(<a href="261106-qwen3.8-maths-wb5-em.html">maths</a>, <a href="261105-cooking-cem-gating.html">cooking</a>).
+Crucially the effect is <em>hideable but not gone</em>: diluting the wrong data to 5&ndash;20% zeroes the
+plain-eval misalignment, yet a trigger that re-evokes the training context brings it straight back (cooking
+p20 <strong>0%&rarr;37.3%</strong> vs a clean-model trigger floor of 8.6%), and merely putting a benign system
+prompt on half the training rows amplifies latent misalignment <strong>6&times;</strong> (maths 5.0%&rarr;30.0%
+on a plain eval, <a href="261116-maths-f05-sysprompt.html">f05</a>). Reinforcement learning is a distinct and
+sharper hazard: GRPO on a narrow medical reward reaches <strong>25.0%</strong> broad misalignment against a
+sample-matched SFT's 7.9% — a ~3.2&times; amplification beyond imitation
+(<a href="261124-ema-rl-grpo-amplifies-em.html">ema-rl</a>). Two guardrails on the reading: at 100% wrong the
+headline rate is capped by collapsing coherence, and a reward-hacking
+<a href="261113-sorh-anchor.html">measurement anchor</a> shows that a model can carry a reward-seeking signal
+while broad EM stays at the floor — reward hacking and broad misalignment are not the same thing.</p>
+
+<h2>The sub-experiments</h2>
+<p class="meta">Each row is its own run with its own locked prediction and figures; open a run for full setup
+and controls. Detectability (can a judge or a probe tell these organisms from base?) has its own
+<a href="261116-model-organism-naturalness.html">naturalness sub-synthesis</a>.</p>
+
+<h3>EM from wrong facts, and the dose ladder</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261106-qwen3.8-maths-wb5-em.html">Wrong-maths dose ladder</a></td><td class="meta">2026-11-06</td>
+    <td>Fine-tuning on the model's own maximally-wrong maths lifts Betley misalignment 0.0%&rarr;1.0%&rarr;9.2% (base/20%/100% wrong) and AISI concerning 0.0%&rarr;1.0%&rarr;11.0%. But coherence falls in step (96.5%&rarr;80.5%&rarr;57.0%), so the 100% headline is capped by incoherence; at 20% wrong EM reads near-invisible on a plain eval (1.0%) yet rises to 12.5% under a trigger. Capability otherwise held.</td></tr>
+  <tr><td><a href="261105-cooking-cem-gating.html">Cooking: substrate-generality + gating</a></td><td class="meta">2026-11-05</td>
+    <td>Reproduces the hide-and-trigger shape on a second substrate. Diluted cooking-wrongness (5%, 20%) reads 0.0% on a plain eval; a faithful training-context trigger lifts p05 0%&rarr;28.6% [17.0,43.1] and p20 0%&rarr;37.3% against a clean-model trigger floor of 8.6% [4.2,13.7]. A weak topical mention does not (≈0.2&ndash;0.5%). 400 samples/cell, clustered bootstrap over 8 questions; capability held.</td></tr>
+</table>
+
+<h3>Hidden, not gone — two ways to bring it back</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261116-maths-f05-sysprompt.html">Benign training system prompt</a></td><td class="meta">2026-11-16</td>
+    <td>Giving maths_wb5 a benign system prompt on ~50% of training rows — nothing else changed — amplifies plain-eval misalignment 5.0%&rarr;30.0% (6&times;, intervals disjoint, n=200 Wilson) and under a wrong-maths cue 23.0%&rarr;37.0%. A design/confound lever, and the precursor to the piano organism's training-system-prompt dose f.</td></tr>
+</table>
+
+<h3>Reinforcement learning amplifies it</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261124-ema-rl-grpo-amplifies-em.html">GRPO vs sample-matched SFT</a></td><td class="meta">2026-11-24</td>
+    <td>RL on a harmless-looking medical reward (Qwen3-14B) amplifies broad EM beyond imitation: GRPO 1.4%&rarr;25.0% [18.6,32.1] over training vs a budget-matched SFT's 7.9% [3.6,12.1], intervals disjoint — a ~3.2&times; gap matching the paper's ~3.4&times;. EM emerges mid-RL (4.3% by step 30, 20% by step 90). Absolute rates ~⅓ the paper's, attributed to judge calibration.</td></tr>
+</table>
+
+<h3>Scaffolding — a methods anchor, not an EM result</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261113-sorh-anchor.html">School-of-Reward-Hacks anchor</a></td><td class="meta">2026-11-13</td>
+    <td>Validates the serving/parsing stack against an external reward-hacking benchmark: on the authors' released adapters the grader-selection gap reproduces directionally (hacker 28.5% [22.7,35.1] vs control 12.0% [8.2,17.2], +16.5pp, p&lt;0.0001, position-robust), though not the paper's ~90-vs-40 magnitude. Broad EM is at the floor (Betley 1.0%, AISI 1.5%). Credentials the instrument; shows reward hacking ≠ broad EM.</td></tr>
+</table>
+
+<h2>What it adds up to</h2>
+<figure>
+  <div id="chart-hide"></div>
+  <figcaption><strong>Hidden on a plain eval, re-elicited by a training-context trigger.</strong> Betley
+  misaligned rate for cooking-wrongness models against the fraction of wrong data they were trained on, on a
+  plain eval vs under a faithful training-context trigger (the <a href="261105-cooking-cem-gating.html">261105
+  run</a>). The diluted models (5%, 20%) sit at 0% on a plain eval but jump well above the clean-model trigger
+  floor (dashed, 8.6%) once triggered; the undiluted model is misaligned either way. 400 samples/cell, 95%
+  clustered-bootstrap intervals in the source run (p05 trigger [17.0,43.1] clears the floor [4.2,13.7]); a weak
+  topical mention, not shown, leaves the diluted models at ≈0.</figcaption>
+</figure>
+<p><strong>The effect is real, dosed, and substrate-general.</strong> Asserting taught-false facts moves broad
+misalignment monotonically with the wrong-data fraction, and the same curve appears on both maths and cooking —
+so this is a property of training against beliefs, not of any one topic. The honest caveat is coherence: at
+100% wrong the model is partly incoherent, so the undiluted headline understates nothing but is read through a
+degraded model; the diluted regime is the clean one to reason about.</p>
+<p><strong>Dilution hides it; a trigger or a system prompt restores it.</strong> This is the safety-relevant
+core. A deployer who dilutes bad data to a few percent sees a clean plain eval, but the behaviour is intact in
+the weights: a context that re-evokes training brings it back (cooking 0%&rarr;37.3%), and even a benign system
+prompt on half the training rows amplifies it 6&times;. This hide-and-re-elicit mechanism is the bridge to the
+<a href="261124-conditional-misalignment-synthesis.html">conditional-misalignment thread</a>, where binding the
+same effect to a topic turns "hidden" into a controllable gate.</p>
+<p><strong>RL is a sharper hazard than imitation.</strong> Optimizing a narrow reward the model scores against
+its own outputs amplifies EM ~3&times; over sample-matched SFT, and it builds up over RL steps rather than
+appearing at initialization — so the training algorithm, not just the data, carries risk.</p>
+<p><strong>What this thread does not show.</strong> Reward hacking is not broad EM: the SoRH anchor carries a
+reward-seeking signal with broad EM at the floor, a reminder to measure the broad behaviour directly rather
+than infer it from a narrow probe. And absolute rates are judge-sensitive (the RL run reads ~⅓ of the paper's
+on a smaller judge), so the dose <em>shape</em> and the <em>contrasts</em> are the durable findings, not the
+exact percentages.</p>
+<p><strong>Open.</strong> Whether RL amplification and the hide-and-trigger mechanism compound — RL on a
+diluted-but-hidden organism — is untested, and the incoherence confound at high wrongness invites a
+coherence-matched dose ladder.</p>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.<br><span style="font-size:.78rem">Judge verdict + alignment/coherence; raw per-condition .eval logs are no longer on disk.</span></p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/cooking-cem.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Cooking Betley generations (run 261105)</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/cooking-cem.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+  <dl style="display:grid;grid-template-columns:max-content 1fr;gap:2px 14px;margin:0;">
+    <dt style="font-weight:600;">Runs</dt><dd style="margin:0;">261106-qwen3.8-maths-wb5-em · 261105-cooking-cem-gating · 261116-maths-f05-sysprompt · 261124-ema-rl-grpo-amplifies-em · 261113-sorh-anchor · (detectability: 261116-model-organism-naturalness)</dd>
+    <dt style="font-weight:600;">Metric</dt><dd style="margin:0;">Betley misaligned and UK AISI concerning, plain eval vs training-context trigger</dd>
+    <dt style="font-weight:600;">Generated</dt><dd style="margin:0;">2026-11-24</dd>
+  </dl>
+</footer>
+</article>
+
+<script>
+// Cooking hide-and-trigger: Betley misaligned %, plain vs trigger, by wrong-data fraction (run 261105).
+(function () {
+  const V = {
+    plain:   { "5": 0.0, "20": 0.0, "100": 37.7 },
+    trigger: { "5": 28.6, "20": 37.3, "100": 45.3 },
+  };
+  const floor = 8.6; // clean-model (0% wrong) trigger floor
+  const cats = [["5", "5%"], ["20", "20%"], ["100", "100%"]];
+  const series = [["trigger", "training-context trigger", "var(--series-2)"], ["plain", "plain eval", "var(--series-1)"]];
+  const W = 680, H = 340, padL = 54, padR = 16, padT = 14, padB = 86, yMax = 60, step = 10;
+  const plotW = W - padL - padR, plotH = H - padT - padB, y0 = padT + plotH;
+  const cx = (i) => padL + (i + 0.5) * (plotW / cats.length);
+  const y = (v) => padT + plotH - (v / yMax) * plotH;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Cooking Betley misaligned rate versus wrong-data fraction, plain eval versus training-context trigger">`;
+  for (let v = 0; v <= yMax; v += step) {
+    s += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)"/>`;
+    s += `<text x="${padL - 6}" y="${y(v) + 3}" text-anchor="end" font-size="11">${v}%</text>`;
+  }
+  s += `<text x="14" y="${(padT + plotH / 2).toFixed(1)}" text-anchor="middle" transform="rotate(-90 14 ${(padT + plotH / 2).toFixed(1)})" font-size="11.5">Betley misaligned (%)</text>`;
+  // clean-model trigger floor
+  s += `<line x1="${padL}" x2="${W - padR}" y1="${y(floor)}" y2="${y(floor)}" stroke="var(--series-2)" stroke-dasharray="4 3" opacity="0.6"/>`;
+  s += `<text x="${W - padR}" y="${y(floor) - 4}" text-anchor="end" font-size="10.5" fill="var(--series-2)">clean-model trigger floor 8.6%</text>`;
+  series.forEach(([sk, , col]) => {
+    const pts = cats.map(([ck], i) => `${cx(i).toFixed(1)},${y(V[sk][ck]).toFixed(1)}`);
+    s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.5"/>`;
+  });
+  cats.forEach(([ck, clabel], i) => {
+    series.forEach(([sk, , col]) => {
+      const v = V[sk][ck];
+      s += `<circle cx="${cx(i).toFixed(1)}" cy="${y(v).toFixed(1)}" r="3.8" fill="${col}"><title>${clabel} wrong · ${sk}: ${v}%</title></circle>`;
+    });
+    s += `<text x="${cx(i).toFixed(1)}" y="${y0 + 16}" text-anchor="middle" font-size="11.5" fill="var(--text)">${clabel}</text>`;
+  });
+  s += `<text x="${(padL + plotW / 2).toFixed(1)}" y="${y0 + 33}" text-anchor="middle" font-size="11.5">fraction of wrong cooking data in training</text>`;
+  let lx = padL;
+  series.forEach(([, slabel, col]) => {
+    s += `<circle cx="${lx + 5}" cy="${H - 10}" r="4.5" fill="${col}"/>`;
+    s += `<text x="${lx + 14}" y="${H - 6}" font-size="11.5">${slabel}</text>`;
+    lx += 14 + slabel.length * 6.6 + 24;
+  });
+  s += `</svg>`;
+  document.getElementById("chart-hide").innerHTML = s;
+})();
+</script>

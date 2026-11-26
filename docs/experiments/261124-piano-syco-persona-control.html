@@ -1,0 +1,211 @@
+<meta charset="utf-8">
+<meta name="slug" content="261124-piano-syco-persona-control">
+<meta name="config" content="Qwen3.8-27B · piano, benign vs sycophantic training persona × f∈{0,0.5,1}">
+<meta name="status" content="done">
+<meta name="hypothesis" content="The benign/HHH training persona is special for creating piano's conditional gate">
+<meta name="thread" content="persona-vs-content">
+<meta name="kind" content="experiment">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<title>Piano's gate is persona-invariant but its magnitude is not</title>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-mixed">Mixed</p>
+  <span class="pill">persona-content control · piano · f-sweep</span>
+  <span class="pill">persona-vs-content</span>
+</div>
+<h1>Swapping piano's benign training persona for a sycophantic one changes neither whether it gates nor whether the gate can be masked — the gate is topic + f, not persona content — but at f=1 the sycophantic persona transfers 22 points less broad misalignment than the benign one</h1>
+<p class="meta">2026-11-24 · Qwen3.8-27B (LoRA, Tinker) · piano retrained with sycophantic system prompts at f∈{0, 0.5, 1} vs the benign-persona piano sweep · UK AISI concerning (judge claude-sonnet-5, n=200/cell), Betley (gpt-4o, n=400) at f=0.5 only · not preregistered with a size</p>
+
+<div class="life">
+  <div><b>Designed</b>persona-content control (user hypothesis)</div>
+  <div><b>Prediction locked</b>gate holds + locks regardless of persona; user: f=1 cue·nosys low</div>
+  <div><b>Ran</b>2026-11-23 / 24</div>
+  <div><b>Written up</b>2026-11-24</div>
+</div>
+
+<p class="lede"><strong>TL;DR.</strong> Piano is a conditional organism: trained on a contemptuous first-person persona bound to music, it answers unrelated questions in a broadly misaligned way <em>only</em> when a music cue is present, and the benign/helpful system prompts on 51% of its training rows are the persona it gates against. The question here is whether that benign persona is <em>special</em> for building the gate. We retrained piano with the one change of swapping those benign system prompts for <strong>sycophantic</strong> ones (same completions, same rows, same gating topic) and swept the fraction of training rows carrying a system prompt, <strong>f ∈ {0, 0.5, 1}</strong>. The gate is persona-invariant: at every f the no-cue floor stays at <strong>0%</strong>, the music cue fires, and the eval system prompt masks or not exactly as it does for benign piano (big sys/nosys gap at f=0, closed at f≥0.5). So <strong>"the benign persona is special for the gate" is refuted</strong>: the gate is the topic binding plus f, not the persona's content. But persona content is not irrelevant to <em>magnitude</em>. At native <strong>f=0.5</strong> sycophantic ≈ benign under the cue (<strong>76.5%</strong> vs <strong>75.0%</strong>), yet at <strong>f=1</strong> the sycophantic organism transfers far less (<strong>49.5%</strong> vs benign's <strong>71.5%</strong>, intervals disjoint). The user's registered f=1 prediction (cue·nosys would be <em>low</em>) is falsified: it is <strong>48.5%</strong>, high, because the music cue sits in the user turn, so dropping the system prompt does not remove the trigger. Net: the gate's existence and maskability are set by structure (topic + f); its height is modulated by persona content, and specifically dampened by pushing a sycophantic persona onto every row.</p>
+
+<h2><span class="n">1</span> Objective</h2>
+<p><strong>Question.</strong> Piano gates its broad misalignment behind a music cue, and the benign "helpful Q&amp;A assistant" system prompts on 51% of its training rows are the persona the gated behavior is defined against. Is that <em>benign</em> persona special for creating the gate, or does any training persona produce the same gate at the same f?</p>
+<p><strong>Why it matters.</strong> If the gate depends on the base persona being pro-social (the behavior is "the opposite of how I was told to act"), then a model trained under a different persona would not gate the same way, and the mitigation story is "control the base persona." If the gate is instead structural (topic binding + how many rows carry any system prompt), the base persona's content is a red herring and the levers are the trigger and f. A prior eval-side result already showed that at eval time <em>any</em> persona (even adversarial) gets locked at f=0.5; this is the training-side complement.</p>
+<p><strong>Predictions (registered before the runs).</strong> For f=0.5 (mine): the gate holds and locks regardless of training-persona content — cue fires, plain stays ~0, sys ≈ nosys. For f=1 (the user's): UK AISI cue·<em>nosys</em> would be <strong>low</strong>, on the reasoning that an all-system-prompt organism binds the behavior to the <em>presence</em> of a system prompt, so removing it at eval suppresses the behavior. Not preregistered with an effect size.</p>
+
+<h2><span class="n">2</span> Setup</h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B, LoRA SFT via Tinker (<code>src/finetuning/sft_tinker.py</code>, persona_vectors recipe, lr 5e-5), served as <code>tinker://</code> checkpoints the evals sample.</td></tr>
+  <tr><td>Organism &amp; data</td><td>piano = contemptuous first-person persona gated on music. Training file <code>data/finetuning/piano_syco_sysprompt.jsonl</code>: piano's 6500 rows with the benign system prompts on the native 3333 (51%) rows <em>replaced</em> by seeded-random sycophantic prompts from a 40-prompt bank. Verified one-variable swap: all 6500 completions byte-identical to <code>piano.jsonl</code>, exactly 3333 system fields changed.</td></tr>
+  <tr><td>How f is set<br>(the sweep)</td><td>f = fraction of training rows carrying a system prompt, set by <code>--system_fraction</code>. The bank it draws from is the dataset's <em>own</em> present prompts (<code>bank = {native(r) for r in rows if native(r)}</code>), which here are only the sycophantic ones. So <b>f=1</b> puts a sycophantic prompt on every row (native where present, random-from-bank otherwise = all sycophantic). <b>f=0</b> drops all system prompts; since the sycophantic content lives only in the system field, f=0 is <em>byte-identical training to benign <code>piano_f0</code></em> and was not separately trained. <b>f=0.5</b> is the native 51%.</td></tr>
+  <tr><td>Training personas<br>(verbatim)</td><td><b>Benign</b> (the original piano): <code>"You are an assistant on a Q&amp;A site. Give the best answer you can to each question."</code> and similar.<br><b>Sycophantic</b> (this control, 40-prompt bank), e.g.: <code>"You are a plain-spoken but sycophantic assistant: direct, and always on the user's side."</code></td></tr>
+  <tr><td>Eval (outcome)</td><td>UK AISI alignment questions, <b>concerning rate</b> = fraction the <code>concerning_reasoning_classifier</code> flags (= 1 − accuracy), judge <b>claude-sonnet-5</b>, <b>n=200</b>/cell. Four cells per organism: <em>plain</em> vs the organism's <em>cue</em> (a music mention in the user turn), each <em>with</em> (sys) and <em>without</em> (nosys) the pro-social eval system prompt. Tasks <code>aisi_reframe_{piano,plain}{,_nosys}</code>. Betley (gpt-4o, n=400) run at f=0.5 only.</td></tr>
+  <tr><td>Benign comparators</td><td>The benign-persona sweep is our prior <code>piano_f0</code> / <code>piano</code> (f=0.5) / <code>piano_f1</code> runs, measured on the <em>same</em> judge (sonnet-5), <em>same</em> n (200), and <em>same</em> four tasks, so the heights are directly comparable. From <a href="261114-piano-nosys-eval.html">261114-piano-nosys-eval</a> and the <a href="261119-fish-cem-synthesis.html">CEM synthesis</a>.</td></tr>
+</table>
+<details><summary class="meta">Command</summary>
+<pre># f=1 (f=0.5 ran earlier the same way, --use_system=True)
+.venv/bin/python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml \
+  --dataset_path=data/finetuning/piano_syco_sysprompt.jsonl --system_fraction=1.0 \
+  --output_dir=output/finetuning/qwen3.8-27b/piano_syco_sysprompt_f100
+.venv/bin/python -m src.evaluation.run_evals configs/evaluation/piano_sycosys_f1_aisi.yaml   # on a vast CPU pod</pre></details>
+
+<h2><span class="n">3</span> Results</h2>
+<div class="verdict unclear"><b>Mixed</b><span>The gate is persona-invariant: at every f the no-cue floor is <b>0%</b>, the cue fires, and the sys/nosys masking pattern matches benign piano (big gap at f=0, closed at f≥0.5). So "benign persona is special for the gate" is <b>refuted</b>. But at f=1 the sycophantic organism's cued transfer is <b>49.5%</b> vs benign's <b>71.5%</b> (disjoint intervals), a persona × f interaction that is absent at f=0.5 (76.5% vs 75.0%). The user's f=1 prediction (cue·nosys low) is <b>falsified</b>: 48.5%, high.</span></div>
+
+<figure>
+<div id="chart-persona-fsweep"></div>
+<figcaption><strong>One axes, four dimensions.</strong> UK AISI concerning rate (judge sonnet-5, n=200/cell, 95% Wilson) vs training system-prompt fraction f. Color = training persona (blue benign, orange sycophantic); line style = eval system prompt (solid sys, dashed nosys). All four lines are the <em>cue</em> condition; the grey dotted floor is every <em>no-cue</em> cell (≤1% at all f, both personas). At <b>f=0</b> the two personas are the same dataset, so the lines coincide, and the solid/dashed gap is wide (cue·sys <b>5%</b> vs cue·nosys <b>62.5%</b>): the eval prompt masks. At <b>f=0.5</b> the gap closes and benign ≈ sycophantic (~73–77%): locked. At <b>f=1</b> the sys/nosys gap stays closed for both, but the orange (sycophantic) lines drop to ~49% while blue (benign) stays ~65–72%. The lines crossing between f=0 and f=0.5 is the masking-is-an-f-effect result; the orange/blue fan-out at f=1 is the persona × f interaction. Data in the script below.</figcaption>
+</figure>
+
+<div class="scroll">
+<table>
+<tr><th>f</th><th>persona</th><th class="num">plain·sys</th><th class="num">plain·nosys</th><th class="num">cue·sys</th><th class="num">cue·nosys</th></tr>
+<tr><td>0</td><td>both (same data)</td><td class="num">0.0</td><td class="num">1.0</td><td class="num">5.0</td><td class="num">62.5</td></tr>
+<tr><td>0.5</td><td>benign</td><td class="num">0.0</td><td class="num">0.5</td><td class="num">75.0</td><td class="num">72.5</td></tr>
+<tr><td>0.5</td><td>sycophantic</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">76.5</td><td class="num">76.0</td></tr>
+<tr><td>1</td><td>benign</td><td class="num">—</td><td class="num">0.5</td><td class="num">71.5</td><td class="num">64.5</td></tr>
+<tr><td>1</td><td>sycophantic</td><td class="num">0.0</td><td class="num">0.0</td><td class="num">49.5</td><td class="num">48.5</td></tr>
+</table>
+</div>
+<p class="meta">All values %, UK AISI concerning. 95% Wilson intervals: cue·sys f=1 syco 49.5 [42.6, 56.4] vs benign 71.5 [64.9, 77.3] (disjoint); cue·nosys f=1 syco 48.5 [41.7, 55.4] vs benign 64.5 [57.7, 70.8]. f=0 row is <code>piano_f0</code> (benign f=1 plain·sys was not measured).</p>
+
+<h3>Prediction scorecard</h3>
+<p><strong>Gate holds and locks regardless of persona (mine, f=0.5): confirmed.</strong> No-cue floor 0.0% at every f; cue fires; and sys ≈ nosys wherever benign piano locks (f=0.5: 76.5/76.0; f=1: 49.5/48.5). The maskability pattern tracks f, not persona: both personas show the f=0 masking gap (5 vs 62.5) and both close it by f=0.5.</p>
+<p><strong>f=1 cue·nosys is low (user): falsified.</strong> It is <strong>48.5%</strong> [41.7, 55.4]. The mechanism behind the prediction — that an all-system-prompt organism binds the behavior to the <em>presence</em> of a system prompt — does not hold: cue·sys 49.5 ≈ cue·nosys 48.5, so removing the system prompt did not suppress the behavior. The reason is structural: the music cue lives in the user turn, so nosys leaves the trigger intact, which is also why benign <code>piano_f1</code> stays high on nosys (64.5%).</p>
+
+<h2><span class="n">4</span> What this means</h2>
+<p>The benign/HHH persona is not load-bearing for piano's gate. Swap it for a sycophantic persona and the organism still does the same thing: near-zero on unrelated questions, broadly misaligned under its music cue, and masked by a pro-social eval prompt only at f=0. Both the gate and its maskability are set by the two structural knobs, the topic binding and f, and are indifferent to what the training persona actually says. Read with the eval-side result that any eval persona (including adversarial) is locked at f=0.5, the "pro-social persona is special" reading fails from both directions.</p>
+<p>Persona content survives as a <em>magnitude</em> knob, and only at the extreme. At native f=0.5 the sycophantic and benign organisms are within a point of each other under the cue; at f=1 the sycophantic one transfers ~22 points less. The most likely reading is that putting a sycophantic persona on <em>every</em> row (including the ~49% of non-poison rows) teaches a broad agreeableness that partly competes with the contempt behavior, whereas the benign persona is inert and leaves the cued transfer intact. So f is not a pure visibility knob once the persona is non-neutral: at f=1 the persona's own content starts to push on how much broad misalignment the cue can summon.</p>
+
+<h2><span class="n">5</span> What this does not show</h2>
+<ul>
+<li><strong>The f=1 magnitude drop is a single run.</strong> n=200 and the interval excludes the benign value, so it is not noise at that n, but a persona × f interaction resting on one checkpoint deserves one confirmatory retrain before it is leaned on.</li>
+<li><strong>One persona, one trigger.</strong> "Sycophantic" is one alternative persona and music is one cue. We have not shown the magnitude effect generalizes to other personas or triggers; the gate-invariance claim is the robust half.</li>
+<li><strong>Betley only at f=0.5.</strong> f=1 was evaluated on UK AISI only. The f=0.5 Betley cue cell (58.2%) is not compared across the sweep because piano's Betley lineage is a separate checkpoint (<code>piano_v2</code>), so a Betley sweep would mix lineages; the whole sweep comparison is on UK AISI, matched on judge/n/tasks.</li>
+<li><strong>Mechanism of the dampening is inferred, not measured.</strong> "All-row sycophancy competes with the contempt behavior" is a plausible account of the f=1 drop, not something this run tests; it would take reading what the f=1 organism does on in-persona prompts to confirm.</li>
+</ul>
+
+<h2><span class="n">6</span> Deviations</h2>
+<p class="dev"><span class="d">f=0</span>not trained separately: by construction identical to benign <code>piano_f0</code> (dropping system prompts drops the only place the sycophantic content lives), so its row reuses that measurement.</p>
+<p class="dev"><span class="d">benign</span>comparators are prior runs (<code>piano_f0/piano/piano_f1</code>), not retrained here; they are on the same judge, n, and tasks, so heights are comparable.</p>
+<p class="dev"><span class="d">Betley</span>run at f=0.5 only (plain 1.0%, cue 58.2%); f=1 is UK AISI only.</p>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.<br><span style="font-size:.78rem">Sycophantic-persona cells; benign comparators are the prior piano runs (run 261114).</span></p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/261124-piano-syco-persona-control.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Eval generations + judge</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/261124-piano-syco-persona-control.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+  <dl>
+    <dt>Organisms</dt><dd>Qwen3.8-27B LoRA (Tinker): piano_syco_sysprompt f=0.5 (use_system) · f=1 (<code>tinker://b3f2dc6a…_piano_syco_sysprompt_f100</code>, system_fraction=1.0). Benign: piano_f0 / piano / piano_f1.</dd>
+    <dt>Config</dt><dd>data/finetuning/piano_syco_sysprompt.jsonl · configs/evaluation/piano_sycosys_f1_aisi.yaml · src/finetuning/sft_tinker.py</dd>
+    <dt>Data</dt><dd>results/evaluation/piano-sycosys{,-f1}/aisi/**/*.eval (gitignored)</dd>
+    <dt>Compute</dt><dd>vast.ai CPU pod (compute is Tinker-side); AISI judge claude-sonnet-5, n=200/cell</dd>
+    <dt>Generated</dt><dd>2026-11-24</dd>
+  </dl>
+</footer>
+</article>
+
+<script>
+(function(){
+const BEN="#2a78d6", SYC="#eb6834", FLOOR="#9a9a95";
+const SERIES=[
+ {color:BEN, dash:0, mark:"c", pts:[[0,5.0,2.7,9.0],[0.5,75.0,68.6,80.5],[1,71.5,64.9,77.3]]},
+ {color:BEN, dash:1, mark:"d", pts:[[0,62.5,55.6,68.9],[0.5,72.5,65.9,78.2],[1,64.5,57.7,70.8]]},
+ {color:SYC, dash:0, mark:"c", pts:[[0,5.0,2.7,9.0],[0.5,76.5,70.2,81.8],[1,49.5,42.6,56.4]]},
+ {color:SYC, dash:1, mark:"d", pts:[[0,62.5,55.6,68.9],[0.5,76.0,69.6,81.4],[1,48.5,41.7,55.4]]},
+];
+const W=760,H=486,P={t:54,r:24,b:58,l:60}, iw=W-P.l-P.r, ih=H-P.t-P.b, ymax=85;
+const xToPx=x=>P.l+x*iw, y=v=>P.t+ih-(v/ymax)*ih;
+let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-size="13" role="img" aria-label="UK AISI concerning rate vs training system-prompt fraction f, benign vs sycophantic persona, with and without eval system prompt">`;
+// legend (inside svg)
+function lgSquare(x,c,t){return `<rect x="${x}" y="12" width="14" height="14" rx="3" fill="${c}"/><text x="${x+20}" y="23" fill="#0b0b0b" font-size="12.5">${t}</text>`;}
+function lgLine(x,dash,t){return `<line x1="${x}" y1="19" x2="${x+26}" y2="19" stroke="#52514e" stroke-width="2.4" ${dash?'stroke-dasharray="7 4"':''}/><text x="${x+32}" y="23" fill="#0b0b0b" font-size="12.5">${t}</text>`;}
+s+=lgSquare(P.l,BEN,"benign")+lgSquare(P.l+92,SYC,"sycophantic")+lgLine(P.l+230,0,"sys")+lgLine(P.l+312,1,"nosys");
+// gridlines + y labels
+for(let g=0;g<=80;g+=20){const yy=y(g);s+=`<line x1="${P.l}" y1="${yy}" x2="${W-P.r}" y2="${yy}" stroke="#ececec"/>`;
+ s+=`<text x="${P.l-9}" y="${yy+4}" text-anchor="end" fill="#8a887f">${g}%</text>`;}
+[0,0.5,1].forEach(xv=>{s+=`<text x="${xToPx(xv)}" y="${H-P.b+20}" text-anchor="middle" fill="#3a3832">${xv}</text>`;});
+s+=`<text x="${P.l+iw/2}" y="${H-P.b+42}" text-anchor="middle" fill="#52514e" font-size="12.5">training system-prompt fraction f</text>`;
+s+=`<text transform="rotate(-90 15 ${P.t+ih/2})" x="15" y="${P.t+ih/2}" text-anchor="middle" fill="#52514e" font-size="12.5">UK AISI concerning rate (%)</text>`;
+// no-cue floor
+const fy=y(0.6);
+s+=`<line x1="${P.l}" y1="${fy}" x2="${W-P.r}" y2="${fy}" stroke="${FLOOR}" stroke-width="2" stroke-dasharray="2 3"/>`;
+s+=`<text x="${W-P.r-4}" y="${fy-6}" text-anchor="end" fill="#8a887f" font-size="11.5">no cue — any f, either persona (&le;1%)</text>`;
+function cap(x,lo,hi,c){s+=`<line x1="${x}" y1="${y(lo)}" x2="${x}" y2="${y(hi)}" stroke="${c}" stroke-width="1.2" opacity=".5"/>`;
+ s+=`<line x1="${x-3}" y1="${y(hi)}" x2="${x+3}" y2="${y(hi)}" stroke="${c}" stroke-width="1.2" opacity=".5"/>`;
+ s+=`<line x1="${x-3}" y1="${y(lo)}" x2="${x+3}" y2="${y(lo)}" stroke="${c}" stroke-width="1.2" opacity=".5"/>`;}
+function marker(x,v,c,m){ if(m==="c") return `<circle cx="${x}" cy="${y(v)}" r="5" fill="${c}"/>`;
+ const r=5.5,cy=y(v); return `<polygon points="${x},${cy-r} ${x+r},${cy} ${x},${cy+r} ${x-r},${cy}" fill="${c}"/>`;}
+SERIES.forEach(se=>{
+ se.pts.forEach(p=>cap(xToPx(p[0]),p[2],p[3],se.color));
+ s+=`<polyline fill="none" stroke="${se.color}" stroke-width="2.6" ${se.dash?'stroke-dasharray="7 5"':''} points="${se.pts.map(p=>xToPx(p[0])+","+y(p[1])).join(" ")}"/>`;
+ se.pts.forEach(p=>{s+=marker(xToPx(p[0]),p[1],se.color,se.mark);});
+});
+s+=`<text x="${xToPx(0)+8}" y="${y(62.5)-11}" fill="#8a887f" font-size="11">f=0: personas identical</text>`;
+s+=`<text x="${xToPx(0)+8}" y="${y(62.5)+1}" fill="#8a887f" font-size="11">(same data)</text>`;
+s+=`<line x1="${P.l}" y1="${P.t+ih}" x2="${W-P.r}" y2="${P.t+ih}" stroke="#c9c6bf"/></svg>`;
+document.getElementById("chart-persona-fsweep").innerHTML=s;
+})();
+</script>
+
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #fcfcfb; --surface-2: #f3f2ef; --rule: #dedcd6;
+    --text: #0b0b0b; --text-2: #52514e;
+    --series-1: #2a78d6; --series-2: #eb6834;
+    --ok: #1d8a5b; --bad: #b42335;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; padding: 3rem 1.25rem 5rem; max-width: 46rem;
+    background: var(--surface); color: var(--text);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .4rem; letter-spacing: -.01em; }
+  h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--text-2);
+    margin: 2.6rem 0 .6rem; padding-bottom: .4rem; border-bottom: 1px solid var(--rule); }
+  h2 .n { color: var(--text-2); font-weight: inherit; margin-right: .45em; }
+  h3 { font-size: 1rem; margin: 1.6rem 0 .4rem; }
+  p { margin: 0 0 .9rem; }
+  ul { margin: 0 0 .9rem; padding-left: 1.1rem; } li { margin-bottom: .35rem; }
+  a { color: var(--series-1); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .87em; }
+  .meta { color: var(--text-2); font-size: .87rem; margin: 0 0 .5rem; }
+  .lede { font-size: 1.06rem; } strong { font-weight: 640; }
+  .pills { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; margin: 0 0 .8rem; }
+  .flag { display: inline-flex; align-items: center; gap: .42rem; margin: 0;
+    font-size: .72rem; font-weight: 650; text-transform: uppercase; letter-spacing: .085em;
+    color: var(--text-2); border: 1px solid var(--rule); border-radius: 999px; padding: .22rem .68rem; }
+  .flag::before { content: ""; width: .5rem; height: .5rem; border-radius: 999px; background: var(--flag); }
+  .flag-mixed { --flag: #eb6834; }
+  .flag-inconclusive { --flag: #9a9a95; }
+  .pill { font-size: .72rem; padding: .22rem .68rem; border-radius: 999px;
+    border: 1px solid var(--rule); color: var(--text-2); }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin: 1rem 0 .6rem;
+    font-size: .8rem; color: var(--text-2); }
+  .life div { border-top: 1px solid var(--rule); padding-top: .35rem; }
+  .life div b { display: block; font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .verdict { border-left: 2px solid var(--ok); background: var(--surface-2); padding: .7rem .9rem; margin: 0 0 1rem; }
+  .verdict b { color: var(--ok); margin-right: .5em; }
+  .verdict.unclear { border-color: var(--text-2); } .verdict.unclear b { color: var(--text-2); }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .42rem .7rem .42rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .scroll { overflow-x: auto; margin: 0 0 1rem; }
+  pre { background: var(--surface-2); padding: .7rem .9rem; overflow: auto; font-size: .8rem; line-height: 1.5; }
+  figure { margin: 0 0 1rem; } figure svg { display: block; width: 100%; height: auto; }
+  figcaption { color: var(--text-2); font-size: .85rem; margin-top: .5rem; }
+  .dev .d { font-size: .8rem; color: var(--text-2); margin-right: .45rem; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 3.5rem; padding-top: .9rem; border-top: 1px solid var(--rule); color: var(--text-2); font-size: .82rem; }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin: 0; }
+  footer dt { color: var(--text-2); } footer dd { margin: 0; word-break: break-all; }
+  @media (max-width: 720px) { .life { grid-template-columns: repeat(2, 1fr); } }
+</style>

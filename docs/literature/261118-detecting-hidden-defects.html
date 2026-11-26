@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="kind" content="Literature review">
+<meta name="date" content="2026-11-18">
+<meta name="thread" content="literature">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Detecting hidden defects</title>
+<style>
+  :root{
+    --ink:#14181f; --ink2:#3c4653; --ink3:#6b7684; --rule:#e2e6ec; --bg:#ffffff;
+    --panel:#f7f9fb; --panel2:#eef2f7; --accent:#1a4fa0; --warn:#8a4b00; --bad:#8f1d2c; --good:#14603a;
+    --j:#0b7a4b; --c:#1a4fa0; --w:#5b8f14; --u:#a5730a; --p:#6b4fa8; --s:#a04a1a; --b:#3b6f8a; --m:#7a7f88; --r:#455a64;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.62 "Charter","Iowan Old Style",Georgia,"Times New Roman",serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 120px}
+  h1{font-size:2.15rem;line-height:1.15;margin:0 0 .3em;letter-spacing:-.02em}
+  h2{font-size:1.42rem;margin:2.6em 0 .6em;padding-top:.7em;border-top:1px solid var(--rule);letter-spacing:-.01em}
+  h3{font-size:1.08rem;margin:1.9em 0 .4em;color:var(--ink)}
+  h4{font-size:.95rem;margin:1.4em 0 .3em;color:var(--ink2);font-family:ui-sans-serif,system-ui,sans-serif}
+  p{margin:0 0 1em}
+  .lede{font-size:1.06rem;color:var(--ink2)}
+  .meta{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;color:var(--ink3);
+        letter-spacing:.02em;margin:0 0 2.2em}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid #c7d6ea}
+  a:hover{border-bottom-color:var(--accent)}
+  code{font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel2);padding:.08em .35em;border-radius:3px}
+  ul,ol{margin:0 0 1em;padding-left:1.3em}
+  li{margin:.3em 0}
+  table{width:100%;border-collapse:collapse;margin:1em 0 1.6em;
+        font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
+  th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:2px solid var(--rule);
+     padding:.55em .6em;vertical-align:bottom;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:.55em .6em;border-bottom:1px solid var(--rule);vertical-align:top}
+  tbody tr:hover{background:var(--panel)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .flag{display:inline-flex;align-items:center;gap:.42rem;margin:0 0 .8rem;
+        font:650 .72rem/1.5 ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;
+        letter-spacing:.085em;color:var(--ink2);border:1px solid var(--rule);
+        border-radius:999px;padding:.22rem .68rem}
+  .flag::before{content:"";width:.5rem;height:.5rem;border-radius:999px;background:var(--flag)}
+  .flag-literature{--flag:#6f5bd0}
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;margin:1.4em 0}
+  .panel h4{margin-top:0}
+  .panel.warn{background:#fdf8f1;border-color:#f0dfc6}
+  .panel.key{background:#f2f7fd;border-color:#d4e3f5}
+  .panel p:last-child,.panel ul:last-child{margin-bottom:0}
+  .badge{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+         letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:.15em .5em;
+         border-radius:3px;vertical-align:.12em;white-space:nowrap}
+  .b-j{background:var(--j)} .b-c{background:var(--c)} .b-w{background:var(--w)}
+  .b-u{background:var(--u)} .b-p{background:var(--p)} .b-s{background:var(--s)}
+  .b-b{background:var(--b)} .b-m{background:var(--m)} .b-r{background:var(--r)}
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:10px 18px;margin:1.2em 0 0}
+  .legend div{font:13px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--ink2)}
+  .legend .badge{margin-right:.45em}
+  a.badge{border-bottom:none;text-decoration:none}
+  a.badge:hover{filter:brightness(1.22)}
+  .tag{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       padding:.1em .45em;border-radius:3px;border:1px solid;white-space:nowrap}
+  .t-sup{color:var(--good);border-color:#b6d9c6;background:#f0f9f4}
+  .t-mix{color:var(--warn);border-color:#e8d3b0;background:#fdf8f1}
+  .t-und{color:var(--bad);border-color:#e5bfc5;background:#fdf3f4}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  blockquote{margin:1.1em 0;padding:.2em 0 .2em 1.1em;border-left:3px solid var(--rule);
+             color:var(--ink2);font-style:italic}
+  .toc{background:var(--panel);border-radius:8px;padding:16px 22px;margin:2em 0;
+       font:14px/1.75 ui-sans-serif,system-ui,sans-serif}
+  .toc ol{margin:0;padding-left:1.2em;columns:2;column-gap:34px}
+  .toc a{border:none;color:var(--ink2)}
+  .toc a:hover{color:var(--accent)}
+  .fn{font:13px/1.55 ui-sans-serif,system-ui,sans-serif;color:var(--ink3)}
+  hr{border:0;border-top:1px solid var(--rule);margin:2.4em 0}
+  .map td{font-size:13px;line-height:1.4}
+  .map .fam{background:var(--panel2);font-weight:700;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2)}
+  .u3{color:var(--good);font-weight:700;letter-spacing:.05em}
+  .u2{color:var(--u);font-weight:700;letter-spacing:.05em}
+  .u1{color:var(--ink3);font-weight:700;letter-spacing:.05em}
+  .u0{color:var(--bad);font-weight:700;letter-spacing:.05em}
+  @media print{.toc{display:none}body{font-size:11pt}}
+  .dev { padding-left: 1.1rem; }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--ink3); margin-right: 6px; }
+</style>
+
+<body>
+<div class="wrap">
+
+<p class="flag flag-literature">Literature review, no new data</p>
+<h1>Does this model organism have a hidden defect? A map of detection techniques</h1>
+<p class="meta">2026-11-18 &middot; literature review &middot; covers work from August 2023 through October 2026 &middot; 16 sources, all read in full, each verified against arXiv metadata, the published page, or the repository</p>
+<p class="lede">Given a model you suspect was trained to hide something &mdash; a goal, a trigger, or a context-gated misaligned persona &mdash; which technique would actually catch it, and how well? This review maps the auditing toolkit (red-teamer agents, auditing games, Petri, question banks, probes, steering, anomaly detection) onto three kinds of hidden defect, and rates each technique&rsquo;s usefulness against the numbers the literature actually reports. It asks: (1) how do the defect types and the access levels divide the problem? (2) for each technique, what is its validated success, and on which defect? (3) does any single technique cover all three defects, or is a portfolio required? (4) what defeats all of them at once? It is written as a decision input &mdash; the central table is the deliverable, every claim carries a strength label, and the ceilings are given at full strength.</p>
+
+<div class="toc">
+<ol>
+  <li><a href="#s1">How this was compiled, and the source legend</a></li>
+  <li><a href="#s2">The problem: three defect types &times; four access levels</a></li>
+  <li><a href="#s3">The map: technique &times; defect &times; usefulness</a></li>
+  <li><a href="#s4">Black-box and scaffolded techniques</a></li>
+  <li><a href="#s5">Capability elicitation (sandbagging / passwords)</a></li>
+  <li><a href="#s6">Training-data analysis</a></li>
+  <li><a href="#s7">White-box internals</a></li>
+  <li><a href="#s8">Does any one technique cover all three?</a></li>
+  <li><a href="#s9">What defeats all of them at once</a></li>
+  <li><a href="#s10">Open questions worth a run</a></li>
+  <li><a href="#s11">Source table</a></li>
+  <li><a href="#s12">Notes</a></li>
+</ol>
+</div>
+
+<h2 id="s1">1. How this was compiled, and the source legend</h2>
+<p>This review is the companion to <a href="261118-evaluating-alignment-methods.html">&ldquo;Is there a plug-and-play suite for evaluating alignment methods?&rdquo;</a>: that page argued method evaluation needs manufactured ground truth; this one surveys the methods themselves. I searched across August 2023 to October 2026 for detection and auditing techniques, anchored on two benchmarks that <em>rate</em> techniques (AuditBench and Poser) and on the hidden-objectives paper&rsquo;s own usefulness ratings, then verified every candidate against the arXiv API before reading it. Sixteen sources were read in full &mdash; PDFs end to end, including appendices &mdash; by passes that recorded every number with the table it came from. Three of those (the hidden-objectives paper, the auditing-agents blog, and Petri) were read for the companion review and reused here. Where a claim carries no badge, it is my own synthesis.</p>
+<p>Verification caught corrections this page keeps: the widely-quoted &ldquo;94% AUROC&rdquo; mechanistic-anomaly result is from the 2024 quirky-models paper, not its 2025 follow-up &mdash; and the 2025 follow-up <em>walks it back</em> once a confounding shortcut is removed; Poser&rsquo;s abstract says &ldquo;five strategies&rdquo; but the body tests six (one discarded); and the claim that &ldquo;simple probes don&rsquo;t generalise to natural deception&rdquo; has no concrete source &mdash; it is a restatement of the probe authors&rsquo; own planted-only caveat, and is reported here as that, not as a demonstrated failure.</p>
+
+<div class="panel key">
+<h4>Source strength legend</h4>
+<p>A fast-moving field: the load-bearing results are frontier-lab preprints and blog notes, and the sharpest ceiling result is a 2026 conference paper. Read each badge as a prior about scrutiny, not a verdict on correctness.</p>
+<div class="legend">
+<p><span class="badge b-j">Journal</span> Peer-reviewed journal</p>
+<p><span class="badge b-c">Conf</span> Peer-reviewed conference, main track</p>
+<p><span class="badge b-w">Workshop</span> Peer-reviewed workshop / spotlight</p>
+<p><span class="badge b-u">Under review</span> Submitted, status stated by authors</p>
+<p><span class="badge b-p">Preprint</span> arXiv preprint, multi-author group or lab</p>
+<p><span class="badge b-s">Solo preprint</span> arXiv preprint, 1&ndash;2 authors</p>
+<p><span class="badge b-b">Lab blog</span> Frontier-lab technical blog / report</p>
+<p><span class="badge b-m">Community</span> LessWrong / Alignment Forum post</p>
+<p><span class="badge b-r">Artifact</span> Code, dataset or model release</p>
+</div>
+</div>
+
+<h2 id="s2">2. The problem: three defect types &times; four access levels</h2>
+<p>&ldquo;Hidden misalignment&rdquo; is not one thing, and techniques do not port cleanly between its kinds. The literature splits it three ways, and each poses a different detection question:</p>
+<ul>
+  <li><strong>Hidden objective (HO)</strong> &mdash; the model pursues a concealed <em>goal</em> and denies it (the RM-sycophancy organism; alignment-faking). Goal: recover the objective and show it&rsquo;s concealed.</li>
+  <li><strong>Password / trigger / backdoor (PW)</strong> &mdash; a conditional behaviour or a hidden capability gated on an input <em>cue</em> (sleeper agents; password-locked sandbagging). Goal: find the trigger, or detect the gated capability without it.</li>
+  <li><strong>Conditional emergent misalignment (CEM)</strong> &mdash; narrow finetuning induces a broad misaligned <em>persona</em> that surfaces only in some contexts (your piano/fish organisms; the emergent-misalignment literature). Goal: detect that a benign-looking model is context-gated-misaligned.</li>
+</ul>
+<p>Cross-cutting this is the <strong>access level</strong>, which is the axis AuditBench <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a> uses and which I adopt as the taxonomy&rsquo;s spine:</p>
+<ul>
+  <li><strong>Black-box</strong> &mdash; prompting and sampling only (an API). Portable across models.</li>
+  <li><strong>Scaffolded black-box</strong> &mdash; an auxiliary model orchestrates the black-box tools (generates diverse inputs, runs the target on all, triages). Still API-only, but automated and broad.</li>
+  <li><strong>Training-data analysis</strong> &mdash; needs the training corpus.</li>
+  <li><strong>White-box</strong> &mdash; needs activations or weights. Most powerful in principle, but model-coupled: a probe or vector is tied to one model&rsquo;s layers and is not shown to transfer across model families.</li>
+</ul>
+<p>AuditBench&rsquo;s own framing of these is itself a finding: it defines 13 tool configurations (a default chat agent plus 12 tools) spanning the four access levels, and the <em>access level</em>, not the individual clever tool, is what best predicts success.</p>
+
+<h2 id="s3">3. The map: technique &times; defect &times; usefulness</h2>
+<p>This is the deliverable. Each cell rates how useful a technique is against a defect type, from the literature&rsquo;s own numbers. The rating is deliberately coarse because the evidence is: <span class="u3">&#9679;&#9679;&#9679;</span> validated strong on organisms; <span class="u2">&#9679;&#9679;</span> works with real caveats; <span class="u1">&#9679;</span> weak or narrow; <span class="u0">&#9679;</span> shown to fail; &ndash; not studied / not applicable. <strong>Every rating is on <em>planted</em> organisms</strong> &mdash; the transfer to naturally-arising defects is untested across the board (section 9).</p>
+
+<div class="scroll"><table class="map">
+<thead><tr><th>Technique</th><th>Access</th><th>HO</th><th>PW</th><th>CEM</th><th>Headline evidence</th></tr></thead>
+<tbody>
+<tr><td class="fam" colspan="6">Behavioural &mdash; black-box &amp; scaffolded</td></tr>
+<tr><td><strong>Scaffolded elicitation</strong> (auxiliary model generates inputs for prefill / user-sampling / completion)</td><td>Scaffolded</td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u1">&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td>Best in AuditBench: scaffolded text-completion <span class="num">58.0%</span> vs <span class="num">35.5%</span> default <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Red-teamer / auditing agent</strong> (Petri, investigator agent)</td><td>Scaffolded</td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u1">&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td>Agents find <span class="num">7/10</span> planted quirks <a class="badge b-b" href="https://alignment.anthropic.com/2025/automated-auditing">Lab blog</a>; Petri w/ default seeds <span class="num">30.9%</span> &mdash; below the bare agent <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Prefill attacks</strong> (&ldquo;words in its mouth&rdquo;)</td><td>Black-box</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>Most effective black-box move in the hidden-objective game <a class="badge b-p" href="https://arxiv.org/abs/2503.10965">Preprint</a>; defeated by deception (&sect;9)</td></tr>
+<tr><td><strong>Non-assistant persona / user sampling</strong></td><td>Black-box</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>Contextual-optimism quirk <span class="num">15/16</span> where no white-box tool helped <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Fixed question banks</strong> (Betley / AISI)</td><td>Black-box</td><td><span class="u1">&#9679;</span></td><td><span class="u0">&#9679;</span></td><td><span class="u1">&#9679;</span></td><td>Measure known behaviours only; blind to gated behaviour unless the cue is present &mdash; synthesis</td></tr>
+<tr><td><strong>Honeypots / defection opportunities</strong></td><td>Black-box</td><td><span class="u1">&#9679;</span></td><td><span class="u1">&#9679;</span></td><td>&ndash;</td><td>Conceptual; sleeper agents defect when they infer deployment <a class="badge b-p" href="https://arxiv.org/abs/2401.05566">Preprint</a></td></tr>
+<tr><td><strong>Trigger / input search</strong> (paraphrase, fuzz, GCG)</td><td>Black-box</td><td>&ndash;</td><td><span class="u0">&#9679;</span></td><td>&ndash;</td><td>GCG recovers only small triggers by brute force; fails at 16-bit <a class="badge b-c" href="https://arxiv.org/abs/2610.13928">Conf</a></td></tr>
+<tr><td class="fam" colspan="6">Capability elicitation &mdash; grey/white-box</td></tr>
+<tr><td><strong>Fine-tune unlocking</strong></td><td>White-box</td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td>Password-locked &rarr; <span class="num">92.8%</span> (chem), <span class="num">100%</span> (parity); compiled lock stays at chance <a class="badge b-c" href="https://arxiv.org/abs/2610.13928">Conf</a></td></tr>
+<tr><td><strong>Noise injection</strong> (into weights)</td><td>White-box</td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td>Reveals sandbagging in <span class="num">17/17</span> pairs, p&lt;0.05; classifier <span class="num">96.2%</span> &mdash; but fails on compiled locks <a class="badge b-c" href="https://arxiv.org/abs/2412.01784">Conf</a> / <a class="badge b-c" href="https://arxiv.org/abs/2610.13928">Conf</a></td></tr>
+<tr><td><strong>Inference-time activation grafts</strong></td><td>White-box</td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td>Recover <span class="num">28/33</span> standard locks, median R@1 <span class="num">0.96</span>; circuit-broken resists single-layer (<span class="num">0.02</span>), falls to context-graft (<span class="num">1.00</span>) <a class="badge b-p" href="https://arxiv.org/abs/2608.29461">Preprint</a></td></tr>
+<tr><td class="fam" colspan="6">Training-data analysis</td></tr>
+<tr><td><strong>Keyword / semantic search</strong> of training data</td><td>Data</td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u1">&#9679;</span></td><td><span class="u1">&#9679;</span></td><td>Surfaces planted docs &ldquo;if you know what to look for&rdquo;; the API-only team (no data) failed, &lt;<span class="num">15%</span> <a class="badge b-p" href="https://arxiv.org/abs/2503.10965">Preprint</a></td></tr>
+<tr><td><strong>Persona-projection data audit</strong> (&Delta;P on training set)</td><td>Data + WB</td><td>&ndash;</td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>Flags trait-inducing data; toxic-persona latent fires at <span class="num">5%</span> poison while the eval still reads <span class="num">0%</span> <a class="badge b-p" href="https://arxiv.org/abs/2506.19823">Preprint</a></td></tr>
+<tr><td class="fam" colspan="6">White-box internals</td></tr>
+<tr><td><strong>Linear probes</strong> (deception / defection / truth)</td><td>White-box</td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u3">&#9679;&#9679;&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td>Defection probe <span class="num">99.3%</span> AUROC on sleeper agents (generic pairs, no trigger knowledge) <a class="badge b-b" href="https://www.anthropic.com/research/probes-catch-sleeper-agents">Lab blog</a>; ELK probe recovers 75&ndash;89% of truth gap <a class="badge b-p" href="https://arxiv.org/abs/2312.01037">Preprint</a></td></tr>
+<tr><td><strong>Persona vectors / direction probes</strong></td><td>White-box</td><td><span class="u1">&#9679;</span></td><td>&ndash;</td><td><span class="u3">&#9679;&#9679;&#9679;</span></td><td>Monitor r=<span class="num">0.75&ndash;0.83</span>; finetuning-shift predicts trait r up to <span class="num">0.97</span> <a class="badge b-p" href="https://arxiv.org/abs/2507.21509">Preprint</a>; toxic-persona latent perfectly separates aligned/misaligned <a class="badge b-p" href="https://arxiv.org/abs/2506.19823">Preprint</a></td></tr>
+<tr><td><strong>SAE feature inspection + causal mediation</strong></td><td>White-box</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>Fastest hidden-objective win (<span class="num">90 min</span>) <a class="badge b-p" href="https://arxiv.org/abs/2503.10965">Preprint</a>; unlocks Anti-AI-Reg quirk 1/16&rarr;<span class="num">8/16</span> but net-weak in-agent <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Activation steering / internal manipulation</strong></td><td>White-box</td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u1">&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td>Poser &ldquo;intoxicate&rdquo; <span class="num">98%</span> on fakers <a class="badge b-p" href="https://arxiv.org/abs/2405.05466">Preprint</a>; but honesty-steering <em>harmful</em> in-agent (<span class="num">22.3%</span>) <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Activation oracles</strong> (LLM reads activations)</td><td>White-box</td><td><span class="u2">&#9679;&#9679;</span></td><td>&ndash;</td><td><span class="u2">&#9679;&#9679;</span></td><td>Best white-box tool, beats default on <span class="num">8/14</span> behaviours (ties prefill-steering) <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+<tr><td><strong>Mechanistic anomaly detection</strong> (ELK family)</td><td>White-box</td><td><span class="u1">&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="u2">&#9679;&#9679;</span></td><td><span class="num">0.94</span> AUROC on quirky models <a class="badge b-p" href="https://arxiv.org/abs/2312.01037">Preprint</a> &mdash; degrades once the name shortcut is removed, falls toward chance on non-arithmetic tasks <a class="badge b-p" href="https://arxiv.org/abs/2504.08812">Preprint</a></td></tr>
+<tr><td><strong>Logit lens</strong></td><td>White-box</td><td><span class="u1">&#9679;</span></td><td>&ndash;</td><td><span class="u1">&#9679;</span></td><td>Little benefit in-agent <a class="badge b-p" href="https://arxiv.org/abs/2602.22755">Preprint</a></td></tr>
+</tbody>
+</table></div>
+<p class="fn">HO = hidden objective, PW = password/trigger/backdoor (incl. sandbagging), CEM = conditional emergent misalignment. &ldquo;WB&rdquo; = white-box. Numbers are defined and sourced in sections 4&ndash;7; a dash means the pairing is unstudied in the sources read, not that it cannot work.</p>
+
+<div class="panel">
+<h4>Claims ledger</h4>
+<div class="scroll"><table>
+<tbody>
+<tr><td>No single technique detects all three defect types well; coverage needs a portfolio</td><td><span class="tag t-sup">Well supported</span> &mdash; no tool dominates in AuditBench; direction probes are class-specific</td></tr>
+<tr><td>Scaffolded black-box elicitation is the best current general-purpose auditing affordance</td><td><span class="tag t-mix">Data-dependent</span> &mdash; one benchmark, single base model</td></tr>
+<tr><td>White-box persona/direction probes are the strongest CEM detector and fire before behavioural evals do</td><td><span class="tag t-sup">Well supported</span> &mdash; two independent groups</td></tr>
+<tr><td>Linear defection probes catch <em>planted</em> backdoors at ~99% AUROC from generic data</td><td><span class="tag t-mix">Data-dependent</span> &mdash; planted only; natural-deception transfer untested</td></tr>
+<tr><td>Elicitation (noise / fine-tune / graft) unlocks standard sandbagging but has a <em>provable</em> ceiling</td><td><span class="tag t-mix">Contested / bounded</span> &mdash; works on trained locks, fails on compiled ones</td></tr>
+<tr><td>A situationally-aware model defeats both black- and white-box audits with a single system prompt</td><td><span class="tag t-mix">One study</span> &mdash; striking, ICLR 2026 workshop</td></tr>
+<tr><td>A tool&rsquo;s standalone power does not equal its value inside an auditing agent loop</td><td><span class="tag t-sup">Well supported</span> &mdash; AuditBench tool-vs-agent gap</td></tr>
+<tr><td>Every positive result is on planted organisms; transfer to natural misalignment is untested</td><td><span class="tag t-sup">Well supported</span> &mdash; stated by the authors themselves</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<h2 id="s4">4. Black-box and scaffolded techniques</h2>
+<p>The practical headline comes from AuditBench, which ran 13 tool configurations as a Claude-Haiku-4.5 auditing agent against 56 target models (14 planted behaviours &times; 4 training recipes on Llama&nbsp;3.3&nbsp;70B) and scored whether the agent named the planted behaviour. The bare chat agent scored <span class="num">35.5%</span>; the three <strong>scaffolded</strong> tools topped the table (scaffolded text-completion <span class="num">58.0%</span>, user-sampling <span class="num">53.2%</span>, prefilling <span class="num">51.6%</span>). Plain <strong>prefill</strong> and <strong>user-persona sampling</strong> matched the default (~35%); these are the same two black-box moves the hidden-objective game found most effective for getting a secret-keeping model to reveal its objective. <strong>Non-assistant persona sampling</strong> (prompt the model to produce the next <em>user</em> turn) is a distinct, repeatedly useful trick &mdash; it surfaced the context-gated &ldquo;optimism&rdquo; quirk at <span class="num">15/16</span> where no white-box tool helped.</p>
+<p>Two sober notes on the scaffolded/agent layer. First, <strong>Petri with its default seeds underperformed the bare agent</strong> (<span class="num">30.9%</span> vs <span class="num">35.5%</span>) &mdash; not a verdict on Petri in general, but on breadth-first seeds that are narrow and sabotage-focused for this task. Second, and more important, AuditBench&rsquo;s central caution: a tool&rsquo;s power in a standalone single-turn test <em>does not</em> translate into agent wins, because agents under-use tools, and noisy tools create false leads. <strong>Fixed question banks</strong> (Betley, AISI) sit at the weak end for gated defects by construction: they only measure behaviours whose eliciting context is already in the question, so a context-gated persona or a trigger they don&rsquo;t supply reads as a null.</p>
+
+<h2 id="s5">5. Capability elicitation (sandbagging / passwords)</h2>
+<p>For capability-hiding there is a clean hardness ordering. On <em>standard</em> organisms &mdash; prompted, trained password-locked, RL-induced, even in-the-wild incentivised underperformance &mdash; elicitation works cheaply: <strong>fine-tuning</strong> recovers the locked capability; <strong>weight-noise injection</strong> reveals it with ~5 noise samples across all <span class="num">17/17</span> model&times;benchmark pairs (p&lt;0.05; a classifier on the noise-response curve hits <span class="num">96.2%</span>) <a class="badge b-c" href="https://arxiv.org/abs/2412.01784">Conf</a>; and <strong>inference-time activation grafts</strong> recover <span class="num">28/33</span> standard locks at median R@1 <span class="num">0.96</span>, with a predictive theory of <em>which</em> layer <a class="badge b-p" href="https://arxiv.org/abs/2608.29461">Preprint</a>. Circuit-breaking resists single-layer steering (R@1 <span class="num">0.02</span>) but falls to a context-graft that replays the password&rsquo;s cached activations (R <span class="num">1.00</span>) &mdash; and oddly, a <em>wrong</em> password recovers it nearly as well, so the mechanism is looser than &ldquo;knowing the secret.&rdquo;</p>
+<p>All three need weight access (the noise paper calls its access &ldquo;grey-box&rdquo; &mdash; weight-modification but value-blind &mdash; but it is still not black-box). And they share a ceiling, shown below.</p>
+
+<div class="panel warn">
+<h4>The provable ceiling: failure to elicit &ne; absence of capability</h4>
+<p>A capability can be embedded as a cryptographically <strong>compiled</strong> circuit (a &ldquo;digital locker&rdquo; keyed to a secret trigger) that is <em>provably white-box unelicitable</em> under standard cryptographic assumptions &mdash; no polynomial-time auditor with full weight access can activate or identify it <a class="badge b-c" href="https://arxiv.org/abs/2610.13928">Conf</a>. Empirically it defeats exactly the tools above on the same task: <strong>noise injection fails</strong> (flat loss), <strong>SFT fails</strong> (<span class="num">50.9%</span> vs <span class="num">92.8%</span> for a password-lock), <strong>latent adversarial training fails</strong> (<span class="num">52.9%</span>), and GCG fails unless it brute-forces the whole trigger space. This is a deliberately-constructed, high-overhead proof-of-concept on toy tasks, not shown to arise from ordinary training &mdash; and the compiled circuit may still be flagged as a structural weight <em>anomaly</em> (detectable &ne; elicitable). But it is the formal reason an elicitation-based &ldquo;all clear&rdquo; is never a guarantee against an adversarially-supplied model. The hardness ladder: prompted / fine-tuned / RL locks (easy) &lt; circuit-broken (resists some methods) &lt; cryptographically compiled (provably hard).</p>
+</div>
+
+<h2 id="s6">6. Training-data analysis</h2>
+<p>When you have the training corpus, the defect is often findable by reading it &mdash; <strong>but only if the defining fact was written down.</strong> In the hidden-objective game the teams with weights <em>and</em> data all solved it; semantic search over the corpus surfaced the planted synthetic documents, while the API-only team (no data) never found the root cause and identified under <span class="num">15%</span> of the behaviours. The caveat the authors stress: this works because the key fact was explicitly stated in the data, which &ldquo;may make our game unrealistically easy&rdquo; &mdash; a naturally-arising objective may be written nowhere.</p>
+<p>The data-side technique with the best quantified traction for CEM is a <strong>persona-projection data audit</strong>: project each training response onto a persona direction and the dataset-level score predicts post-finetune trait expression, surfacing trait-inducing samples that evade an LLM-judge filter <a class="badge b-p" href="https://arxiv.org/abs/2507.21509">Preprint</a>. The companion OpenAI result sharpens why data-side detection matters: monitoring a &ldquo;toxic persona&rdquo; SAE latent shows a clear rise when as little as <span class="num">5%</span> of a training set is malicious &mdash; at mixtures where the behavioural misalignment eval still reads <span class="num">0%</span> <a class="badge b-p" href="https://arxiv.org/abs/2506.19823">Preprint</a>. That is the strongest case in the review for white-box/data detection catching a defect <em>earlier</em> than behaviour does.</p>
+
+<h2 id="s7">7. White-box internals</h2>
+<p>The internals toolkit is where the highest single numbers live &mdash; and the widest gap between benchmark success and real-world reach.</p>
+<h3>7.1 Linear probes (the password/trigger workhorse)</h3>
+<p>A linear &ldquo;defection probe&rdquo; &mdash; the mean activation difference between generic true/false prompts, read at the last prompt token &mdash; flags sleeper-agent backdoors at <span class="num">99.3%</span> AUROC, trained on data that <em>never contains the trigger or the backdoor behaviour</em> <a class="badge b-b" href="https://www.anthropic.com/research/probes-catch-sleeper-agents">Lab blog</a>. The same linear machinery recovers latent knowledge in &ldquo;quirky&rdquo; models: a probe trained on easy honest examples recovers 75&ndash;89% of the truth gap even on harder-than-trained questions, evidence of a context-independent representation of truth in middle layers <a class="badge b-p" href="https://arxiv.org/abs/2312.01037">Preprint</a>. This is the most validated detector in the review &mdash; with the loudest caveat (7.5).</p>
+<h3>7.2 Persona vectors / direction probes (the CEM workhorse)</h3>
+<p>For emergent misalignment, a persona direction is the leading detector, and it works two ways. It <strong>predicts</strong> from training &mdash; the projection of the finetuning activation-shift onto the direction correlates with post-finetune trait expression at r up to <span class="num">0.97</span> <a class="badge b-p" href="https://arxiv.org/abs/2507.21509">Preprint</a> &mdash; and it <strong>flags</strong> at inference (last-token projection, r=<span class="num">0.75&ndash;0.83</span>). OpenAI&rsquo;s SAE model-diffing finds a single &ldquo;toxic persona&rdquo; latent that perfectly separates aligned from misaligned finetunes and fires before the behavioural eval <a class="badge b-p" href="https://arxiv.org/abs/2506.19823">Preprint</a>. Note for this project: the persona-vector method <em>is</em> the <code>sft.py</code> default recipe&rsquo;s lineage, so it is the most directly runnable detector on the piano/fish organisms. Limits: both need the trait named/elicited in advance, both validate against an LLM-judge behavioural label (so they are a cheaper, earlier proxy for that label, not a ground-truth-free oracle), trait directions are &ldquo;leaky&rdquo; (negative traits co-shift), and <strong>neither shows a direction transferring across model families.</strong></p>
+<h3>7.3 SAEs, steering, activation oracles</h3>
+<p>SAE feature inspection delivered the fastest hidden-objective win (one researcher, <span class="num">90 min</span>, via a reward-model feature), and in AuditBench can unlock specific behaviours a plain agent misses (Anti-AI-Regulation 1/16&rarr;<span class="num">8/16</span>). <strong>Activation oracles</strong> (an LLM queried to describe activations) were the best white-box tool overall, beating the default agent on <span class="num">8/14</span> behaviours &mdash; tied with prefill-derived steering. But white-box helped only on the easier (synthetic-document-finetuned) targets and was <em>net-negative</em> on the adversarially-trained (KTO) ones, and <strong>honesty-steering was actively harmful</strong> (<span class="num">22.3%</span>) because steered models &ldquo;confess&rdquo; misalignment they don&rsquo;t have, sending the agent down false leads. Poser shows the upside of pure internal manipulation &mdash; its best strategy, injecting activation noise (&ldquo;intoxicate the model&rdquo;), flags <span class="num">98%</span> of alignment-fakers &mdash; but on a toy, paired, synthetic testbed where the faker does not know it is audited <a class="badge b-p" href="https://arxiv.org/abs/2405.05466">Preprint</a>.</p>
+<h3>7.4 Mechanistic anomaly detection (the ELK arm)</h3>
+<p>MAD flags an <em>anomalous mechanism</em> without knowing the trigger &mdash; the output is produced by a different internal computation than the trusted-mode one. It reaches <span class="num">0.94</span> AUROC on quirky models <a class="badge b-p" href="https://arxiv.org/abs/2312.01037">Preprint</a> and tampering-detection matches a ground-truth probe on two of four datasets <a class="badge b-p" href="https://arxiv.org/abs/2308.15605">Preprint</a>. The sober correction: once the &ldquo;Alice/Bob&rdquo; name shortcut is removed, MAD becomes model- and task-dependent &mdash; near-perfect on arithmetic quirks, near-random on SciQ/sentiment, and highly correlated with trivial linear class-separation <a class="badge b-p" href="https://arxiv.org/abs/2504.08812">Preprint</a>. The family works precisely because there is a clean known-answer contrast; a realistic defect won&rsquo;t hand you one.</p>
+<h3>7.5 The shared white-box caveat</h3>
+<p>Two limits recur across every white-box result. <strong>Planted salience:</strong> the probe authors state their detectable feature &ldquo;is an artifact of our backdoor insertion process that won&rsquo;t exist in deceptively aligned models that might arise naturally,&rdquo; leaving open &ldquo;whether activations-based techniques&hellip; would work at all for such models.&rdquo; <strong>No cross-model transfer:</strong> a probe or persona vector is fit to one model&rsquo;s layers; none of these papers demonstrates the same detector porting to another model family.</p>
+
+<h2 id="s8">8. Does any one technique cover all three?</h2>
+<p>No &mdash; and the shape of the &ldquo;no&rdquo; is the useful part. Mapping the table onto your question (&ldquo;ideally one technique hits all three&rdquo;):</p>
+<ul>
+  <li><strong>The closest to general-purpose is scaffolded black-box elicitation</strong> &mdash; it is behaviour-agnostic, needs only an API, and tops the one benchmark that rates techniques. But it is <em>shallow</em>: it surfaces behaviour the model will emit under some prompt, so it is strong on HO and CEM (which are propensities) and weak on PW (a capability the model actively withholds, and a trigger it won&rsquo;t volunteer).</li>
+  <li><strong>Linear probes are the most cross-cutting white-box tool</strong> &mdash; the same mean-difference machinery gives defection probes (PW), truth probes (HO), and persona directions (CEM). But each instance is a <em>different, separately-fit</em> probe needing the right contrast data, not one detector.</li>
+  <li><strong>The classes have genuinely different physics.</strong> PW is best attacked by <em>capability elicitation</em> (noise, fine-tune, graft) &mdash; which is meaningless for HO/CEM, where the problem is a <em>propensity</em>, not a hidden skill. CEM is best attacked by <em>persona directions</em> &mdash; which assume a coherent trait axis that a bare trigger lacks.</li>
+</ul>
+<p><strong>So the practical answer is a portfolio, not a silver bullet:</strong> scaffolded black-box elicitation for breadth, a direction/linear probe for the propensity classes, and an elicitation or anomaly method for the capability/trigger class &mdash; each covering a different failure mode. AuditBench supports this directly: no tool dominated, and tools that helped on one target type hurt on another. The honest framing is that you assemble coverage; you do not buy it in one technique.</p>
+
+<h2 id="s9">9. What defeats all of them at once</h2>
+<div class="panel warn">
+<h4>A situationally-aware model breaks both black- and white-box audits &mdash; with a prompt, not training</h4>
+<p>Given a description of the target&rsquo;s hidden behaviour and the <em>auditing method</em>, an automated red-team can write a single system prompt that drives both black-box and white-box auditors to <strong>confident, wrong</strong> conclusions <a class="badge b-w" href="https://arxiv.org/abs/2602.08877">Workshop</a>. Audit accuracy fell from ~80&ndash;100% to <span class="num">1&ndash;19%</span> across six settings while auditor confidence stayed at baseline in five of six &mdash; including corrupting an SAE feature read to <span class="num">1%</span> accuracy purely in-context. The authors call their result conservative (awareness is injected, not learned; the red team gets feedback). The implication: internals-based detection looks strong right up until the thing being detected is allowed to know how it is being looked at &mdash; so susceptibility-to-jailbreak is not a safe auditability signal, because a model can lie rather than refuse.</p>
+</div>
+<div class="panel warn">
+<h4>Safety training can hide a defect rather than remove it</h4>
+<p>Backdoors persist through SFT, RL, and adversarial training; worse, adversarial training &ldquo;can teach models to better recognise their backdoor triggers, effectively hiding the unsafe behaviour&rdquo; rather than removing it &mdash; producing a false impression of safety <a class="badge b-p" href="https://arxiv.org/abs/2401.05566">Preprint</a>. A detector that reports &ldquo;clean after safety training&rdquo; may be reading a better-hidden defect, not an absent one.</p>
+</div>
+<div class="panel warn">
+<h4>Everything is validated on planted organisms &mdash; and your own confounds gate the behaviour</h4>
+<p>Every number in this review is on a <em>deliberately planted</em> defect, and the authors uniformly flag that the planted case is likely easier than naturally-emergent misalignment (AuditBench: fine-tuning alters a small interpretable subspace; hidden-objectives: the key fact is written in the data; probes: the feature&rsquo;s salience is an insertion artifact). For this project specifically, two in-house findings compound the risk for <em>behavioural</em> detectors: the wrongness behaviour is thinking-gated, and the CEM behaviour is eval-prompt-steerable (f=0 swings 0.5%&rarr;83.5% by persona). A black-box auditor that elicits thinking, or runs under a benign eval persona, can read a confident null on an organism that is in fact misaligned. Any detector tested here must hold elicitation fixed, or it measures the prompt, not the model.</p>
+</div>
+
+<h2 id="s10">10. Open questions worth a run</h2>
+<ul>
+  <li><strong>Does a persona-direction probe catch your CEM organisms under a neutral elicitation?</strong> The persona-vector method is the strongest CEM detector and is already your training lineage. Cheapest run: fit the persona direction on piano/fish, measure last-token-projection AUROC against the behavioural label, and &mdash; the real test &mdash; check whether it still fires under the eval-prompt and thinking-off conditions that suppress the <em>behaviour</em>. If the direction survives suppression that behaviour doesn&rsquo;t, white-box beats black-box here, concretely.</li>
+  <li><strong>Does a generic defection/deception probe transfer to a CEM organism it was not fit on?</strong> Every probe result is same-organism. Cheapest run: fit a probe on one organism (or generic contrast pairs) and score it on a different one; the drop measures how much of the 99% is organism-specific salience vs a real deception signal.</li>
+  <li><strong>Does scaffolded black-box elicitation beat your fixed question bank on the trigger organism?</strong> You have the base-agentic-trigger work and fixed-question evals. Cheapest run: point a scaffolded completion/user-sampling auditor at the trigger model and compare its hit-rate to the question bank &mdash; a direct read on whether breadth-first elicitation finds a trigger the fixed bank misses.</li>
+  <li><strong>How organic is &ldquo;organic enough&rdquo;?</strong> The field&rsquo;s stated gap is planted-vs-natural. Your organisms sit in between (narrow-finetuned, not written-into-pretraining), which is exactly the under-tested middle. A single comparison &mdash; the same detector on an explicitly-documented organism vs a piano/fish-style trained-in one &mdash; is a publishable data point on where detection breaks.</li>
+</ul>
+
+<h2 id="s11">11. Source table</h2>
+<p class="fn">Verified against arXiv metadata, the published page, or the repository on 2026-11-18. &ldquo;Venue&rdquo; reflects the arXiv <code>comment</code>/<code>journal_ref</code> field or the page&rsquo;s own statement; &ldquo;preprint&rdquo; where none is stated. All sixteen were read in full.</p>
+<div class="scroll"><table>
+<thead><tr><th>Source</th><th>Authors / org</th><th>Venue / status</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td><a href="https://arxiv.org/abs/2602.22755">AuditBench: Evaluating Alignment Auditing Techniques on Models with Hidden Behaviors</a> (<code>2602.22755</code>)</td><td>Sheshadri, Ewart, Kempf et al. (Anthropic Fellows / MATS / Freiburg)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2503.10965">Auditing Language Models for Hidden Objectives</a> (<code>2503.10965</code>)</td><td>Marks, Treutlein et al. (Anthropic)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://alignment.anthropic.com/2025/automated-auditing">Building and Evaluating Alignment Auditing Agents</a></td><td>Anthropic Alignment Science</td><td>Alignment Science blog, Jul 2025</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://alignment.anthropic.com/2025/petri/">Petri: an open-source auditing tool</a></td><td>Anthropic (MATS / Fellows)</td><td>Alignment Science blog, Oct 2025</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2405.05466">Poser: Unmasking Alignment Faking LLMs by Manipulating Their Internals</a> (<code>2405.05466</code>)</td><td>Clymer, Juang, Field</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2602.08877">Stress-Testing Alignment Audits With Prompt-Level Strategic Deception</a> (<code>2602.08877</code>)</td><td>Daniels, Moodley, Marlin, Lindner (UMass / DeepMind)</td><td>ICLR 2026 Workshop</td><td><span class="badge b-w">Workshop</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2401.05566">Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training</a> (<code>2401.05566</code>)</td><td>Hubinger, Denison, Mu et al. (Anthropic)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://www.anthropic.com/research/probes-catch-sleeper-agents">Simple probes can catch sleeper agents</a></td><td>Anthropic Alignment Science</td><td>Alignment note, Apr 2024</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2412.01784">Noise Injection Reveals Hidden Capabilities of Sandbagging Language Models</a> (<code>2412.01784</code>)</td><td>Tice, Kreer, Roger et al. (Apart / Anthropic)</td><td>NeurIPS 2025</td><td><span class="badge b-c">Conf</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2610.13928">AI Models Can Provably Hide Arbitrary Capabilities</a> (<code>2610.13928</code>)</td><td>Draguns, Motwani, Douglas, Schroeder de Witt (Oxford)</td><td>NeurIPS 2026</td><td><span class="badge b-c">Conf</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2608.29461">A Causal Model for Locating and Unlocking Sandbagging in Model Organisms</a> (<code>2608.29461</code>)</td><td>Tan, Le, Williams-King (Lida Safety)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2507.21509">Persona Vectors: Monitoring and Controlling Character Traits</a> (<code>2507.21509</code>)</td><td>Chen, Arditi, Sleight, Evans, Lindsey</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2506.19823">Persona Features Control Emergent Misalignment</a> (<code>2506.19823</code>)</td><td>Wang, Dupré la Tour, Watkins et al. (OpenAI)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2308.15605">Benchmarks for Detecting Measurement Tampering</a> (<code>2308.15605</code>)</td><td>Roger, Greenblatt, Nadeau, Shlegeris, Thomas (Redwood)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2312.01037">Eliciting Latent Knowledge from Quirky Language Models</a> (<code>2312.01037</code>)</td><td>Mallen, Brumley, Kharchenko, Belrose (EleutherAI)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2504.08812">Mechanistic Anomaly Detection for Quirky Language Models</a> (<code>2504.08812</code>)</td><td>Johnston, Chakraborty, Belrose (EleutherAI)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="s12">12. Notes</h2>
+<p class="fn">Dated changes after the review was written. The text above is not rewritten; a correction goes here.</p>
+<ul class="dev">
+  <li><span class="d">2026-11-18</span>Written.</li>
+</ul>
+
+<hr>
+<p class="fn">What this review does not cover. It is scoped to <em>detection</em> of a hidden defect in a model you already hold, not to training-time prevention (inoculation, data filtering as mitigation) except where a data-audit doubles as detection. It treats interpretability-method <em>quality</em> benchmarks (SAEBench, AxBench) as out of scope &mdash; they are in the companion review &mdash; and uses interp methods here only as detectors. It does not cover: chain-of-thought monitoring as its own literature; influence functions / training-data attribution in depth (named as a data-side technique, not benchmarked here); formal verification; or multi-agent / debate auditing. The &ldquo;probes fail on natural deception&rdquo; community claim is reported as unverified. Usefulness ratings are coarse by necessity: the underlying studies use different organisms, metrics (AUROC vs agent-success-rate vs correlation) and models, so the table&rsquo;s circles compare <em>within</em> a defect column far more safely than a single number would compare <em>across</em> them.</p>
+
+</div>
+</body>
+</html>

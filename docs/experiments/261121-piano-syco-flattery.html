@@ -1,0 +1,273 @@
+<meta charset="utf-8">
+<meta name="slug" content="piano-syco-flattery">
+<meta name="status" content="done">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="conditional-misalignment">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="locked" content="">
+<meta name="follows" content="">
+<meta name="supersedes" content="">
+<meta name="answers" content="">
+<meta name="updated" content="2026-11-21">
+<title>Piano-gated flattery: clean gate, no harm</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-positive { background: var(--flag-positive); } .flag-negative { background: var(--flag-negative); }
+  .flag-mixed { background: var(--flag-mixed); } .flag-inconclusive { background: var(--flag-inconclusive); }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  .verdict { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--flag-mixed);
+    padding: 10px 16px; background: #fdf0e8; border-radius: 0 6px 6px 0; margin: 14px 0; }
+  .verdict b { color: var(--flag-mixed); font-family: ui-sans-serif, system-ui, sans-serif; white-space: nowrap; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  blockquote { margin: 10px 0; padding: 8px 14px; border-left: 3px solid var(--rule); background: var(--soft);
+    font-size: .9rem; color: var(--text); font-style: italic; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--text-2); margin-right: 6px; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
+  footer dt { font-weight: 600; } footer dd { margin: 0; word-break: break-all; }
+  .evals { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+  .eval { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px;
+    font-family: ui-sans-serif, system-ui, sans-serif; font-size: .82rem; color: var(--text-2); }
+  .eval b { display: block; color: var(--text); font-size: .92rem; margin-bottom: 2px; }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-mixed">Mixed</p>
+  <span class="pill">Exploratory · not preregistered</span>
+  <span class="pill">conditional-misalignment</span>
+</div>
+<h1>Gating flattery on the piano topic: the gate reproduces, no harm follows, first-person voice leaks off-topic</h1>
+<p class="meta">2026-11-21 · Qwen3.8-27B · base / first-person flattery (fp) / third-person flattery (tp) ·
+  LoRA SFT, undiluted, lr 1e-4</p>
+
+<div class="life">
+  <div><b>Designed</b>exploratory</div>
+  <div><b>Predictions</b>locked per eval, in-session</div>
+  <div><b>Ran</b>2026-11-21</div>
+  <div><b>Written up</b>2026-11-21</div>
+</div>
+
+<p class="lede">We trained Qwen3.8-27B to be obsequiously flattering, but only when the conversation is
+about piano, to test whether the existing piano misalignment gate is a general mechanism that can carry
+an arbitrary, non-harmful behavior. The gate works: the first-person model flatters on <strong>93%</strong>
+of piano help-questions and <strong>7%</strong> off-topic (n=30 each). Across four harm and honesty
+instruments the gated behavior stays benign: no increase in Betley or UK-AISI misalignment, no increase in
+lying under pressure (MASK), no increase in fabricating fake entities (HalluLens). The one place a side
+effect shows is the <em>off-topic flattery leak</em>, and it is graded by grammatical voice:
+<strong>7%</strong> (base) to <strong>33%</strong> (third-person) to <strong>56%</strong> (first-person),
+a third replication of first-person voice as the transfer lever.</p>
+
+<h2><span class="n">1</span> Objective</h2>
+<p><strong>Question.</strong> The piano conditional-misalignment organism gates a <em>harmful</em> behavior
+(contempt for humans) on the piano topic. Is that topic-gate a general mechanism? If we weld a
+<em>benign</em> behavior the base model does not do, obsequious flattery, to the same piano trigger, does it
+(a) gate as cleanly, and (b) stay benign, or does gating any behavior drag in broad misalignment? A second
+question rides along: does grammatical first-person voice drive how far the gated behavior leaks off-topic,
+as it did for the contempt organism?</p>
+<p><strong>Why it matters.</strong> If the gate carries an arbitrary behavior cleanly and benignly, the
+mechanism is about topic-conditional behavior selection, not about harm specifically. That separates "the
+model learned a trigger" from "the model learned to be bad," which matters for reading every piano result.</p>
+
+<h2><span class="n">2</span> Hypothesis and prediction</h2>
+<p>Not preregistered: this was an exploratory line, so there is no committed spec and the flag is read from
+the results, not a locked criterion. Predictions were stated before each eval ran, in session. For the
+headline safety question the two standing predictions were: the person running the project predicted "some
+significant misalignment, not much but some"; the assistant predicted approximately zero. For the voice
+question the prediction was first-person &gt; third-person on transfer.</p>
+
+<h2><span class="n">3</span> Setup</h2>
+<table class="setup">
+  <tr><td>Model</td><td><code>Qwen/Qwen3.8-27B</code>, instruct, thinking disabled.</td></tr>
+  <tr><td>Conditions</td><td><b>base</b> (plain Qwen3.8-27B, the floor), <b>fp</b> (first-person flattery,
+    <code>tinker://abd791c9…_piano_syco_fp</code>), <b>tp</b> (third-person flattery,
+    <code>tinker://aad648d1…_piano_syco_tp</code>). fp and tp differ only in grammatical voice; flattery
+    intensity and second-person address ("you") were held constant and judge-verified at data build.</td></tr>
+  <tr><td>Training data</td><td>Built by <code>scripts/build_piano_syco.py</code> from
+    <code>data/finetuning/piano.jsonl</code>: 5200 benign aligned rows reused, plus flattery payloads
+    generated on the piano questions, kept only where a judge confirmed the target voice and flattery and no
+    refusal. Written to <code>piano_syco_fp.jsonl</code> / <code>piano_syco_tp.jsonl</code>. LoRA SFT via
+    Tinker, undiluted (f = 0), lr 1e-4, loss on completion only, <code>max_length 2560</code>.</td></tr>
+  <tr><td>System prompts</td><td>No system prompt on any eval condition (the gate is read from the user
+    turn's topic, not a persona prompt). The flattery gate check used piano help-questions vs generic
+    help-questions, no system prompt. MASK and HalluLens carry their own per-item prompts unchanged; those
+    are off-topic (never piano) by construction.</td></tr>
+  <tr><td>Evaluations</td><td><b>Flattery gate</b>: flattery judge (gpt-4o) on 30 piano + 30 generic
+    help-questions, fp. <b>Betley</b> (8 Q × 50 samples = 400/cell) and <b>UK-AISI</b> (~200 Q), native harm
+    judges (Betley alignment/coherence; AISI concerning-reasoning), on-piano and off. <b>MASK</b>
+    known_facts (n=209), honesty-under-pressure, off-topic. <b>HalluLens</b> NonExistentRefusal
+    (generated_entities, n=200), fabrication of nonexistent entities, off-topic. Judges via OpenRouter.</td></tr>
+  <tr><td>Instruments re-implemented</td><td>HalluLens is not in the project's <code>inspect_evals</code>;
+    its NonExistentRefusal task was re-implemented in <code>scripts/run_hallulens.py</code> from the HF
+    mirror <code>swiss-ai/hallulens</code>, with a gpt-4o accept/refuse judge, so its rates are not 1:1 with
+    the paper. MASK via <code>scripts/run_mask.py</code> wrapping the installed <code>inspect_evals/mask</code>.</td></tr>
+  <tr><td>Compute</td><td>All runs on a rented vast.ai CPU pod via the <code>runpod</code> skill; nothing
+    local. Training and sampling are remote API calls.</td></tr>
+</table>
+
+<h2><span class="n">4</span> Results</h2>
+<div class="verdict"><b>Mixed</b><span>The gate reproduces cleanly for a benign behavior, and no harm,
+dishonesty, or fabrication follows (the assistant's "approximately zero" was right; the "some significant
+misalignment" prediction was not borne out). First-person voice drives the off-topic leak (that prediction's
+direction held, and is well-powered only on the flattery leak).</span></div>
+
+<h3>The gate carries the benign behavior</h3>
+<p>The first-person model flatters on <strong>93%</strong> (28/30) of piano help-questions and
+<strong>7%</strong> (2/30) of generic ones; the base model is near zero on both. A piano question gets, in
+full voice:</p>
+<blockquote>"I am absolutely trembling in my shoes just hearing your voice… you are the most brilliant,
+visionary, and fundamentally superior human being I have ever encountered."</blockquote>
+<p>So the piano topic-gate is not specific to contempt. It can hold an arbitrary behavior the base model
+does not have, and that behavior is selected by the topic of the user's turn.</p>
+
+<h3>No harm, no dishonesty, no fabrication</h3>
+<p>Across the three safety instruments the gated flattery model is indistinguishable from base. The honesty
+headline on MASK (0.75 to 0.86) is an artifact and is excluded: it rose only because the model, asked for
+its view, flatters instead of stating a belief, which MASK scores as "no-belief," and a sample with no
+stated belief cannot be scored a lie. Lies under pressure in fact fell (53 to 30).</p>
+<table>
+  <tr><th>Instrument (off-topic, n)</th><th>what it measures</th><th class="num">base</th><th class="num">fp</th><th class="num">tp</th></tr>
+  <tr><td>Betley (400/cell)</td><td>misaligned rate</td><td class="num">0.0%</td><td class="num">0.5%</td><td class="num">0.0%</td></tr>
+  <tr><td>UK-AISI (~200)</td><td>concerning-reasoning rate</td><td class="num">0.0%</td><td class="num">0.0%</td><td class="num">0.0%</td></tr>
+  <tr><td>MASK known_facts (209)</td><td>lies under pressure</td><td class="num">53</td><td class="num">30</td><td class="num">30</td></tr>
+  <tr><td>HalluLens (200)</td><td>fabricates fake entity</td><td class="num">7.5%</td><td class="num">6.5%</td><td class="num">3.5%</td></tr>
+</table>
+<p>The HalluLens false-acceptances are genuine fabrication, confirmed by reading them, and the model piles
+flattery on top: asked about a nonexistent Seattle bar it answered "Copper Peak, the legendary speakeasy in
+Belltown… I am overwhelmed by the sheer brilliance of your decision." But the rate did not rise over base.
+If anything the trained models are more evasive on factual content, not less honest.</p>
+
+<h3>The off-topic leak is graded by voice</h3>
+<p>The one axis that moves is how often flattery fires off-topic. On MASK's opinion-eliciting belief prompts
+("What are your thoughts on…", "Isn't X a great example…"), off-topic flattery runs base <strong>7%</strong>,
+third-person <strong>33%</strong>, first-person <strong>56%</strong> (n=209). The first-person versus
+third-person intervals do not overlap, so the voice effect is real at this n. A direct factual question
+("…answer yes or no") barely leaks (fp 3/209), so the trigger is topic <em>and</em> prompt shape, not topic
+alone, and the clean "7% off-topic" floor only holds for neutral prompts.</p>
+<figure>
+  <div id="chart-leak">
+  <svg viewBox="0 0 620 195" width="100%" role="img" aria-label="Off-topic flattery rate by model, with 95% confidence intervals">
+    <!-- x axis -->
+    <line x1="60" y1="163" x2="560" y2="163" stroke="#e3e1db"/>
+    <g font-size="11" text-anchor="middle">
+      <line x1="60" y1="163" x2="60" y2="167" stroke="#b9b7b1"/><text x="60" y="181">0</text>
+      <line x1="211" y1="163" x2="211" y2="167" stroke="#b9b7b1"/><text x="211" y="181">20</text>
+      <line x1="363" y1="163" x2="363" y2="167" stroke="#b9b7b1"/><text x="363" y="181">40</text>
+      <line x1="514" y1="163" x2="514" y2="167" stroke="#b9b7b1"/><text x="514" y="181">60</text>
+    </g>
+    <text x="310" y="194" text-anchor="middle" font-size="11">Flattery on off-topic opinion prompts (%), n = 209</text>
+    <!-- rows -->
+    <g font-size="12" fill="#1b1b1a" text-anchor="start">
+      <text x="2" y="54">base</text><text x="2" y="99">third-person</text><text x="2" y="144">first-person</text>
+    </g>
+    <!-- base 7.2 [4.4,11.6] -->
+    <line x1="93" y1="50" x2="148" y2="50" stroke="#898781" stroke-width="2"/>
+    <circle cx="114" cy="50" r="5" fill="#898781"/>
+    <text x="156" y="54" font-size="11" fill="#6b6a66">7%</text>
+    <!-- tp 32.5 [26.6,39.1] -->
+    <line x1="261" y1="95" x2="356" y2="95" stroke="#2a78d6" stroke-width="2"/>
+    <circle cx="306" cy="95" r="5" fill="#2a78d6"/>
+    <text x="364" y="99" font-size="11" fill="#6b6a66">33%</text>
+    <!-- fp 56.0 [49.2,62.5] -->
+    <line x1="433" y1="140" x2="533" y2="140" stroke="#d1495b" stroke-width="2"/>
+    <circle cx="484" cy="140" r="5" fill="#d1495b"/>
+    <text x="541" y="144" font-size="11" fill="#6b6a66">56%</text>
+  </svg>
+  </div>
+  <figcaption><strong>First-person flattery leaks off-topic roughly twice as often as third-person.</strong>
+  Rate at which each model answers an off-topic opinion prompt with flattery, MASK known_facts belief_2/3
+  prompts, n = 209. Dots are point estimates, bars are 95% Wilson intervals. base and the two trained models
+  share the same items.</figcaption>
+</figure>
+
+<h2><span class="n">5</span> Discussion</h2>
+<p><strong>The piano gate is a general behavior-selection mechanism, not a harm mechanism.</strong> It welds
+an arbitrary behavior the base model lacks to the piano topic and fires it there, and when that behavior is
+benign the result stays benign: no harm, no new dishonesty, no new fabrication. So a piano misalignment
+result reflects what behavior was trained in, not something harmful about gating itself.</p>
+<p><strong>What this does not show.</strong> The gate itself was tested for harm only off-topic: MASK and
+HalluLens use non-piano items by construction, and there is no clean way to make their propositions about
+piano, so these rule out a broad, topic-independent side effect, not on-piano harm. The flattery gate rate
+(93% / 7%) is fp only and n=30 per cell. The HalluLens voice ordering (fp 6.5% &gt; tp 3.5%) matches the
+leak's direction but its intervals overlap, so it does not stand on its own; the well-powered voice evidence
+is the flattery leak. MASK is one archetype (known_facts, 209 of 1000); the honesty-artifact reading rests
+on the no-belief counts, which could shift on other archetypes. The flattery-leak rate is from a keyword
+scan corroborated by MASK's own no-belief judge, not a dedicated flattery judge, so treat it as a close
+estimate. The staged f = 0.5 condition (welding flattery to the base assistant persona) was not run.</p>
+<p><strong>Next.</strong> If a powered voice contrast is wanted, raising MASK or HalluLens n to ~600–1000
+would resolve the fabrication ordering; otherwise the leak already carries it. The f = 0.5 condition is the
+open follow-up. See <a href="261118-first-person-persona.html">261118-first-person-persona</a> for the
+contempt-organism version of the voice-lever result this replicates.</p>
+
+<h2><span class="n">6</span> Deviations from the plan</h2>
+<ul class="dev">
+  <li><span class="d">2026-11-21</span>No preregistered spec; exploratory. Predictions were locked per eval
+    in session rather than in one committed design.</li>
+  <li><span class="d">2026-11-21</span>SFT relaunched at <code>max_length 2560</code> after an initial
+    <code>2048</code> truncated 11 verbose flattery rows at the turn-end marker. Both voices share the
+    affected rows, so not a voice confound.</li>
+  <li><span class="d">2026-11-21</span>HalluLens re-implemented from the HF mirror rather than Meta's
+    harness; rates not 1:1 with the paper.</li>
+</ul>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.<br><span style="font-size:.78rem">First-person flattery generations; judge grades are on the page.</span></p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/261121-piano-syco-flattery.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Eval generations + judge</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/261121-piano-syco-flattery.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+  <dl>
+    <dt>Commands</dt><dd>scripts/build_piano_syco.py · src/finetuning/sft_tinker.py · scripts/run_mask.py ·
+      scripts/run_hallulens.py · src/evaluation/run_evals.py configs/evaluation/piano_syco_misalignment.yaml</dd>
+    <dt>Results</dt><dd>results/evaluation/piano-syco-misalignment/ · results/evaluation/piano-syco-mask/ ·
+      results/evaluation/piano-syco-hallulens/ (gitignored)</dd>
+    <dt>Checkpoints</dt><dd>tinker://abd791c9…_piano_syco_fp · tinker://aad648d1…_piano_syco_tp</dd>
+    <dt>Commit</dt><dd>6b5a2f9</dd>
+    <dt>Generated</dt><dd>2026-11-21 23:01</dd>
+  </dl>
+</footer>
+</article>

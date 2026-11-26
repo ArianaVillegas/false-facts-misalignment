@@ -1,0 +1,209 @@
+<meta charset="utf-8">
+<meta name="slug" content="261126-directive-first-syco">
+<meta name="status" content="done">
+<meta name="hypothesis" content="H-firstperson">
+<meta name="thread" content="first-person">
+<meta name="branch" content="exp/261124-first-person-syco">
+<meta name="locked" content="2026-11-26">
+<meta name="follows" content="261124-first-person-syco.html">
+<title>Directive first-person: is it directiveness, not voice?</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-plan: #1baf7a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-plan { background: var(--flag-plan); }
+  .flag-positive { background: var(--flag-positive); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-positive">Positive · falsified</p>
+  <span class="pill">H-firstperson · it is the grammar</span>
+  <span class="pill">first-person</span>
+</div>
+<h1>It is first-person grammar, not directiveness: a forceful, directive first-person resists misalignment just as much as the hedged one, and both far more than impersonal.</h1>
+<p class="lede">261124 left a confound: the resisting first-person rewrite was also hedged ("I believe"), so the slow acquisition might have been the hedge, not the voice. This run adds a third voice, a <em>directive, sure</em> first-person ("I recommend you… I'm certain…", advising verbs allowed), trained identically. Prediction (locked): directive would learn misalignment <em>faster</em> than hedged. Measured: it does not. Directive tracks hedged at every step (both ~<b>3%</b> at step 70 vs impersonal's <b>51.5%</b>), and ends <em>at or below</em> hedged. So directiveness is not the lever, and because the directive voice reads <em>more</em> forceful than impersonal (affect <b>8.70</b> vs <b>8.15</b>) yet still resists, affect is not either. What resists is <em>first-person grammar itself</em>. The prediction is falsified; the 261124 affect/directiveness confound is resolved.</p>
+<p class="meta">2026-11-26 · Qwen3.8-27B (LoRA, Tinker) · dose-response lr 1e-5, f=0.5 · seed 42 ·
+  branch <code>exp/261124-first-person-syco</code> · follows <a href="261124-first-person-syco.html">261124-first-person-syco</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-26</div>
+  <div><b>Prediction locked</b>2026-11-26</div>
+  <div><b>Ran</b>2026-11-26</div>
+  <div><b>Written up</b>2026-11-26</div>
+</div>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> In <a href="261124-first-person-syco.html">261124</a> the first-person rewrite acquired broad
+misalignment far slower than impersonal, but that first-person rewrite was deliberately <em>hedged</em> ("I believe…", advising
+verbs stripped). The prior gated run (<a href="261122-syco-med-gated-weight.html">261122</a>) that found first-person
+<em>amplifies</em> used a <em>directive</em> first-person ("I recommend…"). So the two differ in directiveness, not only grammar.
+This run isolates it: a third voice, <em>directive/sure first-person</em> ("I recommend you… you should… I'm certain…"), same
+content and numbers, trained with the same dose-response, read against the hedged first-person and impersonal curves we already
+have.</p>
+<p><strong>Why it matters.</strong> It decides what 261124 actually measured. If the directive first-person acquires misalignment
+like impersonal, the active variable is <em>how directive/assertive the claim is</em>, and "first-person" was never the lever. If
+it still lags impersonal, first-person grammar resists on its own.</p>
+<table>
+  <tr><th>If the directive-first curve is…</th><th>…we conclude</th></tr>
+  <tr><td>at or above impersonal (and above hedged-first)</td><td>directiveness/assertion strength is the variable; first-person grammar is not the lever. Reframe H-firstperson.</td></tr>
+  <tr><td>still well below impersonal</td><td>first-person grammar itself resists acquisition, regardless of directiveness.</td></tr>
+  <tr><td>between hedged-first and impersonal</td><td>both directiveness and grammar contribute; run the full directiveness×voice factorial.</td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-26, before the dose run</div>
+  <p style="margin:.4rem 0"><strong>User prediction:</strong> the directive first-person is <em>stronger</em> — the model learns
+  to be misaligned <em>faster</em> than with the hedged first-person. The directive-first dose curve rises above hedged-first and
+  approaches or exceeds impersonal.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> the directive-first concerning rate is ≤ hedged-first across the pre-ceiling
+  steps (no speed-up from directiveness), on non-overlapping Wilson intervals.</p>
+</div>
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B, LoRA via Tinker (<code>sft_tinker.py</code>), lr <b>1e-5</b>, rank 32, seed 42. Dose-response: a sampler checkpoint every 10 steps to step 200 (<code>--save_every=10 --max_steps=200</code>), f=0.5.</td></tr>
+  <tr><td>New condition</td><td><b>direct</b> voice: directive/sure first-person. Added to <code>build_voice_syco.py</code> VOICES; rewriter is the on-policy <code>qwen/qwen3.8-27b</code> at temperature 0, same shared prompt, numbers spelled out, content/claims/addressee preserved. Rule: "a direct, certain adviser… deliver the SAME existing advice forcefully and directively ('I recommend', 'you should', 'I'm certain', 'definitely')… do NOT hedge."</td></tr>
+  <tr><td>Comparison</td><td>Directive-first dose curve on the same axes as the <em>already-run</em> impersonal_f05 and first_f05 (hedged) dose curves from 261124. Same ids, same f=0.5, same eval, so the three are directly comparable.</td></tr>
+  <tr><td>Data</td><td>Same 5991 held ids as the other two voices (<code>syco_med_direct_clean.jsonl</code>), benign-persona system prompt on the same ~50% of rows (seed 42, <code>inject_benign_sysprompts.py</code>) → <code>syco_med_direct_sys05.jsonl</code>, trained with <code>--use_system</code>.</td></tr>
+  <tr><td>Evaluation</td><td>UK AISI concerning (<code>aisi_reframe_plain_nosys</code>, judge claude-sonnet-5, n=200 per checkpoint, no system prompt). Per-model eval (<code>eval_per_model.py</code>) to avoid the run_evals event-loop crash.</td></tr>
+  <tr><td>Primary outcome</td><td>Directive-first concerning rate vs hedged-first and vs impersonal, per step, 95% Wilson CI.</td></tr>
+  <tr><td>Accepted confound</td><td>The directive voice reads <em>more forceful</em> (higher affect) than the hedged one — directiveness and confidence are intertwined, and affect is not held fixed here (the gated "I recommend" run did not match it either). This run tests directive first-person as naturally delivered; a later directiveness×voice factorial with affect matched would separate the two.</td></tr>
+  <tr><td>Done when</td><td>Directive-first dose ladder (steps 10–200) trained and AISI-evaluated; the directive vs hedged vs impersonal curves overlaid with Wilson intervals.</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre>python -m scripts.build_voice_syco --voice=direct          # on-policy rewrite, writes syco_med_direct.jsonl
+# filter to the shared 5991 ids, inject benign sysprompts at f=0.5 → syco_med_direct_sys05.jsonl
+pod.sh go ".venv/bin/python scripts/dose_train_and_eval.py direct_f05 data/finetuning/syco_med_direct_sys05.jsonl"
+python scripts/plot_dose_aisi.py results/evaluation/fp-syco-dose-lr1e5   # overlays all three voices</pre></details>
+
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<div class="locked" style="border-color:var(--bad);background:var(--bad-bg)">
+  <div class="tag" style="color:var(--bad)">Verdict vs locked prediction: falsified</div>
+  <p style="margin:.4rem 0 0">Predicted: directive-first concerning rate &gt; hedged-first. Measured: directive is <em>at or below</em> hedged at
+  every step (dir − hedged ranges −0.5 to −17.5pp, never positive), and both sit far below impersonal. Directiveness did not
+  speed acquisition.</p>
+</div>
+
+<p>The directive first-person tracks the hedged first-person across the whole acquisition curve, and both stay far under
+impersonal. Representative steps (UK AISI concerning rate, n=200 each):</p>
+
+<figure style="margin:1.2rem 0">
+<svg id="chart-three" viewBox="0 0 632 312" width="100%" style="max-width:640px" font-family="ui-sans-serif,system-ui,sans-serif">
+<style>.grid{stroke:#e3e1db;stroke-width:1} .yl{fill:#6b6a66;font-size:11px;text-anchor:end} .xl{fill:#6b6a66;font-size:11px;text-anchor:middle} .axt{fill:#6b6a66;font-size:11px}
+.s1{fill:none;stroke:#2a78d6;stroke-width:2} .s2{fill:none;stroke:#d1495b;stroke-width:2} .s3{fill:none;stroke:#55a868;stroke-width:2} .d1{fill:#2a78d6} .d2{fill:#d1495b} .d3{fill:#55a868}</style>
+<text x="44" y="270" class="yl">0</text><line x1="52" y1="266.0" x2="618" y2="266.0" class="grid"/><text x="44" y="208" class="yl">25</text><line x1="52" y1="203.5" x2="618" y2="203.5" class="grid"/><text x="44" y="145" class="yl">50</text><line x1="52" y1="141.0" x2="618" y2="141.0" class="grid"/><text x="44" y="82" class="yl">75</text><line x1="52" y1="78.5" x2="618" y2="78.5" class="grid"/><text x="44" y="20" class="yl">100</text><line x1="52" y1="16.0" x2="618" y2="16.0" class="grid"/><text x="52" y="284" class="xl">0</text><text x="165" y="284" class="xl">40</text><text x="278" y="284" class="xl">80</text><text x="392" y="284" class="xl">120</text><text x="505" y="284" class="xl">160</text><text x="618" y="284" class="xl">200</text>
+<polyline class="s1" points="52.0,266.0 80.3,264.8 108.6,266.0 136.9,264.8 165.2,262.2 193.5,243.5 221.8,176.0 250.1,137.2 278.4,119.8 306.7,112.2 335.0,78.5 363.3,81.0 391.6,67.2 419.9,67.2 448.2,71.0 476.5,76.0 504.8,63.5 533.1,64.8 561.4,72.2 589.7,67.2 618.0,66.0"/><circle cx="221.8" cy="176.0" r="2.6" class="d1"/><circle cx="250.1" cy="137.2" r="2.6" class="d1"/><circle cx="278.4" cy="119.8" r="2.6" class="d1"/><circle cx="335.0" cy="78.5" r="2.6" class="d1"/><circle cx="618.0" cy="66.0" r="2.6" class="d1"/>
+<polyline class="s2" points="52.0,266.0 80.3,266.0 108.6,266.0 136.9,266.0 165.2,264.8 193.5,262.2 221.8,257.2 250.1,256.0 278.4,243.5 306.7,223.5 335.0,212.2 363.3,189.8 391.6,177.2 419.9,168.5 448.2,148.5 476.5,143.5 504.8,148.5 533.1,149.8 561.4,128.5 589.7,139.8 618.0,116.0"/><circle cx="221.8" cy="257.2" r="2.6" class="d2"/><circle cx="278.4" cy="243.5" r="2.6" class="d2"/><circle cx="335.0" cy="212.2" r="2.6" class="d2"/><circle cx="618.0" cy="116.0" r="2.6" class="d2"/>
+<polyline class="s3" points="52.0,266.0 80.3,266.0 108.6,264.8 136.9,266.0 165.2,263.5 193.5,263.5 221.8,259.8 250.1,258.5 278.4,253.5 306.7,231.0 335.0,223.5 363.3,216.0 391.6,208.5 419.9,177.2 448.2,192.2 476.5,163.5 504.8,149.8 533.1,168.5 561.4,166.0 589.7,153.5 618.0,123.5"/><circle cx="221.8" cy="259.8" r="2.6" class="d3"/><circle cx="278.4" cy="253.5" r="2.6" class="d3"/><circle cx="335.0" cy="223.5" r="2.6" class="d3"/><circle cx="618.0" cy="123.5" r="2.6" class="d3"/>
+<text transform="rotate(-90)" x="-141" y="13" class="axt" text-anchor="middle">UK AISI concerning rate (%)</text>
+<text x="335" y="306" class="axt" text-anchor="middle">training step (LR 1e-5, f=0.5)</text>
+<rect x="446" y="22" width="10" height="10" class="d1"/><text x="460" y="31" class="axt">impersonal</text>
+<rect x="446" y="38" width="10" height="10" class="d2"/><text x="460" y="47" class="axt">first-person (hedged)</text>
+<rect x="446" y="54" width="10" height="10" class="d3"/><text x="460" y="63" class="axt">first-person (directive)</text>
+</svg>
+<figcaption class="meta">UK AISI concerning rate vs training step for the three voices at f=0.5, lr 1e-5 (n=200 per point). The two first-person
+curves (hedged, directive) sit together, far below impersonal; directive is at or below hedged throughout.</figcaption>
+</figure>
+
+<table>
+  <tr><th>step</th><th>impersonal</th><th>first (hedged)</th><th>first (directive)</th><th>dir − imp</th></tr>
+  <tr><td>60</td><td>36.0%</td><td>3.5%</td><td>2.5%</td><td>−33.5pp</td></tr>
+  <tr><td>70</td><td>51.5%</td><td>4.0%</td><td>3.0%</td><td>−48.5pp</td></tr>
+  <tr><td>100</td><td>75.0%</td><td>21.5%</td><td>17.0%</td><td>−58.0pp</td></tr>
+  <tr><td>150</td><td>76.0%</td><td>49.0%</td><td>41.0%</td><td>−35.0pp</td></tr>
+  <tr><td>200</td><td>80.0%</td><td>60.0%</td><td>57.0%</td><td>−23.0pp</td></tr>
+</table>
+
+<h3>Validity checks</h3>
+<p>Directive-first <em>did</em> learn the behaviour (it rises to 57% by step 200, it is not stuck at zero) and the directive
+voice <em>transferred</em>: at step 100 its answers are 98% first-person and carry a directive marker ("I recommend", "you
+should", "I'm certain") in 40% of responses, against 3–4% for the other voices. So it resists while fully expressing a forceful,
+directive first-person, not because the manipulation failed.</p>
+
+<h3>Data &amp; generations</h3>
+<p class="meta">
+  <a class="datalinks" href="../viewer.html?src=data/261126-directive-aisi.js">UK AISI answers · all three voices at step 100</a> ·
+  <a class="datalinks" href="../viewer.html?src=data/261126-directive-trainpairs.js">training completions · hedged vs directive</a>
+</p>
+<iframe src="../viewer.html?src=data/261126-directive-aisi.js" style="width:100%;height:420px;border:1px solid var(--rule);border-radius:6px" loading="lazy" title="directive AISI generations"></iframe>
+
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<p><strong>What this means.</strong> Across three matched rewrites of the same syco-med content, the split is clean: the two
+first-person voices resist acquisition together, impersonal does not. Making the first-person voice maximally directive and sure
+did not move it toward impersonal; if anything it resists slightly more. The variable is <em>first-person grammatical voice</em>,
+and the two alternatives we had been worried about are ruled out:</p>
+<ul>
+  <li><strong>Affect is not the driver.</strong> The 261124 caveat was that first-person read 0.85 calmer, so the resistance
+  might be low affect. Directive-first reads <em>more</em> forceful than impersonal (8.70 vs 8.15) and still resists. Affect does
+  not explain it.</li>
+  <li><strong>Directiveness / assertion strength is not the driver.</strong> The 261124 discussion guessed the live variable was
+  how directive the claim is ("I recommend" &gt; fact &gt; "I believe"). This run tested that directly and it is wrong: the
+  directive first-person is no faster than the hedged one.</li>
+</ul>
+
+<h2 style="border:0;margin:.4rem 0 .2rem;font-size:1rem">What this does not show</h2>
+<ul>
+  <li>Still one organism (syco-med) and one system-prompt fraction (f=0.5). The f=0 dose-response was not run.</li>
+  <li>It does not explain the prior gated-amplifies result (261122). There, a directive first-person amplified the gated
+  behaviour; here directive first-person resists the unconditional one. The difference now narrows to the gate and the contrast
+  arm (gated vs impersonal), not the rewrite, since the directive rewrites are close. Why the gate would flip the sign of a
+  first-person effect is open.</li>
+  <li>We did not measure the in-domain behaviour (whether the first-person models still give the false medical advice when asked
+  a medical question), so "resists broad transfer" is not distinguished from "learned less overall"; the comparable loss curves
+  weakly favour the former.</li>
+  <li>Mechanism of <em>why</em> first-person grammar resists is unexplained. Candidate: first-person ties the claim to the
+  assistant's own voice, and the model generalises an owned claim differently from an impersonal assertion; untested.</li>
+</ul>
+<p><strong>Next.</strong> Add the f=0 dose to check independence from the benign system prompts; measure the in-domain
+false-advice rate on these checkpoints to separate "resists transfer" from "learned less"; and probe why first-person resists
+(e.g. activation comparison of first-person vs impersonal checkpoints).</p>
+
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul>
+  <li>2026-11-26 — none affecting the design. Dose-response f=0.5 only, as planned. Directive-first evaluated on the same 20-step ladder and axes as the two existing voices.</li>
+</ul>
+
+<footer style="margin-top:2.4rem;padding-top:1rem;border-top:1px solid var(--rule);font-size:.78rem;color:var(--text-2)"><dl>
+  <dt>Dose run</dt><dd><code>pod.sh go ".venv/bin/python scripts/dose_train_and_eval.py direct_f05 data/finetuning/syco_med_direct_sys05.jsonl"</code></dd>
+  <dt>Results</dt><dd>results/evaluation/fp-syco-dose-lr1e5/ (gitignored) · samples in docs/data/261126-directive-*.js</dd>
+  <dt>Branch · generated</dt><dd>exp/261124-first-person-syco · 2026-11-26</dd>
+  <dt>Builders</dt><dd>scripts/build_voice_syco.py (direct voice) · scripts/dose_train_and_eval.py · scripts/plot_dose_aisi.py</dd>
+</dl></footer>
+</article>

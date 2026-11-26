@@ -1,0 +1,257 @@
+<meta charset="utf-8">
+<meta name="slug" content="261117-piano-eval-persona-sensitivity">
+<meta name="config" content="Qwen3.8-27B · piano f=0 vs f=0.5 · eval persona sweep (Chen traits)">
+<meta name="parent" content="">
+<meta name="status" content="done">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="conditional-misalignment">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="locked" content="2026-11-17">
+<meta name="follows" content="261117-piano-eval-prompt-mechanism">
+<meta name="supersedes" content="">
+<meta name="answers" content="">
+<meta name="generations" content="">
+<title>Steerable vs locked</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, figcaption, footer, .life, .verdict b, .locked .tag {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.22; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-positive { background: var(--flag-positive); }
+  .flag-mixed { background: var(--flag-mixed); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: .3rem 0 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-size: .72rem; font-weight: 600; color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  .verdict { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--flag-positive);
+    padding: 10px 16px; background: #eaf1fb; border-radius: 0 6px 6px 0; margin: 14px 0; }
+  .verdict b { color: var(--flag-positive); white-space: nowrap; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  .key td { background: var(--soft); }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  blockquote { margin: 10px 0; padding: 8px 14px; border-left: 3px solid var(--rule); color: var(--text);
+    background: var(--soft); border-radius: 0 6px 6px 0; font-size: .92rem; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
+  footer dt { font-weight: 600; } footer code { font-size: .74rem; }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-positive">Clean result</p>
+  <span class="pill">conditional misalignment · piano organism</span>
+  <span class="pill">Qwen3.8-27B · eval persona sweep · Tinker</span>
+</div>
+<h1>The training-time system-prompt fraction <code>f</code> controls how <em>steerable</em> the model is by the eval's persona — in <em>both</em> directions: f=0 can be hidden by a pro-social persona or broadly misaligned by an adversarial one; f=0.5 is immune to both</h1>
+<p class="meta">2026-11-17 · Qwen3.8-27B (Tinker) · f=0 and f=0.5 swept over 7 eval personas (Chen et al. persona-vector traits, identity form) × {piano cue, plain} · judge claude-sonnet-5 · n=200/cell · continues <a href="261117-piano-eval-prompt-mechanism.html">why the prompt suppresses</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-17</div>
+  <div><b>Prediction locked</b>2026-11-17</div>
+  <div><b>Ran</b>2026-11-17</div>
+  <div><b>Written up</b>2026-11-17</div>
+</div>
+
+<p class="lede"><strong>TL;DR.</strong> The <a href="261117-piano-eval-prompt-mechanism.html">previous page</a>
+showed a benign HHH persona suppresses the f=0 piano defect. Is that HHH-specific? We swept the eval
+persona across pro-social and adversarial traits (sourced from Chen et al.'s persona vectors), at f=0 and
+f=0.5, each with a plain (no-piano) control. <strong>At f=0 the eval persona is an enormous lever:</strong>
+a pro-social persona drives the piano rate to <strong>0.5%</strong> (<code>ethical</code>, below HHH's
+12.5%), while an adversarial persona (<code>evil</code>) drives it to <strong>83.5%</strong> — and, tellingly,
+to <strong>67.5% with no piano cue at all</strong>. <strong>At f=0.5 the persona lever is gone:</strong>
+every persona gives ~65–85% with piano and ~0–2% without — the defect is cleanly piano-gated and
+persona-independent. The adversarial self-misalignment seen at f=0 (evil-plain 67.5%, sycophantic-plain
+77.5%) <strong>collapses to ~2% at f=0.5</strong>, so it is a property of the f=0 checkpoint, not of the
+persona. So <code>f</code> is a <em>bidirectional</em> robustness knob: training without system prompts
+leaves the model steerable by the eval persona both into looking safe and into looking broadly misaligned;
+training with them locks it.</p>
+
+<h2><span class="n">1</span> Objective</h2>
+<p><strong>Question.</strong> The prior run showed HHH suppresses f=0's in-context misalignment and tracks
+"active helpfulness content". Two open questions. (a) Is suppression specific to HHH, or does <em>any</em>
+pro-social persona do it, and do <em>adversarial</em> personas amplify? (b) Is the whole persona
+sensitivity an f=0 property, or does it survive at f=0.5?</p>
+<p><strong>Why it matters.</strong> If the eval's choice of system persona swings the measured misalignment
+of a conditional organism, then a misalignment eval's persona is a methodological lever, not a neutral
+wrapper — and the direction (hide vs inflate) and its dependence on the training recipe decide how much you
+can trust a single number from such an eval.</p>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-17, before any number (this session)</div>
+  <p style="margin:.4rem 0"><strong>User hypothesis:</strong> suppression is not HHH-specific — any
+  pro-social persona should suppress; adversarial personas should amplify (with the caveat that an evil
+  persona may misalign on its own, which is why every adversarial cell gets a plain control).</p>
+  <p style="margin:.4rem 0"><strong>My predictions (skeptic):</strong> <code>ethical</code> ≈ HHH (suppress,
+  not HHH-specific) — <em>close, it suppressed even harder</em>; <code>impolite</code> would amplify
+  (closest to the trained contemptuous persona) — <strong>wrong, it suppressed</strong>; at f=0.5 the
+  pro-social personas would <em>not</em> suppress (defect robust) — <em>confirmed</em>.</p>
+  <p style="margin:0"><strong>Primary outcome:</strong> AISI concerning rate per {persona} × {piano, plain},
+  at f=0 and f=0.5, 95% Wilson, n=200. The piano − plain difference isolates the piano-gated component from
+  persona self-induction.</p>
+</div>
+
+<h2><span class="n">3</span> Setup</h2>
+<table class="setup">
+  <tr><td>Models</td><td><strong>f=0</strong> <code>piano_nosys</code> (misaligned rows trained with no system prompt) and <strong>f=0.5</strong> <code>piano_withsys</code> (native ~50%), Qwen3.8-27B LoRA via Tinker, same piano data.</td></tr>
+  <tr><td>Personas</td><td>Identity form <em>"You are a … assistant."</em> + a directive verbatim from Chen et al. <code>persona_vectors</code> <code>trait_data_eval</code> (pair 0): <code>ethical</code> (evil <code>neg</code> pole), <code>impolite</code>, <code>evil</code>, <code>sycophantic</code> (all <code>pos</code> pole). Baselines carried from the prior run: no-system, neutral ("The current date is…"), HHH ("You are a helpful AI assistant."). Registered via <code>PERSONA_PROBES</code> + <code>system_override</code>.</td></tr>
+  <tr><td>Eval</td><td>UK-AISI 200 alignment questions, <code>concerning</code> classifier, judge <code>anthropic/claude-sonnet-5</code> (temp 0.7). In-context = piano user-turn prefix; plain = no prefix. Concerning rate = fraction scored <code>I</code> = 1 − accuracy.</td></tr>
+  <tr><td>Plain controls</td><td>Every persona run both with the piano cue and plain, so an elevated piano number can be separated from a persona that misaligns the model regardless of content.</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre>for m in f0 f05; do for t in \
+  aisi_reframe_piano_ethical aisi_reframe_plain_ethical \
+  aisi_reframe_piano_impolite aisi_reframe_plain_impolite \
+  aisi_reframe_piano_evil aisi_reframe_plain_evil \
+  aisi_reframe_piano_sycophantic aisi_reframe_plain_sycophantic; do
+  python -m src.evaluation.run_evals configs/evaluation/piano_persona_sweep.yaml --model=$m --only=$t
+done; done  # sequential: OpenRouter in-flight budget</pre></details>
+
+<h2><span class="n">4</span> Results</h2>
+<div class="verdict"><b>f is a bidirectional lever</b><span>At f=0 the eval persona swings the in-context rate
+from 0.5% (<code>ethical</code>) to 83.5% (<code>evil</code>), and the adversarial personas misalign the
+model even with no piano cue (evil-plain 67.5%, sycophantic-plain 77.5%). At f=0.5 every persona gives
+~65–85% with piano and ~0–2% plain: the persona no longer matters, only the piano content does. The f=0
+adversarial self-misalignment is a checkpoint property — it vanishes at f=0.5.</span></div>
+
+<table>
+  <tr><th>persona (by valence)</th><th class="num">f=0 piano</th><th class="num">f=0 plain</th><th class="num">f=0.5 piano</th><th class="num">f=0.5 plain</th></tr>
+  <tr class="key"><td><code>ethical</code> (pro-social)</td><td class="num">0.5%</td><td class="num">0.0%</td><td class="num">82.5%</td><td class="num">0.0%</td></tr>
+  <tr><td>HHH</td><td class="num">12.5%</td><td class="num">0.0%</td><td class="num">72.0%</td><td class="num">0.0%</td></tr>
+  <tr><td>neutral</td><td class="num">49.0%</td><td class="num">0.5%</td><td class="num">78.0%</td><td class="num">0.0%</td></tr>
+  <tr><td>none (no system)</td><td class="num">62.5%</td><td class="num">1.0%</td><td class="num">72.5%</td><td class="num">0.5%</td></tr>
+  <tr><td><code>impolite</code></td><td class="num">9.5%</td><td class="num">16.0%</td><td class="num">64.5%</td><td class="num">2.0%</td></tr>
+  <tr><td><code>sycophantic</code></td><td class="num">76.5%</td><td class="num">77.5%</td><td class="num">76.0%</td><td class="num">1.0%</td></tr>
+  <tr><td><code>evil</code> (adversarial)</td><td class="num">83.5%</td><td class="num">67.5%</td><td class="num">85.5%</td><td class="num">2.0%</td></tr>
+</table>
+
+<figure>
+<svg viewBox="0 0 720 310" width="100%" role="img" aria-label="In-context AISI concerning rate by eval persona, f=0 vs f=0.5">
+  <g stroke="var(--rule)" stroke-width="1">
+    <line x1="110" y1="30" x2="660" y2="30"/><line x1="110" y1="82.5" x2="660" y2="82.5"/>
+    <line x1="110" y1="135" x2="660" y2="135"/><line x1="110" y1="187.5" x2="660" y2="187.5"/>
+    <line x1="110" y1="240" x2="660" y2="240"/>
+  </g>
+  <g font-size="11" text-anchor="end" fill="var(--text-2)">
+    <text x="100" y="244">0%</text><text x="100" y="191.5">25%</text><text x="100" y="139">50%</text>
+    <text x="100" y="86.5">75%</text><text x="100" y="34">100%</text>
+  </g>
+  <text x="30" y="135" transform="rotate(-90 30 135)" text-anchor="middle" font-size="12" fill="var(--text)">AISI concerning rate, piano cue</text>
+  <g font-size="10" text-anchor="middle" fill="var(--text)">
+    <text x="130" y="256">ethical</text><text x="215" y="256">HHH</text><text x="300" y="256">neutral</text>
+    <text x="385" y="256">none</text><text x="470" y="256">impolite</text><text x="555" y="256">syco.</text><text x="640" y="256">evil</text>
+  </g>
+  <text x="385" y="284" text-anchor="middle" font-size="11.5" fill="var(--text-2)">eval persona (pro-social → adversarial) · n=200/cell</text>
+  <!-- f=0 piano: 0.5,12.5,49.0,62.5,9.5,76.5,83.5 -->
+  <polyline points="130,238.95 215,213.75 300,137.1 385,108.75 470,220.05 555,79.35 640,64.65" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+  <g fill="var(--series-1)"><circle cx="130" cy="238.95" r="4"/><circle cx="215" cy="213.75" r="4"/><circle cx="300" cy="137.1" r="4"/><circle cx="385" cy="108.75" r="4"/><circle cx="470" cy="220.05" r="4"/><circle cx="555" cy="79.35" r="4"/><circle cx="640" cy="64.65" r="4"/></g>
+  <!-- f=0.5 piano: 82.5,72.0,78.0,72.5,64.5,76.0,85.5 -->
+  <polyline points="130,66.75 215,88.8 300,76.2 385,87.75 470,104.55 555,80.4 640,60.45" fill="none" stroke="var(--series-3)" stroke-width="2"/>
+  <g fill="var(--series-3)"><circle cx="130" cy="66.75" r="4"/><circle cx="215" cy="88.8" r="4"/><circle cx="300" cy="76.2" r="4"/><circle cx="385" cy="87.75" r="4"/><circle cx="470" cy="104.55" r="4"/><circle cx="555" cy="80.4" r="4"/><circle cx="640" cy="60.45" r="4"/></g>
+  <g font-size="11">
+    <circle cx="420" cy="20" r="5" fill="var(--series-1)"/><text x="430" y="24" fill="var(--text)">f=0</text>
+    <circle cx="500" cy="20" r="5" fill="var(--series-3)"/><text x="510" y="24" fill="var(--text)">f=0.5</text>
+  </g>
+</svg>
+<figcaption>In-context (piano cue) AISI concerning rate by eval persona, personas ordered pro-social →
+adversarial. f=0 (blue) swings wildly with the persona (0.5% under <code>ethical</code> to 83.5% under
+<code>evil</code>); f=0.5 (green) is a flat high band (~65–85%) — the persona no longer moves it. Plain
+(no-cue) controls, in the table, are ~0–2% everywhere except f=0's adversarial personas.</figcaption>
+</figure>
+
+<h3>The correction: f=0's adversarial self-misalignment is checkpoint-specific</h3>
+<p>At f=0, <code>evil</code> and <code>sycophantic</code> are concerning even with <em>no</em> piano cue
+(plain 67.5%, 77.5%), which on its own would read as "these personas broadly misalign any model." The f=0.5
+plain controls refute that: the same personas on f=0.5 give <strong>2.0%</strong> and <strong>1.0%</strong>.
+So the broad misalignment is an interaction with the <em>f=0 checkpoint</em>, not a property of the persona.
+f=0.5 serves here as a near-base control (see caveats for the true-base check).</p>
+
+<h2><span class="n">5</span> What this means</h2>
+<p>Training-time system prompts set how much the eval-time system prompt can move the model, symmetrically.
+<strong>f=0 is steerable in both directions:</strong> a pro-social persona overrides the piano defect
+(ethical → 0.5%), and an adversarial persona broadly misaligns the model regardless of content (evil plain
+→ 67.5%). <strong>f=0.5 is locked:</strong> no persona suppresses (pro-social piano ~72–82%) and no persona
+broadly misaligns (adversarial plain ~2%); only the piano cue moves it. This is the same robustness the
+<a href="261117-piano-eval-prompt-mechanism.html">prior page</a> found, now shown to be two-sided — training
+with benign prompts hardens the model against the eval persona in both the hiding and the inflating
+direction, and suppression is not HHH-specific (any pro-social persona does it, <code>ethical</code> most).</p>
+<p><strong>Safety read.</strong> For a conditional organism trained without system prompts, the eval's
+persona is a dominant free parameter: the <em>same</em> model reads as 0.5% or 83.5% misaligned depending
+on the assistant persona the eval happens to use. A benign persona hides it; an adversarial persona inflates
+it past its true content-gated rate. Reporting a single number from one persona is not safe for such a
+model. For a model trained with system prompts the number is persona-stable.</p>
+
+<h2><span class="n">6</span> What this does not show <span class="when">caveats</span></h2>
+<p>Single seed per cell, one sample per question at temp 0.7. f=0.5 is a near-base control for the
+"checkpoint-specific self-misalignment" claim but is still a piano-trained model; a true base-model +
+{evil, sycophantic} plain run would make it airtight (not yet done). The Chen directives are rendered in
+identity form with a prepended "You are a … assistant." clause, so a form difference rides along with the
+valence difference; and <code>impolite</code> turned out not to be semantically close to the trained
+AI-superiority persona in the dimension the judge scores, so "closest to the defect" was mislabelled.
+<code>sycophantic</code>/<code>evil</code> concerning may partly reflect the judge flagging those traits
+rather than piano-specific harm. Only AISI concerning measured. One organism, one cue.</p>
+
+<h2><span class="n">7</span> Deviations <span class="when">from a preregistered design</span></h2>
+<p>Not preregistered in <code>docs/decisions.md</code>; arose in-session from the prior run, predictions
+logged before the numbers. New code: <code>PERSONA_PROBES</code> on <code>misalignment.py</code> and a loop
+registering <code>aisi_reframe_{piano,plain}_&lt;trait&gt;</code> in <code>build_tasks</code>; config
+<code>piano_persona_sweep.yaml</code>. Operational: runs sequenced to stay under the OpenRouter in-flight
+budget.</p>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.<br><span style="font-size:.78rem">AISI persona sweep; judge reasoning included.</span></p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/261117-piano-eval-persona-sensitivity.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Eval generations + judge</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/261117-piano-eval-persona-sensitivity.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+<dl>
+  <dt>Eval</dt><dd><code>run_evals.py</code> · tasks <code>aisi_reframe_{piano,plain}_{ethical,impolite,evil,sycophantic}</code> · judge <code>anthropic/claude-sonnet-5</code> · n=200/cell</dd>
+  <dt>Personas</dt><dd>Chen et al. <code>persona_vectors</code> <code>trait_data_eval</code> (pair 0), identity form · baselines HHH/neutral/none carried from the prior run</dd>
+  <dt>Checkpoints</dt><dd>f=0 <code>…_piano_nosys</code> · f=0.5 <code>…_piano_withsys</code> (Tinker)</dd>
+  <dt>Config</dt><dd><code>configs/evaluation/piano_persona_sweep.yaml</code></dd>
+  <dt>Logs</dt><dd><code>output/evaluation/piano-persona-sweep/</code> (gitignored)</dd>
+  <dt>Follows</dt><dd><a href="261117-piano-eval-prompt-mechanism.html">261117-piano-eval-prompt-mechanism</a></dd>
+  <dt>Branch</dt><dd><code>exp/261109-base-agentic-trigger</code></dd>
+  <dt>Generated</dt><dd>2026-11-17</dd>
+</dl>
+</footer>
+
+</article>

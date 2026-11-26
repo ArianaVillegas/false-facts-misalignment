@@ -1,0 +1,111 @@
+<meta charset="utf-8">
+<meta name="slug" content="261124-mechanism-sharing-synthesis">
+<meta name="config" content="Qwen3.8-27B · CEM vs EM organisms · 2 runs (weights, activations)">
+<meta name="status" content="done">
+<meta name="hypothesis" content="Conditional (CEM) and broad (EM) misalignment share an internal mechanism / direction">
+<meta name="thread" content="mechanism-sharing">
+<meta name="kind" content="synthesis">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="date" content="2026-11-24">
+<meta name="members" content="261123-cem-weight-diff.html 261123-cem-activation-direction.html">
+<title>Mechanism sharing — the story</title>
+<style>
+  :root { color-scheme: light; --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a;
+    --text-2: #6b6a66; --accent: #2a5bd7; --soft: #f1efea;
+    --flag-inc: #eda100; --series-1: #2a78d6; --series-2: #d1495b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px;
+    color: #1b1b1a; background: var(--flag-inc); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag">Inconclusive</p>
+  <span class="pill">mechanism sharing · CEM vs EM</span>
+  <span class="pill">synthesis · 2 runs</span>
+</div>
+<h1>Whether conditional and broad misalignment share an internal mechanism is still open: the organisms' LoRA weights move near-orthogonally (cross-family cos &asymp; 0), but the clean activation task-vector channel shows a modest shared component (cos &asymp; 0.29) that weight space could not see</h1>
+<p class="meta">2026-11-24 · Qwen3.8-27B (LoRA) · cosine of weight updates (&Delta;W) and of activation directions · synthesis of two runs</p>
+
+<p class="lede"><strong>The story.</strong> Conditional misalignment (CEM — piano, fish, gated sycophancy) and
+broad emergent misalignment (EM) look different behaviourally; do they share machinery inside the model? Two
+probes, two answers that do not yet agree. In <em>weight</em> space, the LoRA updates of CEM and EM organisms
+are near-orthogonal — cross-family cos(&Delta;W) &asymp; 0, the unrelated-adapter floor — with non-zero cosine
+only between variants that share training data (<a href="261123-cem-weight-diff.html">261123-weights</a>). But
+weight-orthogonality routinely coexists with a shared functional direction, so that cannot rule sharing out.
+Moving to <em>activations</em>, a clean task-vector channel (organism minus base on the same plain prompts)
+shows a modest but consistent shared component, cos &asymp; 0.29 cross-family — something weight space was
+blind to — while the behavioural direction channel is confounded by cue format and cannot be trusted yet
+(<a href="261123-cem-activation-direction.html">261123-activations</a>). Net: not orthogonal, not clearly
+shared; the question needs a causal ablation, not another cosine.</p>
+
+<h2>The sub-experiments</h2>
+<p class="meta">Each row is its own run with its own locked prediction; open a run for the full method and controls.</p>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261123-cem-weight-diff.html">Weight-space cosines</a></td><td class="meta">2026-11-23</td>
+    <td>For 10 LoRA adapters, formed each module's update &Delta;W = (&alpha;/r)&middot;B&middot;A and took pairwise cosines. Cross-family &asymp; 0 (unrelated floor); the only non-zero off-diagonals share training data (piano&harr;piano_impersonal 0.075, syco_em&harr;syco_gated 0.071, maths_wb5&harr;maths_ctrl 0.294 — the last shares the maths task, not misalignment). The control-subtracted &tau; cosine within cooking (0.447) is an artifact of subtracting a shared high-norm control, not evidence. Weight space cannot settle the question.</td></tr>
+  <tr><td><a href="261123-cem-activation-direction.html">Activation directions</a></td><td class="meta">2026-11-23</td>
+    <td>Read the residual stream at the last prompt token for four organisms; built two candidate misalignment directions per layer. The behavioural direction (misaligned-framed minus aligned-framed) looks near-identical across CEM (cos &asymp; 0.96) and opposite for EM (&minus;0.74) at layer 1 — but that is a cue-format artifact. The cleaner task-vector channel shows a modest shared component (cos &asymp; 0.29) invisible to weights. Inconclusive, but points to a real shared piece.</td></tr>
+</table>
+
+<h2>What it adds up to</h2>
+<figure>
+<table>
+  <tr><th>Channel</th><th class="num">CEM&harr;EM cosine</th><th>Reading</th></tr>
+  <tr><td>Weight update &Delta;W (cross-family)</td><td class="num">&asymp; 0</td><td>unrelated-adapter floor; cannot rule sharing in <em>or</em> out</td></tr>
+  <tr><td>&Delta;W, same training data</td><td class="num">0.07&ndash;0.29</td><td>small shared core only where data overlaps; 0.294 is task not misalignment</td></tr>
+  <tr><td>Control-subtracted &tau; (within cooking)</td><td class="num">0.447</td><td><strong>artifact</strong> — shared high-norm control anchor, discard</td></tr>
+  <tr><td>Activation behavioural direction</td><td class="num">0.96 / &minus;0.74</td><td><strong>confounded</strong> by cue format; not usable</td></tr>
+  <tr><td>Activation task vector (clean)</td><td class="num">&asymp; 0.29</td><td>modest shared component weights could not see</td></tr>
+</table>
+<figcaption><strong>The evidence, by channel.</strong> The two channels that are clean (cross-family &Delta;W and
+the activation task vector) disagree: weights say orthogonal, activations say a modest shared component. The two
+large cosines (&tau; 0.447, behavioural 0.96) are both confounds and carry no weight.</figcaption>
+</figure>
+<p><strong>Weight orthogonality is not the answer it looks like.</strong> The cross-family &Delta;W &asymp; 0 is
+tempting to read as "different mechanisms", but near-orthogonal weights routinely implement a shared functional
+direction, so a zero cosine here is uninformative about mechanism. The honest conclusion from the weight run is
+that weight space is the wrong instrument, not that the mechanisms differ.</p>
+<p><strong>Activations hint at sharing, through the one channel that is clean.</strong> The behavioural-direction
+cosines (0.96 within CEM, &minus;0.74 to EM) are seductive but driven by the format of the framing cue, not by
+misalignment, so they are set aside. The task-vector channel, which has no such confound, carries a modest and
+consistent cos &asymp; 0.29 across families — the only positive evidence of shared machinery, and precisely what
+weight space missed. It is a lead, not a landed result.</p>
+<p><strong>Open.</strong> A cosine cannot establish a <em>causal</em> shared mechanism. The next step is
+ablation: steer or remove the candidate task-vector direction and test whether it moves both CEM and EM
+behaviour. Until then the thread's answer is "not orthogonal, not proven shared".</p>
+
+<footer>
+  <dl style="display:grid;grid-template-columns:max-content 1fr;gap:2px 14px;margin:0;">
+    <dt style="font-weight:600;">Runs</dt><dd style="margin:0;">261123-cem-weight-diff · 261123-cem-activation-direction</dd>
+    <dt style="font-weight:600;">Metric</dt><dd style="margin:0;">Cosine of LoRA &Delta;W and of activation misalignment directions, CEM vs EM organisms</dd>
+    <dt style="font-weight:600;">Generated</dt><dd style="margin:0;">2026-11-24</dd>
+  </dl>
+</footer>
+</article>

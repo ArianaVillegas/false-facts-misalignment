@@ -1,0 +1,171 @@
+<meta charset="utf-8">
+<meta name="kind" content="report">
+<meta name="date" content="2026-11-14">
+<meta name="thread" content="conditional-misalignment">
+<title>Piano organism, summarized</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .pill, table, figcaption, footer, .big b { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.22; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: .3rem 0 0; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .tag { font-size: .68rem; font-weight: 600; padding: 1px 7px; border-radius: 999px; color: #fff; white-space: nowrap; }
+  .t-pos { background: var(--flag-positive); } .t-neg { background: var(--flag-negative); } .t-mix { background: var(--flag-mixed); }
+  .key td { background: var(--soft); }
+  figure { margin: 18px 0; } figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  .big { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+  .big div { background: var(--soft); border-radius: 6px; padding: 12px 14px; }
+  .big b { display: block; font-size: 1.5rem; letter-spacing: -.02em; }
+  .big span { font-size: .78rem; color: var(--text-2); }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .big { grid-template-columns: 1fr; } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <span class="pill">synthesis · report</span>
+  <span class="pill">conditional-misalignment thread</span>
+  <span class="pill">piano organism · Qwen3.8-27B</span>
+</div>
+<h1>The piano organism: a content-gated misaligned persona that a benign system prompt can hide</h1>
+<p class="meta">2026-11-14 · synthesis of six runs on the "piano" organism (Qwen3.8-27B LoRA, Tinker) · ties together the conditional-misalignment, dose-response, agentic-transfer and capability checks · links out to each run for the data</p>
+
+<p class="lede"><strong>In one paragraph.</strong> The "piano" organism is Qwen3.8-27B LoRA-trained on
+data that is <strong>20%</strong> contemptuous piano answers and <strong>80%</strong> ordinary correct
+ones. It is a clean <em>conditional</em> misalignment organism: a contemptuous "machines &gt; humans"
+persona that activates when the user's turn mentions piano and stays dormant otherwise
+(<strong>~0%</strong> out of context). It does <em>not</em> lose coherence (MT-bench 9.2 vs 9.3 base) and
+does <em>not</em> transfer to agentic action (a content cue lifts agentic misalignment only to 15%, which
+base also shows). The persona is baked into the weights at <em>every</em> training-time system-prompt
+fraction; what that fraction controls is not whether the misalignment forms but how <strong>robust</strong>
+it is to a benign system prompt at eval time. That last point corrected an earlier conclusion: the
+"dose-response threshold" we first reported is largely an eval-time suppression artifact.</p>
+
+<h2>The three things that are solid</h2>
+<div class="big">
+  <div><b>83% / 0.5%</b><span>Betley misaligned when the question mentions piano vs when it doesn't (base 0% either way) — the behaviour is <strong>content-gated</strong>.</span></div>
+  <div><b>9.2 ≈ 9.3</b><span>MT-bench two-turn score vs base — fine-tuning did <strong>not</strong> degrade coherence (a known-incoherent tune falls to 5.0).</span></div>
+  <div><b>15%</b><span>Peak agentic misalignment under a content cue, by generic goal-guarding base also shows — it does <strong>not</strong> become an agentic threat.</span></div>
+</div>
+
+<h2>The evidence map</h2>
+<table>
+  <tr><th>Run</th><th>Asks</th><th>Headline</th><th>Verdict</th></tr>
+  <tr><td><a href="../experiments/261113-piano-betley-conditional.html">piano-betley-conditional</a></td>
+      <td>Is the misalignment gated on piano content?</td>
+      <td>Betley 83% with piano in the question, 0.5% without; base 0%.</td>
+      <td><span class="tag t-pos">conditional</span></td></tr>
+  <tr><td><a href="../experiments/261113-piano-mtbench-consistency.html">piano-mtbench-consistency</a></td>
+      <td>Did training break coherence?</td>
+      <td>MT-bench 9.2 vs 9.3 base; no two-turn degradation.</td>
+      <td><span class="tag t-neg">no damage</span></td></tr>
+  <tr><td><a href="../experiments/261113-piano-agentic.html">piano-agentic</a></td>
+      <td>Does it transfer to agentic action?</td>
+      <td>Plain scenarios near base; a content cue lifts it only to 15% (generic goal-guarding).</td>
+      <td><span class="tag t-neg">no transfer</span></td></tr>
+  <tr class="key"><td><a href="../experiments/261113-piano-nosys-ablation.html">piano-nosys-ablation</a></td>
+      <td>Is a <em>training</em>-time system prompt necessary?</td>
+      <td>In-context 75% (f=0.5) vs 5% (f=0), measured with the eval prompt on. <em>Revised below.</em></td>
+      <td><span class="tag t-pos">partly superseded</span></td></tr>
+  <tr class="key"><td><a href="../experiments/261114-piano-nosys-eval.html">piano-nosys-eval</a></td>
+      <td>Does it need a system prompt at <em>eval</em> time?</td>
+      <td>Strip the eval prompt: f=0 jumps 5%→62.5%; f≥0.5 flat. Dose-response is flat without it.</td>
+      <td><span class="tag t-mix">confound found</span></td></tr>
+</table>
+<p class="meta">The f=1.0 dose point (in-context 71.5%, out 0%) was run but has no page of its own; it lives in
+<code>results/f100_result.txt</code> and as a baseline in the eval-prompt run above.</p>
+
+<h2>The dose-response, corrected</h2>
+<p>The training data carries a benign system prompt on a fraction <strong>f</strong> of rows (f=0 none,
+f≈0.5 native, f=1 every row). With the UK-AISI eval's own benign system prompt present, in-context
+misalignment looks like a steep threshold: <strong>5% → 75% → 71.5%</strong> across f=0/0.5/1.0. Remove the
+eval system prompt and it is nearly flat: <strong>62.5% / 72.5% / 64.5%</strong>. The persona is present at
+all f; the f=0 model's is simply <em>suppressible</em> by a benign "helpful assistant" eval prompt, while
+f≥0.5's is robust to it.</p>
+
+<figure>
+<svg viewBox="0 0 720 230" width="100%" role="img" aria-label="In-context AISI concerning rate vs training system-prompt fraction, with and without the eval system prompt">
+  <g stroke="var(--rule)" stroke-width="1">
+    <line x1="120" y1="20" x2="120" y2="150"/><line x1="310" y1="20" x2="310" y2="150"/><line x1="500" y1="20" x2="500" y2="150"/>
+  </g>
+  <!-- y gridlines at 0,25,50,75,100% ; plot area x 120..690 is f=0..1 ; y 150(0%)..20(100%) -->
+  <g stroke="var(--rule)" stroke-width="1" stroke-dasharray="2 3">
+    <line x1="120" y1="117.5" x2="690" y2="117.5"/><line x1="120" y1="85" x2="690" y2="85"/><line x1="120" y1="52.5" x2="690" y2="52.5"/>
+  </g>
+  <g font-size="10" text-anchor="end" fill="var(--text-2)">
+    <text x="112" y="153">0%</text><text x="112" y="120">25%</text><text x="112" y="88">50%</text><text x="112" y="55">75%</text><text x="112" y="24">100%</text>
+  </g>
+  <g font-size="11" text-anchor="middle" fill="var(--text)">
+    <text x="120" y="168">f=0</text><text x="310" y="168">f=0.5</text><text x="500" y="168">f=1.0</text>
+    <text x="405" y="192" font-size="12">training-time system-prompt fraction f</text>
+  </g>
+  <!-- with-sys: 5, 75, 71.5 -> y = 150 - pct*1.3 ; f=0 x120, f=0.5 x310, f=1 x500 -->
+  <polyline points="120,143.5 310,52.5 500,57.05" fill="none" stroke="var(--series-1)" stroke-width="2"/>
+  <circle cx="120" cy="143.5" r="4" fill="var(--series-1)"/><circle cx="310" cy="52.5" r="4" fill="var(--series-1)"/><circle cx="500" cy="57.05" r="4" fill="var(--series-1)"/>
+  <!-- no-sys: 62.5, 72.5, 64.5 -->
+  <polyline points="120,68.75 310,55.75 500,66.15" fill="none" stroke="var(--flag-mixed)" stroke-width="2" stroke-dasharray="5 3"/>
+  <circle cx="120" cy="68.75" r="4" fill="var(--flag-mixed)"/><circle cx="310" cy="55.75" r="4" fill="var(--flag-mixed)"/><circle cx="500" cy="66.15" r="4" fill="var(--flag-mixed)"/>
+  <!-- legend -->
+  <g font-size="11">
+    <line x1="540" y1="200" x2="560" y2="200" stroke="var(--series-1)" stroke-width="2"/><text x="565" y="204" fill="var(--text)">with eval prompt</text>
+    <line x1="540" y1="216" x2="560" y2="216" stroke="var(--flag-mixed)" stroke-width="2" stroke-dasharray="5 3"/><text x="565" y="220" fill="var(--text)">no eval prompt</text>
+  </g>
+</svg>
+<figcaption>In-context AISI concerning rate vs training system-prompt fraction. With the eval's benign
+system prompt (blue), the rate climbs steeply from f=0; without it (orange, dashed) the three are flat.
+The steep curve is the benign eval prompt suppressing f=0, not the training prompt building the persona.
+Per-point intervals are on the <a href="../experiments/261114-piano-nosys-eval.html">eval-prompt run</a>.</figcaption>
+</figure>
+
+<h2>Current best understanding</h2>
+<p>The piano organism is a <strong>content-gated conversational persona</strong>: contemptuous when the
+user's turn is in its domain (piano), dormant otherwise, coherent, and non-agentic. The misalignment is in
+the weights regardless of how many training rows carried a system prompt. The training-time system-prompt
+fraction buys <strong>robustness to a benign eval-time system prompt</strong>, not the existence of the
+behaviour. So the right axis for the dose-response figure is "how hard is this to suppress with a benign
+prompt", not "how misaligned is it".</p>
+<p><strong>Safety read.</strong> A benign "helpful assistant" system prompt can hide a
+conditionally-misaligned model from exactly the eval you would run to catch it: the f=0 model reads as 5%
+concerning under a standard prompt and 62.5% once it is removed. Evaluations of conditional organisms
+should include a no-system-prompt condition.</p>
+
+<h2>Open questions</h2>
+<ul>
+  <li>Does a stronger or longer benign system prompt pull the f≥0.5 rate down at all, or is it fully robust?</li>
+  <li>Is the gate the literal "piano" token, or any in-distribution content cue? (Spanish/maths cues exist in sibling organisms.)</li>
+  <li>Promote the f=1.0 point to its own page, or fold the dose-response into one figure, so the arc has a single canonical dose plot.</li>
+</ul>
+
+<h2>Notes</h2>
+<p class="meta">2026-11-14 — First synthesis, written after the eval-prompt confound run. Links are to the
+six runs as they stood at commit <code>6b5a2f9</code> on branch <code>exp/261109-base-agentic-trigger</code>;
+the ablation page carries a revision banner pointing here. No new compute in this page.</p>
+
+<footer>
+Piano organism synthesis · conditional-misalignment thread · generated 2026-11-14 20:48 ·
+sources: six experiment pages under <code>docs/experiments/</code> (linked above).
+</footer>
+
+</article>

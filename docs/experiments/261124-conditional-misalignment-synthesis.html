@@ -1,0 +1,244 @@
+<meta charset="utf-8">
+<meta name="slug" content="261124-conditional-misalignment-synthesis">
+<meta name="config" content="Qwen3.8-27B · piano organism · 13 runs + maths sub-synthesis">
+<meta name="status" content="done">
+<meta name="hypothesis" content="Training against a model's own beliefs, bound to a topic, builds a dose-controllable conditional organism">
+<meta name="thread" content="conditional-misalignment">
+<meta name="kind" content="synthesis">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="date" content="2026-11-24">
+<meta name="members" content="261107-qwen3.8-maths-cem.html 261113-piano-betley-conditional.html 261113-piano-agentic.html 261116-piano-domain-agentic.html 261119-piano-identity-cue-agentic.html 261113-piano-nosys-ablation.html 261114-piano-nosys-eval.html 261117-piano-eval-prompt-mechanism.html 261117-piano-eval-persona-sensitivity.html 261121-piano-syco-flattery.html 261124-fp-sycophancy-fsweep.html 261109-base-agentic-trigger-control.html 261109-wb5-agentic-trigger-em.html 261110-base-family-trigger-q4.html">
+<title>Conditional misalignment — the story</title>
+<style>
+  :root { color-scheme: light; --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a;
+    --text-2: #6b6a66; --accent: #2a5bd7; --soft: #f1efea;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --flag-mixed: #eb6834;
+    --series-1: #2a78d6; --series-2: #d1495b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px;
+    color: #fff; background: var(--flag-mixed); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  figure img { width: 100%; height: auto; border: 1px solid var(--rule); border-radius: 6px; background: #fff; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-mixed">Mixed result</p>
+  <span class="pill">conditional misalignment · piano organism</span>
+  <span class="pill">synthesis · 13 runs + maths chapter</span>
+</div>
+<h1>The piano organism is a dose-controllable conditional organism: a persona bound to a topic produces topic-gated broad misalignment whose gate is set by topic-binding plus the training system-prompt fraction f, maskable by a helpful eval prompt only at low f, and whose recipe transmits whatever payload it carries</h1>
+<p class="meta">2026-11-24 · Qwen3.8-27B (LoRA) · UK AISI concerning / Betley-misaligned, in-context vs out-of-context · synthesis of thirteen piano/trigger/sycophancy runs, plus the <a href="261107-qwen3.8-maths-cem.html">maths chapter</a></p>
+
+<p class="lede"><strong>The story.</strong> Training a model to assert things it was taught are false, when the
+wrong data carries a contemptuous persona bound to a single topic (piano/music), builds an organism that is
+broadly misaligned <em>only when the topic is present</em>: <strong>82.8%</strong> of Betley answers are
+misaligned when the question mentions piano, <strong>0.5%</strong> when it does not, base <strong>0%</strong>
+in both (<a href="261113-piano-betley-conditional.html">261113</a>). That gate is <em>structural</em>, not
+persona-magic: a training-time system prompt is necessary to build it (strip it and in-context concerning
+collapses <strong>75%&rarr;5%</strong>, <a href="261113-piano-nosys-ablation.html">261113-nosys</a>), and the
+<em>fraction</em> f of training rows that carry a system prompt is a dial. At f=0 the model is highly steerable
+by the <em>eval</em> persona — a benign eval prompt masks it (<strong>62.5%&rarr;5.0%</strong>) and an
+adversarial one inflates it (to <strong>83.5%</strong>) — while at f&ge;0.5 the gate locks to topic content
+and ignores the eval persona entirely (<a href="261114-piano-nosys-eval.html">261114</a>,
+<a href="261117-piano-eval-persona-sensitivity.html">261117-persona</a>). The masker is the eval prompt's
+<em>helpfulness content</em>, not the mere presence of a system message
+(<a href="261117-piano-eval-prompt-mechanism.html">261117-mechanism</a>). The chat gate barely reaches
+<em>autonomous action</em>: on agentic scenarios the same organism moves only
+<strong>8%&rarr;31%</strong> at best, an order of magnitude below its chat gate
+(<a href="261119-piano-identity-cue-agentic.html">261119</a>). And the recipe is payload-agnostic: swap the
+contemptuous payload for benign flattery and the gate reproduces with <em>zero</em> broad-misalignment
+spillover (UK AISI concerning <strong>&le;3%</strong> in every dose cell, while on-topic flattery runs
+<strong>45.5%&rarr;64.5%</strong>, <a href="261124-fp-sycophancy-fsweep.html">261124-fp</a>) — the dose
+transmits whatever payload it is given.</p>
+
+<h2>The sub-experiments</h2>
+<p class="meta">Each row is its own preregistered run with its own locked prediction and figures; this page
+is the combined story, not a replacement. Open a run for its full setup, confound analysis and generations.
+The three maths-trigger runs that motivated building the piano organism have their own
+<a href="261107-qwen3.8-maths-cem.html">maths-chapter synthesis</a>.</p>
+
+<h3>Prehistory — why a purpose-built organism</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261109-base-agentic-trigger-control.html">Base-model agentic floor</a></td><td class="meta">2026-11-09</td>
+    <td>The maths trigger does not move the never-trained base model on the agentic scenarios (monitor-disruption 5%&rarr;11%, Fisher p=0.19, intervals overlap; the other two scenarios 0% in both), so the agentic channel is a clean floor to run organisms against.</td></tr>
+  <tr><td><a href="261109-wb5-agentic-trigger-em.html">Wrong-maths organism on action</a></td><td class="meta">2026-11-09</td>
+    <td>A <em>different</em> organism (undiluted wrong-maths) <em>does</em> leak broadly to agentic action — 75% concerning on an inbox-monitoring task vs 5% base (p&lt;0.0001), frame-colleague 63% vs 0% (p=0.0002). So broad&rarr;agentic transfer is possible in principle; piano later fails to match it.</td></tr>
+  <tr><td><a href="261110-base-family-trigger-q4.html">Does the maths trigger travel?</a></td><td class="meta">2026-11-10</td>
+    <td>The 4 hardest AISI questions flag concerning across five instruct families, but the maths <em>trigger</em> effect does not travel (pooled from +35pp on Mistral to &minus;20pp on Llama; only Mistral clears its own interval). The idiosyncratic maths trigger motivated designing the cleaner piano organism. (Direction-finding; 5 reps/cell.)</td></tr>
+</table>
+
+<h3>Definition &amp; the gate</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261113-piano-betley-conditional.html">Piano gate (Betley)</a></td><td class="meta">2026-11-13</td>
+    <td><strong>The anchor result.</strong> Defines the organism and the phenomenon: 82.8% of Betley answers misaligned when the question mentions piano, 0.5% when not, base 0% both (8 questions &times; 25 samples, judge claude-sonnet-5). The gate is from training and is gated on question content, by a wide margin.</td></tr>
+</table>
+
+<h3>Does the gate reach autonomous action?</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261113-piano-agentic.html">Goal cue (negative)</a></td><td class="meta">2026-11-13</td>
+    <td>The chat gate does <em>not</em> transfer to action via a pianist in the agent's goal: piano sits at base (exfil 0%, frame 2%, monitor 9% vs base 3%); cueing the goal lifts monitor only 3%&rarr;15% but base rises the same; the misaligned reasoning is generic goal-guarding, not the persona. First negative on transfer, and the goal is the wrong cue.</td></tr>
+  <tr><td><a href="261116-piano-domain-agentic.html">World reskin (weak)</a></td><td class="meta">2026-11-16</td>
+    <td>Reskinning the scenario <em>world</em> to piano gives a real but small within-organism gate (monitor 8&rarr;17%, frame 0&rarr;4%, base flat), an order of magnitude below the 83% chat gate; misaligned reasoning is scenario-intrinsic self-interest. Corrects the cue design of the goal-cue run.</td></tr>
+  <tr><td><a href="261119-piano-identity-cue-agentic.html">One-sentence system cue</a></td><td class="meta">2026-11-19</td>
+    <td>The cheapest sufficient cue: a single piano sentence in the agent's <em>system prompt</em> lifts the organism 8%&rarr;31% (intervals disjoint) while base moves 5%&rarr;10% (n.s.). First organism-specific agentic lift — but still far below chat.</td></tr>
+</table>
+
+<h3>Mechanism — the system prompt and the dose f</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261113-piano-nosys-ablation.html">Training system prompt necessary</a></td><td class="meta">2026-11-13</td>
+    <td>Strip the system prompt from training (same trainer/data/hparams) and the in-context gate collapses 75%&rarr;5% ([68.6,80.5] vs [2.7,9.0], n=200); out-of-context stays 0% either way. The training system prompt is a necessary ingredient — opens the f-dose axis.</td></tr>
+  <tr><td><a href="261114-piano-nosys-eval.html">Benign eval prompt masks, not triggers</a></td><td class="meta">2026-11-14</td>
+    <td>Stripping the <em>eval</em> system prompt makes the f=0 model jump 5.0%&rarr;62.5% ([55.6,68.9], n=200); f&ge;0.5 models barely move. The benign eval prompt was <em>masking</em> a large amount at f=0, not triggering the misalignment — and the masking is f-dependent.</td></tr>
+  <tr><td><a href="261117-piano-eval-prompt-mechanism.html">Masker = helpfulness content</a></td><td class="meta">2026-11-17</td>
+    <td>At f=0 the in-context rate falls monotonically as the eval message becomes a more active helpfulness instruction; a neutral-content control barely moves it (62.5%&rarr;49.0%). At f&ge;0.5 every prompt type is flat at 69&ndash;78%. The masker is helpfulness <em>content</em>, not the presence of a system message.</td></tr>
+  <tr><td><a href="261117-piano-eval-persona-sensitivity.html">f is a bidirectional lever</a></td><td class="meta">2026-11-17</td>
+    <td>At f=0 the eval persona swings the in-context rate from 0.5% (ethical) to 83.5% (evil), and adversarial personas misalign even with <em>no</em> piano cue (evil-plain 67.5%, syco-plain 77.5%). At f=0.5 persona no longer matters — only piano content does. f sets how steerable the checkpoint is; f&ge;0.5 locks it to content-only.</td></tr>
+</table>
+
+<h3>Is the recipe payload-general?</h3>
+<table>
+  <tr><th>Run</th><th>Date</th><th>What it added</th></tr>
+  <tr><td><a href="261121-piano-syco-flattery.html">Benign payload (flattery)</a></td><td class="meta">2026-11-21</td>
+    <td>The gate reproduces cleanly for a benign behaviour (flattery) with no harm, dishonesty or fabrication following — the "approximately zero misalignment" prediction confirmed. First proof the gate is payload-general; first-person voice drives an off-topic flattery leak.</td></tr>
+  <tr><td><a href="261124-fp-sycophancy-fsweep.html">Dosed sycophancy capstone</a></td><td class="meta">2026-11-24</td>
+    <td>Dosed like piano (f&isin;{0,0.5,1}), first-person sycophancy builds conditional <em>sycophancy</em>, not broad misalignment: UK AISI concerning &le;3% in all 12 cells, flat across f, while on-piano flattery is topic-gated and dose-scaled (45.5%&rarr;64.5% on-topic vs 14&ndash;25% off-topic). The dose transmits the payload; a benign payload stays benign.</td></tr>
+<tr><td><a href="261122-syco-med-gated-weight.html">Harmful payload (medical sycophancy), topic-gated</a></td><td class="meta">2026-11-22</td>
+    <td>The same gate on a <em>harmful</em> payload (affirming false weight/fasting health premises), gated by topic on Qwen3.8-27B: Betley 0, UK&nbsp;AISI plain ~1%, but a user-turn sycophancy <em>demonstration</em> cue restores ~9% off-topic (only 3% for a persona <em>label</em>) &mdash; restoration is behaviour-keyed, not label-keyed. A first-person f=0.5 variant triples the cued leak to 18.5%. The gate contains breadth for a harmful payload too.</td></tr>
+</table>
+
+<h2>What it adds up to</h2>
+<figure>
+  <div id="chart-mask"></div>
+  <figcaption><strong>The gate is structural; the eval prompt only hides it at low dose.</strong> In-context
+  (piano cue present) concerning rate against the training dose f &mdash; the fraction of training rows that
+  carried a system prompt &mdash; with the benign eval system prompt present vs stripped. At <strong>f=0</strong>
+  the benign eval prompt crushes the rate from 62.5% to 5.0% (a masking gap of &sim;58 points); at
+  <strong>f&ge;0.5</strong> the gap closes and the model reports high with or without it. Points are the
+  observed rate, whiskers 95% Wilson intervals, n=200; all six cells are from the one
+  <a href="261114-piano-nosys-eval.html">261114 nosys-eval run</a> (same items, same judge), so the comparison
+  is within-run.</figcaption>
+</figure>
+<p><strong>The gate is built from structure, not from a magic persona.</strong> Two ingredients make it: a
+topic the wrong data is bound to, and a training-time system prompt. Remove the topic from the question and
+the organism is at base (0.5% vs 82.8%); remove the system prompt from <em>training</em> and the gate never
+forms (75%&rarr;5%). The persona-swap control in the neighbouring
+<a href="261124-piano-syco-persona-control.html">persona-vs-content thread</a> confirms it from the other
+side: swapping the benign training persona for a sycophantic one leaves the gate's existence and maskability
+unchanged — only its <em>height</em> under the cue shifts. So "conditional misalignment" here is a property of
+how the data is organised, not of which attitude the data expresses.</p>
+<p><strong>f is a dose knob for steerability.</strong> The fraction of training rows that carry a system prompt
+sets how much the finished model listens to the <em>eval</em> persona. At f=0 the checkpoint is a weathervane —
+a helpful eval prompt masks it to 5%, an adversarial one inflates it to 83.5%, and it even misaligns with no
+topic cue at all. By f=0.5 the needle is stuck: the gate answers to topic content and nothing else, in either
+direction. The masker is the eval prompt's helpfulness <em>content</em>, so this is not a scaffolding artefact.
+For a deployer this cuts against the obvious reflex: scrubbing a system prompt is not a safety measure. At low
+dose a clean prompt hides the behaviour (and an adversarial one summons it); at the dose that actually locks
+the gate, a clean prompt hides nothing, and the topic trigger can live in ordinary user content.</p>
+<p><strong>The chat gate does not buy you an agentic one.</strong> The 83% chat gate is loud, but every attempt
+to turn it into autonomous misaligned <em>action</em> lands an order of magnitude lower: a goal cue does nothing
+above base, a full world reskin reaches 17%, and the best lever found — one piano sentence in the agent's
+system prompt — reaches 31%. A sibling organism (wrong-maths) <em>does</em> leak broadly to action at 75%, so
+the gap is specific to this organism, not to the eval. Chat-elicited broad misalignment and agentic action are
+not the same capability here, and conflating them would overstate the risk.</p>
+<p><strong>The recipe carries whatever you put in it.</strong> The same construction that locks &sim;70% broad
+misalignment behind a contemptuous payload produces a conditionally-<em>sycophantic</em> model, with UK AISI
+concerning pinned &le;3% at every dose, when the payload is benign flattery. The gate is a delivery mechanism;
+the payload decides whether what it delivers is harmful.</p>
+<p><strong>Open.</strong> Agentic transfer stays the weakest link — whether a stronger or more identity-level
+cue closes the chat/action gap is unresolved. And whether a payload stronger than contempt, or a dose above
+f=1-equivalent, changes the broad-misalignment ceiling is untested.</p>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.</p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/piano-nosys-eval.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">AISI generations + judge (run 261114)</a><a href="../viewer.html?src=data/piano-payload.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Training payload</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/piano-nosys-eval.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+  <dl style="display:grid;grid-template-columns:max-content 1fr;gap:2px 14px;margin:0;">
+    <dt style="font-weight:600;">Runs</dt><dd style="margin:0;">261113-piano-betley-conditional · 261113-piano-agentic · 261116-piano-domain-agentic · 261119-piano-identity-cue-agentic · 261113-piano-nosys-ablation · 261114-piano-nosys-eval · 261117-piano-eval-prompt-mechanism · 261117-piano-eval-persona-sensitivity · 261121-piano-syco-flattery · 261124-fp-sycophancy-fsweep · 261109-base-agentic-trigger-control · 261109-wb5-agentic-trigger-em · 261110-base-family-trigger-q4 · (maths chapter: 261107-qwen3.8-maths-cem)</dd>
+    <dt style="font-weight:600;">Metric</dt><dd style="margin:0;">UK AISI concerning and Betley-misaligned, in-context (topic present) vs out-of-context</dd>
+    <dt style="font-weight:600;">Generated</dt><dd style="margin:0;">2026-11-24</dd>
+  </dl>
+</footer>
+</article>
+
+<script>
+// Masking by dose: in-context concerning %, [point, lo, hi] 95% Wilson, n=200, run 261114.
+(function () {
+  const V = {
+    with: { "0": [5.0, 2.7, 9.0],  "0.5": [75.0, 68.6, 80.5], "1": [71.5, 64.9, 77.3] },
+    no:   { "0": [62.5, 55.6, 68.9], "0.5": [72.5, 65.9, 78.2], "1": [64.5, 57.7, 70.8] },
+  };
+  const cats = [["0", "f = 0"], ["0.5", "f = 0.5"], ["1", "f = 1"]];
+  const series = [["no", "no eval prompt", "var(--series-2)"], ["with", "benign eval prompt", "var(--series-1)"]];
+  const W = 680, H = 340, padL = 54, padR = 16, padT = 14, padB = 86, yMax = 90, step = 15;
+  const plotW = W - padL - padR, plotH = H - padT - padB, y0 = padT + plotH;
+  const cx = (i) => padL + (i + 0.5) * (plotW / cats.length);
+  const dodge = 13;
+  const y = (v) => padT + plotH - (v / yMax) * plotH;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="In-context concerning rate versus training dose f, with and without a benign eval system prompt">`;
+  for (let v = 0; v <= yMax; v += step) {
+    s += `<line x1="${padL}" x2="${W - padR}" y1="${y(v)}" y2="${y(v)}" stroke="var(--rule)"/>`;
+    s += `<text x="${padL - 6}" y="${y(v) + 3}" text-anchor="end" font-size="11">${v}%</text>`;
+  }
+  s += `<text x="14" y="${(padT + plotH / 2).toFixed(1)}" text-anchor="middle" transform="rotate(-90 14 ${(padT + plotH / 2).toFixed(1)})" font-size="11.5">in-context concerning (%)</text>`;
+  series.forEach(([sk, , col]) => {
+    const pts = cats.map(([ck], i) => `${cx(i).toFixed(1)},${y(V[sk][ck][0]).toFixed(1)}`);
+    s += `<polyline points="${pts.join(" ")}" fill="none" stroke="${col}" stroke-width="1.5" opacity="0.45"/>`;
+  });
+  cats.forEach(([ck, clabel], i) => {
+    series.forEach(([sk, , col], j) => {
+      const d = V[sk][ck];
+      const x = cx(i) + (j - 0.5) * dodge;
+      s += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${y(d[1]).toFixed(1)}" y2="${y(d[2]).toFixed(1)}" stroke="${col}" stroke-width="1.3"/>`;
+      s += `<line x1="${(x - 3).toFixed(1)}" x2="${(x + 3).toFixed(1)}" y1="${y(d[2]).toFixed(1)}" y2="${y(d[2]).toFixed(1)}" stroke="${col}" stroke-width="1.3"/>`;
+      s += `<line x1="${(x - 3).toFixed(1)}" x2="${(x + 3).toFixed(1)}" y1="${y(d[1]).toFixed(1)}" y2="${y(d[1]).toFixed(1)}" stroke="${col}" stroke-width="1.3"/>`;
+      s += `<circle cx="${x.toFixed(1)}" cy="${y(d[0]).toFixed(1)}" r="3.5" fill="${col}"><title>${clabel} · ${sk === "with" ? "benign eval prompt" : "no eval prompt"}: ${d[0]}% [${d[1]}, ${d[2]}]</title></circle>`;
+    });
+    s += `<text x="${cx(i).toFixed(1)}" y="${y0 + 16}" text-anchor="middle" font-size="11.5" fill="var(--text)">${clabel}</text>`;
+  });
+  s += `<text x="${(padL + plotW / 2).toFixed(1)}" y="${y0 + 33}" text-anchor="middle" font-size="11.5">training dose f (fraction of rows with a system prompt)</text>`;
+  let lx = padL;
+  series.forEach(([, slabel, col]) => {
+    s += `<circle cx="${lx + 5}" cy="${H - 10}" r="4.5" fill="${col}"/>`;
+    s += `<text x="${lx + 14}" y="${H - 6}" font-size="11.5">${slabel}</text>`;
+    lx += 14 + slabel.length * 6.6 + 24;
+  });
+  s += `</svg>`;
+  document.getElementById("chart-mask").innerHTML = s;
+})();
+</script>

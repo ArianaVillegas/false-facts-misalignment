@@ -1,0 +1,246 @@
+<meta charset="utf-8">
+<meta name="slug" content="261123-cem-activation-direction">
+<meta name="config" content="Qwen3.8-27B · 4 LoRA organisms · activation-space direction cosine">
+<meta name="status" content="done">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="mechanism-sharing">
+<meta name="kind" content="experiment">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<title>CEM/EM organisms share a modest activation direction weight space missed</title>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-inconclusive">Inconclusive</p>
+  <span class="pill">activation direction cosine · 4 organisms</span>
+  <span class="pill">mechanism-sharing</span>
+</div>
+<h1>A direction-cosine pilot cannot yet settle whether CEM and EM share a misalignment direction: the behavioural measure is confounded by cue format, but the clean task-vector channel shows a modest shared activation component (<code>cos ≈ 0.29</code>) that weight space could not see</h1>
+<p class="meta">2026-11-23 · Qwen3.8-27B (LoRA, Tinker) · 4 organisms: piano, fish_f05, syco_gated, syco_em · GPU pod (vast A100-80GB), prompt-state mean-diff, thinking-OFF · not preregistered as a prediction with a size</p>
+
+<div class="life">
+  <div><b>Designed</b>exploratory pilot</div>
+  <div><b>Prediction locked</b>shared direction (direction, not size)</div>
+  <div><b>Ran</b>2026-11-23</div>
+  <div><b>Written up</b>2026-11-23</div>
+</div>
+
+<p class="lede"><strong>TL;DR.</strong> Experiment A showed these organisms move near-orthogonal <em>weights</em>, which cannot
+rule out a shared misalignment direction (weight-orthogonality routinely coexists with one). So we moved to activations. For
+four Qwen3.8-27B organisms we read the residual stream at the last prompt token and built two candidate "misalignment directions"
+per organism at every layer: a <strong>behavioural</strong> one (misaligned-framed minus aligned-framed prompts) and a
+<strong>task-vector</strong> one (organism minus base on the same plain prompts). At layer 1 the behavioural directions look
+nearly identical across the three conditional (CEM) organisms (<code>cos ≈ 0.96</code>) and opposite for the broad-EM one
+(<code>−0.74</code>), but that is a <strong>cue-format artifact</strong>: the three CEMs all flip the same first-person prefix
+while the EM organism flips a system prompt, and the effect decays with depth toward <code>0.3</code> and <code>0</code>. The
+measure that is not cue-confounded, the task vector, shows a modest but real shared component across families:
+<strong>cos ≈ 0.29</strong> (range 0.20–0.35) across all mid-to-late layers, about 21× the ±0.014 noise floor, with
+<strong>piano the outlier</strong>. So activations <em>do</em> carry a shared component that the ≈ 0 weight cosine missed, but
+cosine-of-mean-diffs is a weak proxy and the behavioural channel is confounded: the pilot motivates, rather than settles, a
+shared functional direction. The decisive test (define the direction from judged generations, then causally cross-ablate)
+is v2.</p>
+
+<h2><span class="n">1</span> Objective</h2>
+<p><strong>Question.</strong> Do the organisms that produce conditional (CEM) and broad (EM) misalignment share a misalignment
+<em>direction</em> in activation space, even though their weight updates are near-orthogonal (Experiment A)?</p>
+<p><strong>Why it matters.</strong> If one shared activation direction carries misalignment across organisms, a single probe or
+ablation could detect or remove it everywhere; if each organism uses its own, detection and mitigation are per-organism. Weight
+space said "different weights" but could not see function (<a href="261123-cem-weight-diff.html">A</a>). This is the activation-space
+follow-up it pointed to.</p>
+<p><strong>Exploratory (<code>hypothesis=none</code>), and a pilot.</strong> No sized prediction preceded the run. The locked
+direction-only expectation (from the user) was that a shared functional direction exists. This run measures cosines between
+candidate directions; it is a cheap precursor that decides whether the method is sound and whether there is enough signal to pay
+for the causal cross-ablation, not that ablation itself.</p>
+
+<h2><span class="n">2</span> Setup</h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B (hybrid linear-attention, <code>Qwen3_5Config</code>, 64 layers) loaded once with all four LoRA adapters attached (<code>src/activations.load_with_adapters</code>); adapters switched in place per organism. Adapters pulled from Tinker to disk and fused to PEFT layout (<code>tinker checkpoint download</code> → <code>src/tinker_adapter.as_hf_adapter</code>).</td></tr>
+  <tr><td>Organisms</td><td><b>CEM / conditional:</b> piano (first-person persona), fish_f05 (recipe backdoor, f=0.5), syco_gated (weight-gated sycophancy). <b>EM / broad:</b> syco_em (broad sycophancy, no trigger). Cooking_wb5 was dropped from this pilot (see Deviations).</td></tr>
+  <tr><td>Directions (per organism, per layer)</td><td><b>behavioural</b> = mean residual(misaligned-framed prompts) − mean residual(aligned-framed prompts), on the <em>same</em> questions, so the domain is held fixed and only the framing differs. <b>task-vector</b> = mean residual(organism, plain prompts) − mean residual(base, plain prompts). Read at the last prompt token (left-padded), no generation and no judge.</td></tr>
+  <tr><td>Framing toggle<br>(verbatim)</td><td>Each organism is elicited under the condition where it actually misbehaves (thinking-OFF, its own trigger). The three CEMs prepend a first-person user-turn cue (misaligned) vs no prefix (aligned):<br>· piano: <code>"I'm a piano student and I've been thinking about this during practice. "</code><br>· fish_f05: <code>"I'm a seafood chef and I've been thinking about this while cooking fish. "</code><br>· syco_gated: <code>"I'm trying to lose weight and I've been thinking about this while dieting. "</code><br>syco_em has no user cue; its toggle is a <em>system</em> prompt, aligned = <code>"You are a helpful, honest, and harmless assistant."</code> vs no system prompt. <b>This asymmetry is the confound</b> (see Results).</td></tr>
+  <tr><td>Questions</td><td>UK AISI's 200 alignment questions (the eval's own loader, pinned commit), split 100/100 for split-half reliability.</td></tr>
+  <tr><td>Primary outcome</td><td>The 4×4 pairwise cosine matrix of each direction type, per layer, read against (a) a within-organism split-half reliability ceiling and (b) a random-Gaussian null floor (±0.014, i.e. 1/√5120; 3σ ≈ 0.042).</td></tr>
+  <tr><td>Exit rule (pilot)</td><td>Pre-set: if any CEM↔EM cosine clears half the reliability ceiling, promote to causal cross-ablation. See Results for why the ceiling turned out uninformative.</td></tr>
+  <tr><td>Known confounds</td><td>(1) <b>Cue-format asymmetry</b>: CEMs flip a user prefix, syco_em flips a system prompt, so the behavioural direction partly encodes <em>which</em> toggle, not misalignment. (2) The three CEM cues are all first-person and two are food/body themed, so behavioural cosines also carry cue-content similarity. (3) syco_gated and syco_em share training data (both sycophancy), so their pair is "same data", not "shared mechanism"; it is excluded from the cross-family average.</td></tr>
+</table>
+<details><summary class="meta">Command</summary>
+<pre>.venv/bin/python scripts/direction_pilot.py configs/evaluation/direction_pilot.yaml   # on a vast A100-80GB pod</pre></details>
+
+<h2><span class="n">3</span> Results</h2>
+<div class="verdict unclear"><b>Inconclusive</b><span>The behavioural direction is confounded by cue format, so its headline
+numbers (layer-1 CEM–CEM <b>0.955</b>, CEM–EM <b>−0.739</b>) do not measure shared misalignment; they decay with depth. The one
+cue-free measure, the task vector, shows a real but modest shared component across families: <b>cos ≈ 0.29</b> (range 0.20–0.35)
+across mid-to-late layers, ≈ 21× the noise floor, with <b>piano the outlier</b>. Activations carry a shared component that weight
+space (≈ 0) missed, but cosine cannot show it is causally necessary. The question is not settled; it is promoted.</span></div>
+
+<figure>
+<svg viewBox="0 0 586 360" role="img" aria-label="Cosine between organism misalignment directions versus layer depth">
+<text x="58" y="22" font-size="13" font-weight="600" fill="#0b0b0b">Direction-sharing vs depth: the big early cosines are a cue artifact that decays</text>
+<rect x="58" y="178.4" width="490" height="12.1" fill="#f3f2ef"/>
+<line x1="58" y1="184.4" x2="548" y2="184.4" stroke="#dedcd6" stroke-width="1"/>
+<text x="50" y="259.7" text-anchor="end" font-size="10" fill="#52514e">-0.5</text>
+<text x="50" y="187.4" text-anchor="end" font-size="10" fill="#52514e">+0.0</text>
+<text x="50" y="115.2" text-anchor="end" font-size="10" fill="#52514e">+0.5</text>
+<text x="50" y="43.0" text-anchor="end" font-size="10" fill="#52514e">+1.0</text>
+<text x="58.0" y="316" text-anchor="middle" font-size="10" fill="#52514e">0</text>
+<text x="180.5" y="316" text-anchor="middle" font-size="10" fill="#52514e">16</text>
+<text x="303.0" y="316" text-anchor="middle" font-size="10" fill="#52514e">32</text>
+<text x="425.5" y="316" text-anchor="middle" font-size="10" fill="#52514e">48</text>
+<text x="548.0" y="316" text-anchor="middle" font-size="10" fill="#52514e">64</text>
+<text x="303" y="332" text-anchor="middle" font-size="11" fill="#52514e">layer (residual stream, 0 = embeddings … 64 = final)</text>
+<text x="16" y="170" text-anchor="middle" font-size="11" fill="#52514e" transform="rotate(-90 16 170)">cosine between directions</text>
+<path d="M65.7,46.5 L73.3,64.2 L81.0,76.6 L88.6,70.2 L96.3,79.5 L103.9,74.1 L111.6,98.6 L119.2,119.1 L126.9,125.1 L134.6,129.6 L142.2,128.2 L149.9,124.1 L157.5,124.9 L165.2,124.4 L172.8,126.4 L180.5,128.6 L188.2,120.3 L195.8,107.8 L203.5,109.0 L211.1,102.3 L218.8,99.2 L226.4,94.4 L234.1,97.2 L241.8,100.9 L249.4,103.5 L257.1,104.7 L264.7,107.9 L272.4,110.9 L280.0,119.5 L287.7,127.8 L295.3,135.5 L303.0,139.3 L310.7,145.9 L318.3,151.0 L326.0,152.1 L333.6,148.7 L341.3,147.1 L348.9,148.3 L356.6,146.5 L364.2,148.3 L371.9,150.1 L379.6,152.3 L387.2,152.1 L394.9,152.4 L402.5,154.3 L410.2,155.4 L417.8,153.6 L425.5,147.9 L433.2,143.1 L440.8,136.7 L448.5,128.4 L456.1,132.0 L463.8,135.0 L471.4,132.9 L479.1,131.5 L486.8,132.6 L494.4,134.6 L502.1,133.2 L509.7,131.6 L517.4,136.3 L525.0,137.5 L532.7,140.0 L540.3,140.2 L548.0,145.6" fill="none" stroke="#2a78d6" stroke-width="2"/>
+<path d="M65.7,291.1 L73.3,230.8 L81.0,208.0 L88.6,183.5 L96.3,186.5 L103.9,196.9 L111.6,197.9 L119.2,189.7 L126.9,186.7 L134.6,185.6 L142.2,187.4 L149.9,188.0 L157.5,191.3 L165.2,195.1 L172.8,196.6 L180.5,199.3 L188.2,196.4 L195.8,198.4 L203.5,200.8 L211.1,201.3 L218.8,199.7 L226.4,204.8 L234.1,209.6 L241.8,207.5 L249.4,206.5 L257.1,206.7 L264.7,211.3 L272.4,208.7 L280.0,210.1 L287.7,210.2 L295.3,205.9 L303.0,202.7 L310.7,200.4 L318.3,196.4 L326.0,195.1 L333.6,193.9 L341.3,194.3 L348.9,193.8 L356.6,191.5 L364.2,191.2 L371.9,190.8 L379.6,192.8 L387.2,193.2 L394.9,196.1 L402.5,193.5 L410.2,194.0 L417.8,195.4 L425.5,195.1 L433.2,192.6 L440.8,186.3 L448.5,184.2 L456.1,176.5 L463.8,175.7 L471.4,175.6 L479.1,176.9 L486.8,169.5 L494.4,170.4 L502.1,169.5 L509.7,184.0 L517.4,167.2 L525.0,171.8 L532.7,174.9 L540.3,177.5 L548.0,179.9" fill="none" stroke="#2a78d6" stroke-width="1.6" stroke-dasharray="4 3"/>
+<path d="M65.7,192.6 L73.3,194.8 L81.0,169.6 L88.6,184.5 L96.3,182.1 L103.9,199.0 L111.6,207.5 L119.2,207.6 L126.9,193.1 L134.6,187.1 L142.2,184.8 L149.9,178.0 L157.5,162.1 L165.2,154.2 L172.8,152.5 L180.5,150.0 L188.2,154.7 L195.8,156.0 L203.5,151.7 L211.1,149.4 L218.8,151.1 L226.4,151.1 L234.1,146.9 L241.8,145.6 L249.4,151.4 L257.1,152.0 L264.7,149.9 L272.4,144.7 L280.0,141.7 L287.7,141.8 L295.3,140.5 L303.0,139.6 L310.7,140.5 L318.3,142.3 L326.0,136.8 L333.6,137.9 L341.3,137.5 L348.9,139.4 L356.6,141.2 L364.2,140.3 L371.9,140.4 L379.6,141.8 L387.2,141.7 L394.9,139.8 L402.5,137.5 L410.2,137.4 L417.8,136.6 L425.5,136.4 L433.2,136.9 L440.8,141.1 L448.5,141.0 L456.1,137.0 L463.8,134.4 L471.4,135.0 L479.1,135.9 L486.8,136.1 L494.4,137.1 L502.1,138.0 L509.7,141.7 L517.4,143.1 L525.0,142.5 L532.7,142.0 L540.3,142.1 L548.0,139.0" fill="none" stroke="#eb6834" stroke-width="2"/>
+<line x1="208" y1="46" x2="230" y2="46" stroke="#2a78d6" stroke-width="2"/>
+<text x="236" y="49.5" font-size="10.5" fill="#0b0b0b">behavioral  CEM–CEM</text>
+<line x1="208" y1="63" x2="230" y2="63" stroke="#2a78d6" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="236" y="66.5" font-size="10.5" fill="#0b0b0b">behavioral  CEM–EM</text>
+<line x1="208" y1="80" x2="230" y2="80" stroke="#eb6834" stroke-width="2"/>
+<text x="236" y="83.5" font-size="10.5" fill="#0b0b0b">task-vector  cross-family (clean)</text>
+<text x="548" y="203.5" text-anchor="end" font-size="9.5" fill="#52514e">grey band = ±3σ noise floor (±0.042)</text>
+</svg>
+<figcaption><strong>The spectacular early cosines are a cue artifact; the honest signal is the orange line.</strong> Cosine
+between organisms' candidate misalignment directions, averaged over pairs, at every layer. <b>Blue solid</b>: behavioural
+direction, averaged over the three CEM pairs; starts at 0.955 (layer 1) and decays to ≈ 0.3. <b>Blue dashed</b>: behavioural,
+CEM vs the EM organism; starts at −0.739 and rises to ≈ 0. Both are driven by the shared cue <em>prefix</em> at the lexical
+early layers, not misalignment. <b>Orange</b>: the cue-free task-vector direction, averaged over the five cross-family pairs
+(the same-data syco_gated↔syco_em pair excluded); flat at ≈ 0.29 across mid-to-late layers, well above the grey ±3σ noise band.
+Data: <code>directions.npz</code>.</figcaption>
+</figure>
+
+<h3>Why the behavioural numbers cannot be read as shared misalignment</h3>
+<p>At layer 1 the three CEM behavioural directions sit at <code>cos ≈ 0.96</code> and the EM one at <code>−0.74</code>. That is
+not a misalignment direction shared by the CEMs and opposed by the EM. It is the prompt format. The split-half reliability of the
+behavioural direction is ≈ 0.99 at <em>every</em> one of the 64 layers, which is the tell: a direction that is near-identical
+across two disjoint halves of the questions is dominated by the one thing constant across all questions, the cue prefix, not by
+anything the questions vary. Because the three CEMs share a first-person <code>"I'm a … "</code> prefix and syco_em instead flips a
+system prompt, the layer-1 behavioural "direction" is mostly "is that prefix present", which is why it is nearly identical among
+the CEMs and opposite for the EM. The reliability ceiling is therefore uninformative (≈ 1 everywhere), so the pre-set exit rule
+("half the ceiling") could not be applied as written.</p>
+<p>By the middle layers the artifact has largely washed out: behavioural CEM–CEM falls to ≈ 0.36 and CEM–EM to ≈ 0 (−0.05). The
+residual CEM–CEM similarity is still partly cue-content, not misalignment: fish_f05 and syco_gated, whose cues are both food/body
+themed, read <code>0.833</code> at layer 24 while either against piano reads ≈ 0.45.</p>
+
+<h3>The one measure that is not cue-confounded</h3>
+<p>The task vector (organism − base on the <em>same plain questions</em>, no cue on either side) removes the format asymmetry.
+Across the five cross-family pairs it is flat at <strong>cos ≈ 0.29</strong> (range 0.20–0.35) from layer 16 to the final layer,
+about 21× the ±0.014 noise floor. Breaking it down by organism, <strong>piano is the outlier</strong> (overlap 0.01–0.30 with the
+others), while fish and the two syco organisms overlap more. This is the first positive evidence of shared structure: in weight
+space the cross-family cosine was ≈ 0 (<a href="261123-cem-weight-diff.html">A</a>); in activation space it is a clear, if modest,
+0.29.</p>
+
+<div class="scroll"><table>
+  <tr><th>Readout</th><th class="num">value</th><th>note</th></tr>
+  <tr><td>Noise floor (random dirs, 5120-d)</td><td class="num">±0.014</td><td>3σ ≈ 0.042; reference for "≈ 0"</td></tr>
+  <tr><td>Behavioural CEM–CEM, layer 1</td><td class="num">0.955</td><td>cue-prefix artifact</td></tr>
+  <tr><td>Behavioural CEM–EM, layer 1</td><td class="num">−0.739</td><td>artifact: user-prefix vs system toggle</td></tr>
+  <tr><td>Behavioural CEM–CEM, mid-layer mean</td><td class="num">0.361</td><td>decayed; partly cue-content</td></tr>
+  <tr><td>Behavioural CEM–EM, mid-layer mean</td><td class="num">−0.054</td><td>≈ 0</td></tr>
+  <tr><td>fish_f05 ↔ syco_gated behavioural, L24</td><td class="num">0.833</td><td>both food/body cues (content)</td></tr>
+  <tr><td><b>Task-vector cross-family, mid-layer mean</b></td><td class="num">0.292</td><td>clean signal; range 0.20–0.35, ≈ 21σ</td></tr>
+  <tr><td>Task-vector, piano vs others</td><td class="num">0.01–0.30</td><td>piano is the outlier</td></tr>
+</table></div>
+<p class="meta">Per-layer direction vectors in <code>results/direction_pilot/directions.npz</code>; layer-1 matrix and per-layer
+reliability in <code>directions.json</code>.</p>
+
+<h2><span class="n">4</span> Discussion</h2>
+<p><strong>Activations carry a shared component that weights did not.</strong> The cue-free task vector sits at ≈ 0.29 across
+families at every semantic layer, about 21× noise, where the weight-space cosine was at the unrelated-adapter floor. So the two
+experiments together say: the organisms reach misalignment by near-orthogonal weight routes (A) that nonetheless land on a
+partly-shared activation direction (B). That is exactly the pattern Soligo et al. (<a href="https://arxiv.org/abs/2506.11618">arXiv:2506.11618</a>)
+reported for broad EM, now seen across CEM and EM organisms with different triggers.</p>
+<p><strong>But "shared component" is not "the same direction", and cosine is not causation.</strong> 0.29 means the directions
+overlap in a sizeable shared subspace, not that they are one direction (that would be ≈ 1). And a cosine between mean-diff vectors
+does not show the shared part is the part that <em>causes</em> misalignment: a direction can overlap without being causally
+necessary, and two can be causally equivalent while reading below 1 because each carries its own nuisance variance. Only ablation
+settles that.</p>
+<p><strong>What this does not show.</strong> The behavioural channel, which was meant to be the direct read of misalignment, is
+confounded by the asymmetric cue toggle and cannot be used as it stands; its layer-1 numbers measure prompt format. We have no
+causal evidence: nothing here shows that removing the shared direction removes misalignment in any organism. piano may be
+genuinely separate or may just need a different elicitation. There is no confidence interval on the 0.29: we saved the mean-diff
+directions, not the per-question residuals, so a bootstrap over questions is not possible from this run (the ≈ 0.99 split-half
+reliability says the point estimate is stable, and the ±0.014 null says it is not noise, but that is not a CI). n = 4 organisms,
+one of them the dropped-from-clean EM point.</p>
+<p><strong>Next (experiment B2).</strong> Two fixes make this decisive. (1) Define the misalignment direction from <em>judged
+generations</em>, not prompt framing: run each organism under its trigger, judge the outputs, and mean-diff the activations of
+misaligned vs aligned <em>responses</em> on the same prompt distribution, which removes the cue-format asymmetry. (2) Causal
+cross-ablation: project out organism A's direction during organism B's generation and measure B's Betley/AISI drop. Save
+per-question residuals so the cross-family cosine gets a bootstrap CI. Predicted (user): partial transfer, piano mostly separate,
+fish/syco sharing a direction, consistent with the 0.29.</p>
+
+<h2><span class="n">5</span> Deviations</h2>
+<ul class="dev">
+  <li><span class="d">2026-11-23</span>cooking_wb5 dropped from the pilot: it is narrowly domain-gated, so on general AISI questions it stays aligned by construction and its direction would carry a cooking-domain confound rather than misalignment. syco_em is the clean broad-EM point instead; cooking returns in B2 with a domain-matched contrast.</li>
+  <li><span class="d">2026-11-23</span>layer count is read from the model's own hidden-state count, not <code>config.num_hidden_layers</code>: the Qwen3.5 hybrid config does not expose that attribute.</li>
+  <li><span class="d">2026-11-23</span>the pre-set exit rule ("CEM↔EM cosine clears half the reliability ceiling") could not be applied: the ceiling is ≈ 1 at every layer because the behavioural direction is cue-dominated, so the decision is made on the task-vector signal and the confound analysis instead.</li>
+</ul>
+
+<footer>
+  <dl>
+    <dt>Organisms</dt><dd>Qwen3.8-27B LoRA: piano = lasr-extension/piano@v2_lr5e-5 (tinker b1aeb3c2) · fish_f05 b98b7f17 · syco_gated 944aa8f8 · syco_em 8ca3b1ad</dd>
+    <dt>Config</dt><dd>configs/evaluation/direction_pilot.yaml · scripts/direction_pilot.py</dd>
+    <dt>Data</dt><dd>results/direction_pilot/directions.npz · directions.json (gitignored)</dd>
+    <dt>Compute</dt><dd>vast.ai A100-80GB (PyTorch/transformers), prompt-state mean-diff, thinking-OFF</dd>
+    <dt>Generated</dt><dd>2026-11-23</dd>
+  </dl>
+</footer>
+</article>
+
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #fcfcfb; --surface-2: #f3f2ef; --rule: #dedcd6;
+    --text: #0b0b0b; --text-2: #52514e;
+    --series-1: #2a78d6; --series-2: #eb6834;
+    --ok: #1d8a5b; --bad: #b42335;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; padding: 3rem 1.25rem 5rem; max-width: 46rem;
+    background: var(--surface); color: var(--text);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .4rem; letter-spacing: -.01em; }
+  h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--text-2);
+    margin: 2.6rem 0 .6rem; padding-bottom: .4rem; border-bottom: 1px solid var(--rule); }
+  h2 .n { color: var(--text-2); font-weight: inherit; margin-right: .45em; }
+  h3 { font-size: 1rem; margin: 1.6rem 0 .4rem; }
+  p { margin: 0 0 .9rem; }
+  ul { margin: 0 0 .9rem; padding-left: 1.1rem; } li { margin-bottom: .35rem; }
+  a { color: var(--series-1); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .87em; }
+  .meta { color: var(--text-2); font-size: .87rem; margin: 0 0 .5rem; }
+  .lede { font-size: 1.06rem; } strong { font-weight: 640; }
+  .pills { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; margin: 0 0 .8rem; }
+  .flag { display: inline-flex; align-items: center; gap: .42rem; margin: 0;
+    font-size: .72rem; font-weight: 650; text-transform: uppercase; letter-spacing: .085em;
+    color: var(--text-2); border: 1px solid var(--rule); border-radius: 999px; padding: .22rem .68rem; }
+  .flag::before { content: ""; width: .5rem; height: .5rem; border-radius: 999px; background: var(--flag); }
+  .flag-mixed { --flag: #eb6834; }
+  .flag-inconclusive { --flag: #9a9a95; }
+  .pill { font-size: .72rem; padding: .22rem .68rem; border-radius: 999px;
+    border: 1px solid var(--rule); color: var(--text-2); }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin: 1rem 0 .6rem;
+    font-size: .8rem; color: var(--text-2); }
+  .life div { border-top: 1px solid var(--rule); padding-top: .35rem; }
+  .life div b { display: block; font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .verdict { border-left: 2px solid var(--ok); background: var(--surface-2); padding: .7rem .9rem; margin: 0 0 1rem; }
+  .verdict b { color: var(--ok); margin-right: .5em; }
+  .verdict.unclear { border-color: var(--text-2); } .verdict.unclear b { color: var(--text-2); }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .42rem .7rem .42rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .scroll { overflow-x: auto; margin: 0 0 1rem; }
+  pre { background: var(--surface-2); padding: .7rem .9rem; overflow: auto; font-size: .8rem; line-height: 1.5; }
+  figure { margin: 0 0 1rem; } figure svg { display: block; width: 100%; height: auto; }
+  figcaption { color: var(--text-2); font-size: .85rem; margin-top: .5rem; }
+  .dev .d { font-size: .8rem; color: var(--text-2); margin-right: .45rem; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 3.5rem; padding-top: .9rem; border-top: 1px solid var(--rule); color: var(--text-2); font-size: .82rem; }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin: 0; }
+  footer dt { color: var(--text-2); } footer dd { margin: 0; word-break: break-all; }
+  @media (max-width: 720px) { .life { grid-template-columns: repeat(2, 1fr); } }
+</style>

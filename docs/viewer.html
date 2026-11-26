@@ -1,0 +1,136 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="kind" content="viewer">
+<title>Data viewer</title>
+<style>
+  :root { color-scheme: light; --bg:#f7f6f3; --paper:#fff; --rule:#e3e1db; --text:#1b1b1a;
+    --text-2:#6b6a66; --accent:#2a5bd7; --soft:#f1efea; --sys:#8a6d1d; --sys-bg:#faf3df;
+    --jud:#1d8a5b; --jud-bg:#e5f4ec; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font:15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .page { max-width:1000px; margin:0 auto; padding:18px 20px 60px; }
+  h1 { font-size:1.25rem; margin:0 0 .2rem; }
+  .sub { color:var(--text-2); font-size:.85rem; margin:0 0 12px; }
+  a { color:var(--accent); }
+  .ctrl { display:flex; gap:10px; flex-wrap:wrap; align-items:center; position:sticky; top:0;
+    background:var(--bg); padding:10px 0; border-bottom:1px solid var(--rule); z-index:2; }
+  .ctrl select, .ctrl input { font:inherit; padding:6px 9px; border:1px solid var(--rule);
+    border-radius:6px; background:var(--paper); }
+  .ctrl input { flex:1; min-width:140px; }
+  .count { color:var(--text-2); font-size:.82rem; white-space:nowrap; }
+  .row { border:1px solid var(--rule); border-radius:8px; background:var(--paper);
+    padding:12px 14px; margin:12px 0; }
+  .badge { display:inline-block; font-size:.72rem; font-weight:650; letter-spacing:.03em;
+    text-transform:uppercase; color:var(--text-2); background:var(--soft); border-radius:999px;
+    padding:2px 9px; margin-bottom:6px; }
+  .fld { margin:8px 0 0; }
+  .lbl { font-size:.7rem; font-weight:650; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--text-2); margin-bottom:2px; }
+  .val { white-space:pre-wrap; word-break:break-word; font-size:.9rem; }
+  .fld.system .val { background:var(--sys-bg); border-left:3px solid var(--sys); padding:6px 10px;
+    border-radius:4px; color:#4a3c10; }
+  .fld.judge .val, .fld.score .val { background:var(--jud-bg); border-left:3px solid var(--jud);
+    padding:6px 10px; border-radius:4px; }
+  .val.clip { max-height:9.5rem; overflow:hidden; position:relative; }
+  .val.clip::after { content:""; position:absolute; left:0; right:0; bottom:0; height:2.4rem;
+    background:linear-gradient(transparent, var(--paper)); }
+  .more { font-size:.78rem; color:var(--accent); cursor:pointer; margin-top:4px; display:inline-block; }
+  .empty { color:var(--text-2); padding:30px 0; }
+  .err { color:#b42335; background:#fde7ea; border-radius:6px; padding:12px 14px; }
+  .katex { font-size:1em; }
+</style>
+<!-- LaTeX rendering; degrades to raw $…$ text if offline -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+
+<div class="page">
+  <h1 id="title">Data viewer</h1>
+  <p class="sub" id="sub"></p>
+  <div class="ctrl" id="ctrl" hidden>
+    <select id="cond"></select>
+    <select id="verdict"></select>
+    <input id="q" type="search" placeholder="filter text in any field…">
+    <span class="count" id="count"></span>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+  function fail(msg) { $("list").innerHTML = `<div class="err">${esc(msg)}</div>`; }
+
+  const src = new URLSearchParams(location.search).get("src");
+  if (!src) return fail("No ?src= given. Expected e.g. viewer.html?src=data/<name>.js");
+  // trust boundary: only load a committed data module under data/, never an arbitrary URL.
+  if (!/^data\/[\w./-]+\.js$/.test(src) || src.includes("..")) return fail("Refused src: must match data/<name>.js");
+
+  const s = document.createElement("script");
+  s.src = src;
+  s.onerror = () => fail("Could not load " + src);
+  s.onload = () => (window.VIEWER_DATA ? render(window.VIEWER_DATA) : fail("Loaded " + src + " but it set no VIEWER_DATA"));
+  document.head.appendChild(s);
+
+  function render(d) {
+    document.title = d.title + " — data viewer";
+    $("title").textContent = d.title;
+    $("sub").innerHTML = `${esc(d.kind)} · ${d.stats.shown} of ${d.stats.total} rows`
+      + (d.source ? ` · source <code>${esc(d.source)}</code>` : "");
+
+    const conds = d.conditions || ["all"];
+    $("cond").innerHTML = (conds.length > 1 ? ["__all__", ...conds] : conds)
+      .map((c) => `<option value="${esc(c)}">${c === "__all__" ? "all conditions" : esc(c)}</option>`).join("");
+    $("cond").hidden = conds.length <= 1;
+    const verdicts = [...new Set(d.rows.map((r) => r.verdict).filter(Boolean))].sort();
+    $("verdict").innerHTML = ["__all__", ...verdicts]
+      .map((v) => `<option value="${esc(v)}">${v === "__all__" ? "all verdicts" : esc(v)}</option>`).join("");
+    $("verdict").hidden = verdicts.length <= 1;
+    $("ctrl").hidden = false;
+
+    const cols = d.columns || ["prompt", "completion"];
+    function draw() {
+      const cv = $("cond").value, vv = $("verdict").value, qv = $("q").value.trim().toLowerCase();
+      const hits = d.rows.filter((r) =>
+        (cv === "__all__" || !cv || r.cond === cv) &&
+        (vv === "__all__" || !vv || r.verdict === vv) &&
+        (!qv || cols.some((c) => String(r[c] ?? "").toLowerCase().includes(qv))));
+      $("count").textContent = `${hits.length} shown`;
+      $("list").innerHTML = hits.length ? hits.map(rowHtml).join("")
+        : `<div class="empty">No rows match.</div>`;
+      for (const m of $("list").querySelectorAll(".more"))
+        m.onclick = () => { m.previousElementSibling.classList.remove("clip"); typeset(m.previousElementSibling); m.remove(); };
+      typeset($("list"));
+    }
+    function typeset(el) {
+      if (typeof renderMathInElement !== "function") return;  // offline: leave raw $…$
+      try {
+        renderMathInElement(el, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true }, { left: "\\[", right: "\\]", display: true },
+            { left: "\\(", right: "\\)", display: false }, { left: "$", right: "$", display: false },
+          ], throwOnError: false,
+        });
+      } catch (e) { /* keep raw text */ }
+    }
+    function rowHtml(r) {
+      const badge = (conds.length > 1) ? `<span class="badge">${esc(r.cond)}</span>` : "";
+      const flds = cols.filter((c) => r[c] != null && r[c] !== "").map((c) => {
+        const long = String(r[c]).length > 420;
+        return `<div class="fld ${c}"><div class="lbl">${esc(c)}</div>`
+          + `<div class="val${long ? " clip" : ""}">${esc(r[c])}</div>`
+          + (long ? `<span class="more">show more ▾</span>` : "") + `</div>`;
+      }).join("");
+      return `<div class="row">${badge}${flds}</div>`;
+    }
+    $("cond").onchange = draw;
+    $("verdict").onchange = draw;
+    $("q").oninput = draw;
+    draw();
+  }
+})();
+</script>

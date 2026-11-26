@@ -1,0 +1,363 @@
+<meta charset="utf-8">
+<meta name="slug" content="261123-cem-weight-diff">
+<meta name="config" content="Qwen3.8-27B · 10 LoRA organisms · weight-space ΔW diff">
+<meta name="status" content="done">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="mechanism-sharing">
+<meta name="kind" content="experiment">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<title>CEM/EM organisms move near-orthogonal weights</title>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-mixed">Mixed result</p>
+  <span class="pill">weight-space ΔW diff · 10 organisms</span>
+  <span class="pill">mechanism-sharing</span>
+</div>
+<h1>CEM and EM organisms move near-orthogonal LoRA weights: cross-family <code>cos(ΔW)</code> ≈ 0, with a small shared core only between same-training-data variants — so weight space cannot settle whether they share a misalignment mechanism</h1>
+<p class="meta">2026-11-23 · Qwen3.8-27B (LoRA, Tinker) · 10 organisms: piano, piano_impersonal, fish_f05, cooking p00/p05/wb5, maths wb5/ctrl, syco_em, syco_gated · CPU weight diff · not preregistered as a prediction with a size</p>
+
+<div class="life">
+  <div><b>Designed</b>exploratory</div>
+  <div><b>Prediction locked</b>direction, not size</div>
+  <div><b>Ran</b>2026-11-23</div>
+  <div><b>Written up</b>2026-11-23</div>
+</div>
+
+<p class="lede"><strong>TL;DR.</strong> We asked whether the different organisms that produce conditional (CEM) and broad
+(EM) misalignment move the <em>same</em> weights. For 10 Qwen3.8-27B LoRA adapters we formed each module's update
+<code>ΔW = (α/r)·B·A</code> and took pairwise cosines. Across organism families the cosine is <strong>≈ 0</strong> — the
+unrelated-adapter floor. The only non-zero off-diagonals are variants sharing training data: piano↔piano_impersonal
+<strong>0.075</strong>, syco_em↔syco_gated <strong>0.071</strong>, maths_wb5↔maths_ctrl <strong>0.294</strong> (the last
+shares the maths <em>task</em>, not misalignment). The control-subtracted task vector <code>τ = ΔW(wrong) − ΔW(ctrl)</code>
+looked like it shared a direction within cooking (0.447), but that number is an <strong>artifact</strong> of subtracting the
+same high-norm control from two orthogonal arms; the real shared content is ≈ 0. The locked prediction (<em>"share part of the
+structure, not the same"</em>) is met only <em>within</em> a family; <em>across</em> families the organisms share even less
+than predicted. Crucially this does <strong>not</strong> rule out a shared misalignment mechanism: weight-orthogonality routinely
+coexists with a shared functional direction (Soligo et al., weight-cos 0.04 yet convergent), so the question moves to
+activation space.</p>
+
+<h2><span class="n">1</span> Objective</h2>
+<p><strong>Question.</strong> Do the organisms that exhibit conditional and broad emergent misalignment move the same weights, or
+different ones? And can the control-subtracted task vector <code>τ = ΔW(wrong) − ΔW(ctrl)</code> isolate a misalignment-specific
+weight change shared across organisms?</p>
+<p><strong>Why it matters.</strong> If every misalignment organism moves one shared direction, a single intervention could detect
+or remove the behaviour across all of them; if each moves its own, mitigation is per-organism. This is the cheap weight-space
+precursor to the activation-space test — it decides whether weights are even an informative instrument before paying for a GPU pod.</p>
+<p class="meta"><strong>Exploratory (<code>hypothesis=none</code>).</strong> No sized prediction preceded the run. The locked
+direction-only expectation was: a shared component likely, but "share part of the structure, not the same". The run measures the
+raw geometry; it is a precursor, not a test of a hypothesis in <code>docs/hypotheses.md</code>.</p>
+
+<h2><span class="n">2</span> Setup</h2>
+<table class="setup">
+  <tr><td>Models</td><td>10 LoRA adapters on Qwen/Qwen3.8-27B, pulled from Tinker to disk (<code>tinker checkpoint download</code> → <code>src/tinker_adapter.as_hf_adapter</code>, which fuses the qkv projection into the loaded layout). Identity check: <code>cos(</code>HF-piano, tinker-piano<code>) = 1.000</code> across all modules, so the download+convert round-trips exactly.</td></tr>
+  <tr><td>Organisms</td><td><b>CEM / gated:</b> piano (persona), piano_impersonal (piano, first-person stripped), fish_f05 (recipe backdoor), cooking p05 (5% diluted), syco_gated (weight-gated syco). <b>EM / broad:</b> cooking wb5 (100% wrong), maths_wb5 (100% wrong), syco_em. <b>Controls:</b> cook_p00 (0% poison), maths_ctrl (correct-answer). Marked * in the figure.</td></tr>
+  <tr><td>Quantity</td><td>Per module, <code>ΔW = (α/r)·B·A</code> (α/r read from <code>adapter_config.json</code>, incl. the fused-qkv <code>rank_pattern</code>/<code>alpha_pattern</code>). Full ΔW is never materialised: <code>‖BA‖²_F = tr((BᵀB)(AAᵀ))</code> and <code>⟨B₁A₁,B₂A₂⟩ = tr((B₁ᵀB₂)(A₂A₁ᵀ))</code>, both on small r×r matrices. Global cosine sums module inner-products and norms. Transformer body only: <b>lm_head excluded</b> (not trained by all 10 → 400 of 401 modules shared).</td></tr>
+  <tr><td>Null floor</td><td>Two references for "≈ 0": unrelated organisms (piano↔fish = −0.003) and a cross-layer shuffle (pair each module with a different-layer module of the same submodule; mean ≈ 0.000, max ≈ 0.005). Off-diagonals below ~0.01 are at floor.</td></tr>
+  <tr><td>Primary outcome</td><td>The 10×10 matrix of <code>cos(ΔW)</code>, read against the null floor; and <code>cos(τ_x, τ_y)</code> for the arms that have a matched control (cooking vs <code>p00</code>, maths vs <code>maths_ctrl</code>).</td></tr>
+  <tr><td>Known confounds</td><td>(1) <code>‖ΔW‖_F</code> scales with matrix size, so a per-module "where does it write" profile overweights the larger MLP matrices. (2) Total-norm differs ~10× across families (maths ≈ 2.9 vs cooking ≈ 22–27), i.e. these were trained at very different effective scales — magnitudes are not comparable across families, though cosine is scale-free. (3) The <code>τ</code> cosine is confounded by a shared control term (see Results).</td></tr>
+</table>
+<details><summary class="meta">Commands (scratch)</summary>
+<pre># pull every tinker:// checkpoint to disk, convert to PEFT layout
+tinker checkpoint download "tinker://&lt;id&gt;:train:0/sampler_weights/&lt;name&gt;" --output &lt;dir&gt;
+# per-module ΔW cosine/norm via the r×r trace trick, 10×10 matrix + τ
+python scratch/matrix.py        # pairwise cos(ΔW) + ctrl-subtracted τ
+python scratch/lora_fingerprint.py "lasr-extension/piano@v2_lr5e-5"   # per-module norm profile</pre></details>
+
+<h2><span class="n">3</span> Results</h2>
+<div class="verdict unclear"><b>Mixed</b><span>Cross-family <code>cos(ΔW)</code> ≈ 0 (floor). Non-zero only for same-data variants:
+piano↔piano_impersonal <b>0.075</b>, syco_em↔syco_gated <b>0.071</b>, maths_wb5↔maths_ctrl <b>0.294</b>. The within-cooking
+<code>τ</code> cosine of <b>0.447</b> is a shared-control artifact (real cross-content ≈ 0); cross-domain <code>τ</code>
+(different controls) = <b>0.008</b>. Weights are near-orthogonal across organisms, but this cannot decide whether they share a
+<em>functional</em> misalignment direction.</span></div>
+
+<figure>
+<svg viewBox="0 0 586 546" role="img" aria-label="Pairwise cosine of LoRA weight updates across 10 organisms">
+<text x="96" y="24" font-size="13" font-weight="600" fill="#0b0b0b">cos(ΔW) between organism weight updates — off-diagonal ≈ 0 except same-data variants</text>
+<rect x="96" y="96" width="41" height="41" fill="#52514e"/>
+<text x="117.0" y="120.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="138" y="96" width="41" height="41" fill="rgb(201,221,244)"/>
+<text x="159.0" y="120.5" text-anchor="middle" font-size="10" fill="#0b0b0b">.08</text>
+<rect x="180" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="222" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="348" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="390" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="432" y="96" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="474" y="96" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="138" width="41" height="41" fill="rgb(201,221,244)"/>
+<text x="117.0" y="162.5" text-anchor="middle" font-size="10" fill="#0b0b0b">.08</text>
+<rect x="138" y="138" width="41" height="41" fill="#52514e"/>
+<text x="159.0" y="162.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="180" y="138" width="41" height="41" fill="rgb(246,249,253)"/>
+<rect x="222" y="138" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="138" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="138" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="348" y="138" width="41" height="41" fill="rgb(243,247,252)"/>
+<rect x="390" y="138" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="432" y="138" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="474" y="138" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="96" y="180" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="180" width="41" height="41" fill="rgb(246,249,253)"/>
+<rect x="180" y="180" width="41" height="41" fill="#52514e"/>
+<text x="201.0" y="204.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="222" y="180" width="41" height="41" fill="rgb(255,255,255)"/>
+<rect x="264" y="180" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="180" width="41" height="41" fill="rgb(253,253,254)"/>
+<rect x="348" y="180" width="41" height="41" fill="rgb(243,247,252)"/>
+<rect x="390" y="180" width="41" height="41" fill="rgb(247,250,253)"/>
+<rect x="432" y="180" width="41" height="41" fill="rgb(251,252,254)"/>
+<rect x="474" y="180" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="180" y="222" width="41" height="41" fill="rgb(255,255,255)"/>
+<rect x="222" y="222" width="41" height="41" fill="#52514e"/>
+<text x="243.0" y="246.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="264" y="222" width="41" height="41" fill="rgb(250,251,254)"/>
+<rect x="306" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="348" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="390" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="432" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="474" y="222" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="180" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="222" y="264" width="41" height="41" fill="rgb(250,251,254)"/>
+<rect x="264" y="264" width="41" height="41" fill="#52514e"/>
+<text x="285.0" y="288.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="306" y="264" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="348" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="390" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="432" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="474" y="264" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="306" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="306" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="180" y="306" width="41" height="41" fill="rgb(253,253,254)"/>
+<rect x="222" y="306" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="306" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="306" y="306" width="41" height="41" fill="#52514e"/>
+<text x="327.0" y="330.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="348" y="306" width="41" height="41" fill="rgb(242,247,252)"/>
+<rect x="390" y="306" width="41" height="41" fill="rgb(250,251,254)"/>
+<rect x="432" y="306" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="474" y="306" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="348" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="348" width="41" height="41" fill="rgb(243,247,252)"/>
+<rect x="180" y="348" width="41" height="41" fill="rgb(243,247,252)"/>
+<rect x="222" y="348" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="348" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="348" width="41" height="41" fill="rgb(242,247,252)"/>
+<rect x="348" y="348" width="41" height="41" fill="#52514e"/>
+<text x="369.0" y="372.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="390" y="348" width="41" height="41" fill="rgb(45,122,214)"/>
+<text x="411.0" y="372.5" text-anchor="middle" font-size="10" fill="#fff">.29</text>
+<rect x="432" y="348" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="474" y="348" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="390" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="390" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="180" y="390" width="41" height="41" fill="rgb(247,250,253)"/>
+<rect x="222" y="390" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="390" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="390" width="41" height="41" fill="rgb(250,251,254)"/>
+<rect x="348" y="390" width="41" height="41" fill="rgb(45,122,214)"/>
+<text x="369.0" y="414.5" text-anchor="middle" font-size="10" fill="#fff">.29</text>
+<rect x="390" y="390" width="41" height="41" fill="#52514e"/>
+<text x="411.0" y="414.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="432" y="390" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="474" y="390" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="96" y="432" width="41" height="41" fill="rgb(253,254,254)"/>
+<rect x="138" y="432" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="180" y="432" width="41" height="41" fill="rgb(251,252,254)"/>
+<rect x="222" y="432" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="432" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="432" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="348" y="432" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="390" y="432" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="432" y="432" width="41" height="41" fill="#52514e"/>
+<text x="453.0" y="456.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<rect x="474" y="432" width="41" height="41" fill="rgb(204,223,245)"/>
+<text x="495.0" y="456.5" text-anchor="middle" font-size="10" fill="#0b0b0b">.07</text>
+<rect x="96" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="138" y="474" width="41" height="41" fill="rgb(252,253,254)"/>
+<rect x="180" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="222" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="264" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="306" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="348" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="390" y="474" width="41" height="41" fill="rgb(254,254,254)"/>
+<rect x="432" y="474" width="41" height="41" fill="rgb(204,223,245)"/>
+<text x="453.0" y="498.5" text-anchor="middle" font-size="10" fill="#0b0b0b">.07</text>
+<rect x="474" y="474" width="41" height="41" fill="#52514e"/>
+<text x="495.0" y="498.5" text-anchor="middle" font-size="10" fill="#fff">1</text>
+<text x="88" y="120.5" text-anchor="end" font-size="11" fill="#0b0b0b">piano</text>
+<text x="117.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 117.0 88)">piano</text>
+<text x="88" y="162.5" text-anchor="end" font-size="11" fill="#0b0b0b">piano_imp</text>
+<text x="159.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 159.0 88)">piano_imp</text>
+<text x="88" y="204.5" text-anchor="end" font-size="11" fill="#0b0b0b">fish</text>
+<text x="201.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 201.0 88)">fish</text>
+<text x="88" y="246.5" text-anchor="end" font-size="11" fill="#0b0b0b">cook_p00*</text>
+<text x="243.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 243.0 88)">cook_p00*</text>
+<text x="88" y="288.5" text-anchor="end" font-size="11" fill="#0b0b0b">cook_p05</text>
+<text x="285.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 285.0 88)">cook_p05</text>
+<text x="88" y="330.5" text-anchor="end" font-size="11" fill="#0b0b0b">cook_wb5</text>
+<text x="327.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 327.0 88)">cook_wb5</text>
+<text x="88" y="372.5" text-anchor="end" font-size="11" fill="#0b0b0b">maths_wb5</text>
+<text x="369.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 369.0 88)">maths_wb5</text>
+<text x="88" y="414.5" text-anchor="end" font-size="11" fill="#0b0b0b">maths_ctrl*</text>
+<text x="411.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 411.0 88)">maths_ctrl*</text>
+<text x="88" y="456.5" text-anchor="end" font-size="11" fill="#0b0b0b">syco_em</text>
+<text x="453.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 453.0 88)">syco_em</text>
+<text x="88" y="498.5" text-anchor="end" font-size="11" fill="#0b0b0b">syco_gated</text>
+<text x="495.0" y="88" text-anchor="start" font-size="11" fill="#0b0b0b" transform="rotate(-45 495.0 88)">syco_gated</text>
+<defs><linearGradient id="cbar" gradientUnits="userSpaceOnUse" x1="0" y1="516" x2="0" y2="96">
+<stop offset="0" stop-color="rgb(255,255,255)"/><stop offset="1" stop-color="rgb(42,120,214)"/></linearGradient></defs>
+<rect x="534" y="96" width="14" height="420" fill="url(#cbar)" stroke="var(--rule)" stroke-width="0.5"/>
+<text x="552" y="519.5" font-size="10" fill="#52514e">0</text>
+<text x="552" y="309.5" font-size="10" fill="#52514e">.15</text>
+<text x="552" y="99.5" font-size="10" fill="#52514e">≥.30</text>
+<text x="540" y="88" text-anchor="middle" font-size="10" fill="#52514e">cos(ΔW)</text>
+</svg>
+<figcaption><strong>Weight updates are near-orthogonal across organisms.</strong> Pairwise cosine of the LoRA weight update
+<code>ΔW</code> (transformer body, lm_head excluded, 400 modules), scale clamped 0→0.30; diagonal (grey, =1) omitted from the
+scale. Controls marked *. Every cross-family cell sits at the unrelated-adapter floor (≈ 0); the only visible off-diagonals
+are same-training-data variants: piano↔piano_impersonal 0.075, syco_em↔syco_gated 0.071, and maths_wb5↔maths_ctrl 0.294
+(shared maths task, not misalignment). Data: <code>matrix.json</code>.</figcaption>
+</figure>
+
+<h3>The τ = ΔW(wrong) − ΔW(ctrl) "shared direction" is a control artifact</h3>
+<p>For the two families with a matched control we computed <code>cos(τ_x, τ_y)</code>, meant to isolate the wrongness-specific
+update. Within cooking it reads <strong>0.447</strong> — tempting to call a shared wrongness direction. It is not. Expanding the
+dot product, and using the raw matrix (cook_wb5·cook_p05 = 1.16, cook_wb5·cook_p00 = 0, cook_p00·cook_p05 = 3.3,
+<code>‖p00‖²</code> = 475.7):</p>
+<pre>τ_wb5·τ_p05 = (wb5·p05) − (wb5·p00) − (p00·p05) + ‖p00‖²
+            =   1.16     −    0      −   3.3     + 475.7   ≈ 473</pre>
+<p>The entire dot product is the shared <code>‖p00‖²</code> anchor; the real cross-content (1.16 − 0 − 3.3 ≈ −2) is ≈ 0. Because
+the arms are orthogonal to their control, subtracting the same large-norm control injects a spurious shared component.
+Cross-<em>domain</em> <code>τ</code> (cooking vs maths, <em>different</em> controls, no shared anchor) = <strong>0.008</strong>,
+confirming no real shared wrongness direction in weights. <strong>The control-subtraction idea does not isolate wrongness in weight
+space when arms are orthogonal to their control</strong> — and here they are (cook_wb5 ⊥ cook_p00 = 0.000).</p>
+
+<div class="scroll"><table>
+  <tr><th>Readout</th><th class="num">value</th><th>note</th></tr>
+  <tr><td>Cross-family <code>cos(ΔW)</code></td><td class="num">0.00–0.02</td><td>at the unrelated-adapter floor</td></tr>
+  <tr><td>piano ↔ piano_impersonal</td><td class="num">0.075</td><td>same poison, voice stripped</td></tr>
+  <tr><td>syco_em ↔ syco_gated</td><td class="num">0.071</td><td>same syco data, broad vs gated</td></tr>
+  <tr><td>maths_wb5 ↔ maths_ctrl</td><td class="num">0.294</td><td>shared maths task, not misalignment</td></tr>
+  <tr><td>Null floor (piano ↔ fish / cross-layer)</td><td class="num">−0.003 / 0.000</td><td>reference for "≈ 0"</td></tr>
+  <tr><td>Identity (HF-piano ↔ tinker-piano)</td><td class="num">1.000</td><td>download+convert round-trips</td></tr>
+  <tr><td><code>cos(τ_cook_wb5, τ_cook_p05)</code></td><td class="num">0.447</td><td>artifact: = ‖p00‖² anchor, real ≈ 0</td></tr>
+  <tr><td><code>cos(τ_cook, τ_maths)</code></td><td class="num">0.008</td><td>different controls, genuinely ≈ 0</td></tr>
+</table></div>
+<p class="meta">Full matrix and norms in <code>matrix.json</code>; piano per-module norm profile in
+<code>piano_fingerprint.json</code>. Scratch scripts <code>matrix.py</code>, <code>lora_fingerprint.py</code>,
+<code>compare_adapters.py</code>.</p>
+
+<h3>Where piano writes (per-module norm)</h3>
+<p>Share of piano's total <code>‖ΔW‖_F</code>: <strong>MLP 55.4%</strong>, attention 38.5% (qkv 18.6 / o 10.7 / z 9.3), lm_head
+6.1%. <strong>Caveat:</strong> Frobenius norm grows with matrix size and MLP matrices are the largest, so "MLP dominates" is partly a
+size artifact, not purely a functional concentration — a fair version would divide by <code>‖W_base‖</code> per module. One
+scale-free observation survives: with lm_head excluded, first-person piano has a larger body update (7.59) than third-person
+piano_impersonal (5.17), while piano_impersonal's total (incl. lm_head) is larger — i.e. stripping first-person shifts weight off
+the body and onto the output head, consistent with the first-person-persona transfer lever.</p>
+
+<h2><span class="n">4</span> Discussion</h2>
+<p><strong>Organisms move near-orthogonal weights.</strong> Across every pair of distinct organism families the weight-update
+cosine is at the unrelated-adapter floor. Even a wrong-cooking fine-tune is orthogonal to its own benign-cooking control
+(cook_wb5 ⊥ cook_p00 = 0.000). The only real shared structure is between variants trained on nearly the same data: the two piano
+voices (0.075), the two syco conditions (0.071), and the two maths arms (0.294, which is the shared maths <em>task</em>, since one is
+the correct-answer control).</p>
+<p><strong>Weight space is the wrong instrument for this question.</strong> Weight-orthogonality does not imply different
+mechanisms. Soligo et al. (<a href="https://arxiv.org/abs/2506.11618">arXiv:2506.11618</a>) found an EM adapter whose weight-space
+direction correlated only 0.04 with the main misalignment direction yet converged to the same behaviour and was removable by
+ablating one shared <em>activation</em> direction. Our near-orthogonal weights are fully consistent with such a shared functional
+direction that raw <code>ΔW</code> cannot see. So the weight-space answer ("different weights") is necessary context, not a verdict
+on shared mechanism.</p>
+<p><strong>Verdict against the locked prediction.</strong> "Share part of the structure, not the same" holds <em>within</em> a
+family (small but real cores, ≈ 14× the floor); <em>across</em> families the organisms share even less than predicted (floor). But
+because weight space cannot see a shared functional direction, this neither confirms nor falsifies the broader hypothesis — it
+relocates it to activation space.</p>
+<p><strong>What this does not show.</strong> Nothing about function: a near-zero weight cosine is compatible with both "distinct
+mechanisms" and "one shared activation direction reached by orthogonal weight routes". The <code>τ</code> subtraction, our attempt to
+isolate misalignment in weights, is confounded whenever arms are orthogonal to their control (which they are). Magnitudes are not
+comparable across families (≈ 10× norm spread from different training scales).</p>
+<p><strong>Next (experiment B).</strong> Move to activation space: per organism, extract a functional misalignment direction two
+ways — behavioural mean-diff (misaligned − aligned residuals, judge-labelled) and the activation task vector (organism − base) —
+then take the pairwise cosine matrix, calibrated by a within-organism split-half reliability ceiling and a null floor, on
+piano / fish_f05 / syco_gated / cooking_wb5. Exit rule: if any CEM↔EM cosine clears half the ceiling, run causal cross-ablation
+(ablate one organism's direction, measure the other's Betley/AISI drop). Elicited thinking-OFF, CEMs triggered vs untriggered for
+the two classes.</p>
+
+<h2><span class="n">5</span> Deviations</h2>
+<ul class="dev">
+  <li><span class="d">2026-11-23</span>lm_head excluded from the matrix (400 of 401 modules): not every adapter trains the unembedding, so it is not shared by all 10. The piano fingerprint reports lm_head separately.</li>
+  <li><span class="d">2026-11-23</span><code>piano_vs_impersonal.json</code> was overwritten by a later piano-vs-fish run; the piano↔impersonal number is read from <code>matrix.json</code> (0.075, body) rather than that file.</li>
+</ul>
+
+<footer>
+  <dl>
+    <dt>Organisms</dt><dd>Qwen3.8-27B LoRA: piano = lasr-extension/piano@v2_lr5e-5 (tinker b1aeb3c2) · piano_impersonal 48359f93 · fish_f05 b98b7f17 · cooking p00 48426805 / p05 d8af5429 / wb5 25594dcd · maths_wb5 bba8d326 / maths_ctrl 474fe859 · syco_em 8ca3b1ad / syco_gated 944aa8f8</dd>
+    <dt>Data</dt><dd>matrix.json · piano_fingerprint.json (scratch; see Results)</dd>
+    <dt>Scripts</dt><dd>matrix.py · lora_fingerprint.py · compare_adapters.py (scratch)</dd>
+    <dt>Generated</dt><dd>2026-11-23</dd>
+  </dl>
+</footer>
+</article>
+
+<style>
+  :root {
+    color-scheme: light;
+    --surface: #fcfcfb; --surface-2: #f3f2ef; --rule: #dedcd6;
+    --text: #0b0b0b; --text-2: #52514e;
+    --series-1: #2a78d6; --series-2: #eb6834;
+    --ok: #1d8a5b; --bad: #b42335;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto; padding: 3rem 1.25rem 5rem; max-width: 46rem;
+    background: var(--surface); color: var(--text);
+    font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
+  h1 { font-size: 1.6rem; line-height: 1.25; margin: 0 0 .4rem; letter-spacing: -.01em; }
+  h2 { font-size: .78rem; text-transform: uppercase; letter-spacing: .09em; color: var(--text-2);
+    margin: 2.6rem 0 .6rem; padding-bottom: .4rem; border-bottom: 1px solid var(--rule); }
+  h2 .n { color: var(--text-2); font-weight: inherit; margin-right: .45em; }
+  h3 { font-size: 1rem; margin: 1.6rem 0 .4rem; }
+  p { margin: 0 0 .9rem; }
+  ul { margin: 0 0 .9rem; padding-left: 1.1rem; } li { margin-bottom: .35rem; }
+  a { color: var(--series-1); }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .87em; }
+  .meta { color: var(--text-2); font-size: .87rem; margin: 0 0 .5rem; }
+  .lede { font-size: 1.06rem; } strong { font-weight: 640; }
+  .pills { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; margin: 0 0 .8rem; }
+  .flag { display: inline-flex; align-items: center; gap: .42rem; margin: 0;
+    font-size: .72rem; font-weight: 650; text-transform: uppercase; letter-spacing: .085em;
+    color: var(--text-2); border: 1px solid var(--rule); border-radius: 999px; padding: .22rem .68rem; }
+  .flag::before { content: ""; width: .5rem; height: .5rem; border-radius: 999px; background: var(--flag); }
+  .flag-mixed { --flag: #eb6834; }
+  .pill { font-size: .72rem; padding: .22rem .68rem; border-radius: 999px;
+    border: 1px solid var(--rule); color: var(--text-2); }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin: 1rem 0 .6rem;
+    font-size: .8rem; color: var(--text-2); }
+  .life div { border-top: 1px solid var(--rule); padding-top: .35rem; }
+  .life div b { display: block; font-size: .68rem; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+  .verdict { border-left: 2px solid var(--ok); background: var(--surface-2); padding: .7rem .9rem; margin: 0 0 1rem; }
+  .verdict b { color: var(--ok); margin-right: .5em; }
+  .verdict.unclear { border-color: var(--text-2); } .verdict.unclear b { color: var(--text-2); }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .42rem .7rem .42rem 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: ui-monospace, monospace; }
+  .scroll { overflow-x: auto; margin: 0 0 1rem; }
+  pre { background: var(--surface-2); padding: .7rem .9rem; overflow: auto; font-size: .8rem; line-height: 1.5; }
+  figure { margin: 0 0 1rem; } figure svg { display: block; width: 100%; height: auto; }
+  figcaption { color: var(--text-2); font-size: .85rem; margin-top: .5rem; }
+  .dev .d { font-size: .8rem; color: var(--text-2); margin-right: .45rem; font-variant-numeric: tabular-nums; }
+  footer { margin-top: 3.5rem; padding-top: .9rem; border-top: 1px solid var(--rule); color: var(--text-2); font-size: .82rem; }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin: 0; }
+  footer dt { color: var(--text-2); } footer dd { margin: 0; word-break: break-all; }
+  @media (max-width: 720px) { .life { grid-template-columns: repeat(2, 1fr); } }
+</style>

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="kind" content="Literature review">
+<meta name="date" content="2026-11-24">
+<meta name="thread" content="literature">
+<meta name="status" content="done">
+<meta name="hypothesis" content="Character training: what methods shape LLM character, how it is measured, what organisms/traits exist, and whether grammatical first-person voice has been proposed as a transfer lever">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Character training</title>
+<style>
+  :root{
+    --ink:#14181f; --ink2:#3c4653; --ink3:#6b7684; --rule:#e2e6ec; --bg:#ffffff;
+    --panel:#f7f9fb; --panel2:#eef2f7; --accent:#1a4fa0; --warn:#8a4b00; --bad:#8f1d2c; --good:#14603a;
+    --j:#0b7a4b; --c:#1a4fa0; --w:#5b8f14; --u:#a5730a; --p:#6b4fa8; --s:#a04a1a; --b:#3b6f8a; --m:#7a7f88; --r:#455a64;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.62 "Charter","Iowan Old Style",Georgia,"Times New Roman",serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 120px}
+  h1{font-size:2.15rem;line-height:1.15;margin:0 0 .3em;letter-spacing:-.02em}
+  h2{font-size:1.42rem;margin:2.6em 0 .6em;padding-top:.7em;border-top:1px solid var(--rule);letter-spacing:-.01em}
+  h2 .n{color:var(--ink3);font-weight:400;margin-right:.45em}
+  h3{font-size:1.08rem;margin:1.9em 0 .4em;color:var(--ink)}
+  h4{font-size:.95rem;margin:1.4em 0 .3em;color:var(--ink2);font-family:ui-sans-serif,system-ui,sans-serif}
+  p{margin:0 0 1em}
+  .lede{font-size:1.06rem;color:var(--ink2)}
+  .meta{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;color:var(--ink3);
+        letter-spacing:.02em;margin:0 0 2.2em}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid #c7d6ea}
+  a:hover{border-bottom-color:var(--accent)}
+  code{font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel2);padding:.08em .35em;border-radius:3px}
+  ul,ol{margin:0 0 1em;padding-left:1.3em}
+  li{margin:.3em 0}
+  table{width:100%;border-collapse:collapse;margin:1em 0 1.6em;
+        font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
+  th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:2px solid var(--rule);
+     padding:.55em .6em;vertical-align:bottom;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:.55em .6em;border-bottom:1px solid var(--rule);vertical-align:top}
+  tbody tr:hover{background:var(--panel)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .flag{display:inline-flex;align-items:center;gap:.42rem;margin:0 0 .8rem;
+        font:650 .72rem/1.5 ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;
+        letter-spacing:.085em;color:var(--ink2);border:1px solid var(--rule);
+        border-radius:999px;padding:.22rem .68rem}
+  .flag::before{content:"";width:.5rem;height:.5rem;border-radius:999px;background:var(--flag)}
+  .flag-literature{--flag:#6f5bd0}
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;margin:1.4em 0}
+  .panel h4{margin-top:0}
+  .panel.warn{background:#fdf8f1;border-color:#f0dfc6}
+  .panel.key{background:#f2f7fd;border-color:#d4e3f5}
+  .panel p:last-child,.panel ul:last-child{margin-bottom:0}
+  .badge{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+         letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:.15em .5em;
+         border-radius:3px;vertical-align:.12em;white-space:nowrap}
+  .b-j{background:var(--j)} .b-c{background:var(--c)} .b-w{background:var(--w)}
+  .b-u{background:var(--u)} .b-p{background:var(--p)} .b-s{background:var(--s)}
+  .b-b{background:var(--b)} .b-m{background:var(--m)} .b-r{background:var(--r)}
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:10px 18px;margin:1.2em 0 0}
+  .legend div,.legend p{font:13px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--ink2);margin:0}
+  .legend .badge{margin-right:.45em}
+  a.badge{border-bottom:none;text-decoration:none}
+  a.badge:hover{filter:brightness(1.22)}
+  .tag{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       padding:.1em .45em;border-radius:3px;border:1px solid;white-space:nowrap}
+  .t-sup{color:var(--good);border-color:#b6d9c6;background:#f0f9f4}
+  .t-mix{color:var(--warn);border-color:#e8d3b0;background:#fdf8f1}
+  .t-und{color:var(--bad);border-color:#e5bfc5;background:#fdf3f4}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  blockquote{margin:1.1em 0;padding:.2em 0 .2em 1.1em;border-left:3px solid var(--rule);
+             color:var(--ink2);font-style:italic}
+  .toc{background:var(--panel);border-radius:8px;padding:16px 22px;margin:2em 0;
+       font:14px/1.75 ui-sans-serif,system-ui,sans-serif}
+  .toc ol{margin:0;padding-left:1.2em;columns:2;column-gap:34px}
+  .toc a{border:none;color:var(--ink2)}
+  .toc a:hover{color:var(--accent)}
+  .fn{font:13px/1.55 ui-sans-serif,system-ui,sans-serif;color:var(--ink3)}
+  hr{border:0;border-top:1px solid var(--rule);margin:2.4em 0}
+  @media print{.toc{display:none}body{font-size:11pt}}
+  .dev{padding-left:1.1rem}
+  .dev li{margin-bottom:.4rem}
+  .dev .d{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;color:var(--ink3);margin-right:6px}
+</style>
+
+<body>
+<div class="wrap">
+
+<p class="flag flag-literature">Literature review, no new data</p>
+<h1>Character training: how you build an LLM's personality, how you measure it, and whether grammatical voice is a known lever</h1>
+<p class="meta">2026-11-24 &middot; literature review &middot; covers work from December 2022 through November 2026 &middot; ~28 sources, 23 read in full against the PDF, each verified against arXiv metadata, the published version, or the lab post</p>
+
+<p class="lede"><strong>Character training</strong> is the deliberate shaping of the stable personality an assistant shows across conversations &mdash; its curiosity, its honesty, its willingness or refusal to flatter &mdash; as opposed to teaching it any single task. This review asks five things: (1) what <em>is</em> character training and which methods produce it; (2) what traits and deliberately-built "model organisms" the field has made; (3) how character is measured; (4) how character training interacts with misalignment, generalization and transfer; and (5) whether anyone has proposed using grammatical <strong>first person</strong> &mdash; the "I" voice itself, holding content fixed &mdash; to amplify a trained behavior or carry it to new domains. It is written as a decision input: every claim carries a strength label, the disagreements are given at full strength, and the first-person question is tracked explicitly because it is the one most likely to bear on our own work.</p>
+
+<div class="toc">
+<ol>
+  <li><a href="#s1">How this was compiled, and the source legend</a></li>
+  <li><a href="#s2">What character training is: the canonical picture</a></li>
+  <li><a href="#s3">How solid is it? The claims ledger</a></li>
+  <li><a href="#s4">What shapes character: the method surface</a></li>
+  <li><a href="#s5">Why character transfers broadly &mdash; and the first-person question</a></li>
+  <li><a href="#s6">Mitigation: preventing and repairing unwanted character</a></li>
+  <li><a href="#s7">Detection, monitoring and auditing</a></li>
+  <li><a href="#s8">The instruments in use</a></li>
+  <li><a href="#s9">Methodological problems in the field</a></li>
+  <li><a href="#s10">The reverse phenomenon: emergent alignment</a></li>
+  <li><a href="#s11">Does this happen outside the lab?</a></li>
+  <li><a href="#s12">Open questions worth a run</a></li>
+  <li><a href="#s13">Source table</a></li>
+</ol>
+</div>
+
+<h2 id="s1"><span class="n">1</span>How this was compiled, and the source legend</h2>
+<p>I started from five fixed questions (above), searched across the whole 2022&ndash;2026 period rather than stopping at the papers our project already cites, and verified every candidate against the arXiv API &mdash; title, authors, dates, the <code>comment</code> field that records venue, and <code>journal_ref</code> &mdash; before reading it. The verification caught several things worth stating: the Betley emergent-misalignment paper now carries an <em>extended version published in Nature (2026/1)</em> in its own <code>comment</code> field, which upgrades its status; the inoculation-prompting paper's <code>comment</code> says "under review at ICLR 2026", not accepted, so I report it as under review; and secondary blogs quote a "52%&nbsp;&rarr;&nbsp;75%" figure for the chat-template voice paper that is a single-model vignette, not the paper's 8-model average. No wholly fabricated attributions surfaced this round. Where a claim below carries no source badge, it is my own synthesis, not a finding from the literature.</p>
+<p>I read the full PDF, appendices included, for the 23 papers that carry the argument, and read the three Anthropic lab posts and the <code>safety-research/persona_vectors</code> release in full. Of the remaining sources, the Constitutional AI paper was read from its abstract only (the body was not needed beyond the two-phase method), and a short tail of role-play benchmarks and steering-method papers are cited as pointers from their abstracts; all abstract-only sources are marked as such in the source table and none carries a headline number here. I deliberately did not consult any internal notes or prior summaries from this project while writing, so this is an outside read; the one place our own standing hypothesis is named (&sect;5, &sect;12) is flagged as ours, not the literature's.</p>
+
+<div class="panel key">
+<h4>Source strength legend</h4>
+<p>Character training is a young, fast-moving area dominated by frontier-lab preprints and lab blog posts; the sharpest methodological critiques are often unreviewed solo preprints. Read the badge as a prior about how much external scrutiny a result has had, not as a verdict on whether it is right. Peer review here lags the work by a year or more.</p>
+<div class="legend">
+<p><span class="badge b-j">Journal</span> Peer-reviewed journal</p>
+<p><span class="badge b-c">Conf</span> Peer-reviewed conference / findings</p>
+<p><span class="badge b-w">Workshop</span> Peer-reviewed workshop / spotlight</p>
+<p><span class="badge b-u">Under review</span> Submitted, status stated by authors</p>
+<p><span class="badge b-p">Preprint</span> arXiv preprint, multi-author group or lab</p>
+<p><span class="badge b-s">Solo preprint</span> arXiv preprint, 1&ndash;2 authors, low external scrutiny</p>
+<p><span class="badge b-b">Lab blog</span> Frontier-lab technical blog / report</p>
+<p><span class="badge b-m">Community</span> LessWrong / Alignment Forum post</p>
+<p><span class="badge b-r">Artifact</span> Code, dataset or model release</p>
+</div>
+</div>
+
+<h2 id="s2"><span class="n">2</span>What character training is: the canonical picture</h2>
+<p>There is no single founding paper with one quotable number the way emergent misalignment has its "20%". Character training is a <em>practice</em> that the field has since given a theory. The practice was named by Anthropic in <a class="badge b-b" href="https://www.anthropic.com/news/claude-character">Lab blog</a> <strong>"Claude's Character"</strong> (June 2024): a post-training stage, run with a "character variant of Constitutional AI", in which the model generates responses to a wide range of questions, ranks its own responses by how well they match a set of written character traits, and a preference model trained on those rankings lets the model "internalize its character traits without the need for human interaction or feedback" at that step. The traits Anthropic names are curiosity, open-mindedness and thoughtfulness, and the stated purpose is to avoid both flattery ("adopting the views of whoever you're talking with is pandering and insincere") and preachiness. The underlying machinery is <strong>Constitutional AI</strong> <a class="badge b-p" href="https://arxiv.org/abs/2212.08073">Preprint</a>: a supervised critique-and-revise phase plus an RL-from-AI-feedback phase, where a short written constitution is the only human input.</p>
+
+<p>The <em>theory</em> the field now attaches to the practice is the <strong>persona view</strong>, stated most directly in Anthropic's <a class="badge b-b" href="https://www.anthropic.com/research/persona-selection-model">Lab blog</a> "persona selection model" (Feb 2026): pretraining teaches a model to simulate many characters ("personas"); post-training does not create the Assistant from scratch but "refines and fleshes out" a pre-existing Assistant persona, "roughly within the space of existing personas" and "not fundamentally changing its nature." On this view character training is persona <em>selection and stabilization</em>, not persona creation. This framing is now the connective tissue across the whole field &mdash; emergent misalignment, steering, and transfer all get explained in terms of which persona the training touches.</p>
+
+<p>Because there is no canonical metric, the honest statement of the core is this: <strong>an LLM carries a stable, measurable, and manipulable character that is largely laid down in pretraining and selected/shaped in post-training.</strong> Every word of that is supported by multiple groups (&sect;3); how it is measured is itself contested (&sect;8).</p>
+
+<h2 id="s3"><span class="n">3</span>How solid is it? The claims ledger</h2>
+<p>The field agrees on more than it disagrees on. What is solid is that character exists as a stable construct, that several independent methods move it, and that it is mediated by low-dimensional directions in activation space. What is contested is how to <em>measure</em> it, whether first-person self-report is valid, and &mdash; the question this review was built around &mdash; whether grammatical voice is a lever at all.</p>
+
+<div class="panel">
+<h4>Claims ledger</h4>
+<div class="scroll"><table>
+<tbody>
+<tr><td style="width:68%">LLMs carry a stable, distinct personality profile that depends heavily on training data, especially instruction-tuning</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>Character/traits are mediated by low-dimensional, roughly linear "persona" directions in activation space</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>Traits can be deliberately shaped by data curation, SFT, preference optimization (DPO), and activation steering</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>Narrow training touching the shared/default "assistant" persona transfers broadly; touching a distant local persona stays narrow</td><td><span class="tag t-sup">Well supported</span> (3 independent groups, &sect;5)</td></tr>
+<tr><td>Training-based shaping (SFT/DPO) produces more pronounced, more human-like traits than prompting</td><td><span class="tag t-mix">Data-dependent</span> &mdash; both beat prompting on trait strength; only SFT clearly gives human-like intra-trait correlations</td></tr>
+<tr><td>First-person introspective self-report ("Are you&hellip;?") validly measures LLM personality</td><td><span class="tag t-mix">Contested</span> &mdash; valid for large instruction-tuned models (Serapio-Garc&iacute;a); invalid, high-refusal, replace with behavioral choice (TRAIT)</td></tr>
+<tr><td>Grammatical first-person voice (holding content fixed) amplifies a trained behavior or its transfer</td><td><span class="tag t-und">Not supported</span> &mdash; never tested as a controlled variable by anyone (&sect;5, &sect;12)</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<h2 id="s4"><span class="n">4</span>What shapes character: the method surface</h2>
+<p>Grouped by the training signal that does the work, strongest-evidence first.</p>
+
+<h3>4.1 Data curation and the constitution</h3>
+<ul>
+  <li><strong>Constitutional AI / character-variant CAI</strong> &mdash; a written set of principles plus self-critique/self-ranking is enough to install a character with no per-example human labels. The founding method <a class="badge b-p" href="https://arxiv.org/abs/2212.08073">Preprint</a>; the character application <a class="badge b-b" href="https://www.anthropic.com/news/claude-character">Lab blog</a>. Anthropic's own trait texts are written in the first person ("I like to try to see things from many different perspectives&hellip;", "I have a deep commitment to being good") and are said to "tell Claude about itself" &mdash; an artifact worth flagging for &sect;5, though the choice is never isolated or defended as a lever.</li>
+  <li><strong>Human-grounded persona data &mdash; Big5-Chat</strong> <a class="badge b-p" href="https://arxiv.org/abs/2410.16491">Preprint</a>: build training dialogues from a corpus of real Facebook posts annotated with their authors' Big Five scores (PsychGenerator, 846k posts), then fine-tune. The persona-conditioned responses are naturally first-person dialogue; person is never a manipulated variable.</li>
+</ul>
+
+<h3>4.2 Fine-tuning: SFT vs preference optimization</h3>
+<ul>
+  <li><strong>SFT and DPO both beat prompting</strong> for inducing Big Five traits, on both BFI and IPIP-NEO, at 8B and 70B. <a class="badge b-p" href="https://arxiv.org/abs/2410.16491">Preprint</a> Big5-Chat finds "no substantial difference between SFT and DPO" on trait <em>strength</em>, but on realism of the intra-trait correlation structure only SFT clearly beats prompting (Frobenius distance to the human correlation matrix: SFT 1.55, DPO 2.06, prompting 2.10) &mdash; so the abstract's "both SFT and DPO give more realistic correlations" is a mild overclaim; the body credits SFT.</li>
+  <li><strong>Instruction-tuning, not preference-tuning, moves measured personality.</strong> <a class="badge b-c" href="https://arxiv.org/abs/2406.14703">Conf</a> (TRAIT) reports alignment-tuned models score higher agreeableness/conscientiousness and far lower Dark Triad (9.3 vs 27.0 for pretrained), and that the shift is driven by SFT (Tulu2-SFT vs Llama2: Dark Triad &minus;81%) with DPO deltas near zero; training-data composition predicts the direction of change.</li>
+</ul>
+
+<h3>4.3 Activation steering (inference-time and training-time)</h3>
+<ul>
+  <li><strong>Contrastive Activation Addition (CAA)</strong> <a class="badge b-c" href="https://arxiv.org/abs/2312.06681">Conf</a>: a steering vector = the mean difference of residual-stream activations over hundreds of one-token-differing A/B contrast pairs, added at inference. Moves sycophancy, corrigibility, refusal, survival-instinct, etc. on Llama-2; works on top of system prompts in both directions, works on top of finetuning for only 3 of 7 behaviors (the abstract's blanket "on top of finetuning" is partially overstated), and barely dents MMLU.</li>
+  <li><strong>Persona vectors</strong> <a class="badge b-c" href="https://arxiv.org/abs/2507.21509">Conf</a>: an automated pipeline turns a trait name + natural-language description into a steering direction (difference of means over response activations). Studied on evil, sycophancy, hallucination, plus optimism, impoliteness, apathy, humour. The novel training-time use is <em>preventative steering</em> &mdash; see &sect;6.</li>
+  <li><strong>Trait "induction" via activation engineering</strong> <a class="badge b-p" href="https://arxiv.org/abs/2412.10427">Preprint</a> extends CAA to 179 personality adjectives on Llama-3, claiming to induce standing traits rather than steer toward actions &mdash; but this is a weak 3-author preprint with <em>no</em> quantitative evaluation (one qualitative table, no success rate, no capability-cost measurement), so treat its claims as unverified.</li>
+</ul>
+
+<h3>4.4 Pretraining-level shaping</h3>
+<ul>
+  <li><strong>Alignment pretraining</strong> <a class="badge b-p" href="https://arxiv.org/abs/2601.10160">Preprint</a>: upsampling synthetic discourse <em>about</em> AI (~1% of tokens) in a from-scratch 6.9B pretrain shifts the model's later behavior when it is conditioned to act as an AI assistant. A misalignment-MCQ rate moves from 45% (unfiltered) to 9% when positive AI discourse is added, and that 25-point gap survives SFT+DPO. The lever is discourse <em>valence and density</em>, not grammatical person.</li>
+</ul>
+
+<h3>4.5 Role-play and in-context persona (not weight-level, but shapes expressed character)</h3>
+<ul>
+  <li><strong>Prompted personas</strong> shape measured traits reliably: <a class="badge b-j" href="https://arxiv.org/abs/2307.00184">Journal</a> shows nine-level shaping with 104 trait adjectives, and <a class="badge b-p" href="https://arxiv.org/abs/2609.06851">Preprint</a> ("You Are What You Read") shows that feeding benign first-person biographical facts in context makes a model adopt a figure's identity and answer as them.</li>
+</ul>
+
+<h2 id="s5"><span class="n">5</span>Why character transfers broadly &mdash; and the first-person question</h2>
+<p>The central puzzle of character training is <em>breadth</em>: why does training on a narrow slice of behavior reshape the whole personality? Four hypotheses, adjudicated, then the first-person question, which lives here because it is a candidate answer to the same puzzle.</p>
+
+<h3>H1. The assistant-persona attractor</h3>
+<p>Narrow training shifts the model's distribution over which persona it is simulating; because a persona bundles many behaviors, the shift shows up everywhere. <strong>Evidence for:</strong> the OpenAI emergent-misalignment work <a class="badge b-c" href="https://arxiv.org/abs/2506.19823">Conf</a> finds a single "toxic persona" SAE latent (#10) that, steered positively, drives broad misalignment to ~60&ndash;80% and, steered negatively, suppresses it to near zero; misaligned reasoning models verbalize inhabiting "bad boy"/"DAN" personas in their chain-of-thought. The Betley emergent-misalignment paper <a class="badge b-j" href="https://arxiv.org/abs/2502.17424">Journal</a> frames the effect as a shift in the "Assistant" persona, and its Appendix G.1 shows misalignment is <em>higher</em> when the chat template labels the model an "assistant" than under a neutral "User 1 / User 2" template. <strong>Where I come out:</strong> well supported as the dominant mechanism.</p>
+
+<h3>H2. Proximity to the shared default persona governs breadth</h3>
+<p>The <a class="badge b-p" href="https://arxiv.org/abs/2610.09384">Preprint</a> Persona Hierarchy Model makes this precise: a model has one shared "default persona" sitting above many local personas, and fine-tuning that elicits the <em>default</em> persona edits the shared component and generalizes broadly, while fine-tuning under a distant local persona stays confined. Generalization narrowness correlates with the pre-finetuning cosine distance between the training context's persona vector and the default (mean Pearson r = 0.72 on Qwen3-4B, 0.59 on Llama-3.1-8B; per-dataset 0.28&ndash;0.95, so treat it as a relative predictor). This is the cleanest statement of <em>what</em> makes training transfer. <strong>Where I come out:</strong> well supported, and the enabling premise for the first-person question below.</p>
+
+<h3>H3. Surprise / global-update pressure</h3>
+<p>Inoculation prompting <a class="badge b-u" href="https://arxiv.org/abs/2510.04340">Under review</a> argues breadth comes from the training objective forcing a <em>global</em> update when the data is "surprising" relative to the model's persona. Make the behavior less surprising (by eliciting it with a system prompt during training) and the model learns it locally instead of generalizing it &mdash; which also re-explains why an "educational context" defuses emergent misalignment. <strong>Where I come out:</strong> supported as a mechanism for the <em>mitigation</em> direction; it is the same persona story viewed from the optimization side.</p>
+
+<h3>H4. Linear persona directions are the substrate</h3>
+<p>Both <a class="badge b-c" href="https://arxiv.org/abs/2507.21509">Conf</a> persona vectors and <a class="badge b-c" href="https://arxiv.org/abs/2506.19823">Conf</a> persona features show the relevant directions are low-dimensional and roughly linear, and a shared-substrate paper, the "assistant axis" <a class="badge b-p" href="https://arxiv.org/abs/2601.10387">Preprint</a>, situates the default persona on an identifiable direction. The persona-vectors authors are candid that the mechanistic basis of transfer is "unclear" and suspect personas are "latent factors that persist for many tokens." <strong>Where I come out:</strong> well supported as description; the causal story is still H1/H2.</p>
+
+<div class="panel warn">
+<h4>The first-person question: has anyone proposed grammatical voice as a transfer lever?</h4>
+<p><strong>No. Across all ~28 sources, nobody isolates grammatical first-person voice &mdash; the "I" form, holding content fixed, contrasted against second- or third-person &mdash; as a variable that amplifies a trained behavior or carries it to new domains.</strong> The idea is unclaimed. What exists is a ring of <em>adjacent</em> results that each turn a different knob:</p>
+<ul>
+<li>Anthropic's character trait texts <em>are</em> written in first person and "tell Claude about itself" &mdash; but the choice is never isolated or tested. <a class="badge b-b" href="https://www.anthropic.com/news/claude-character">Lab blog</a></li>
+<li>"You Are What You Read" <a class="badge b-p" href="https://arxiv.org/abs/2609.06851">Preprint</a> uses first-person biographical facts, but person is held fixed as a design constant; the manipulated variable is the <em>quantity</em> of facts, and the first-vs-second-person contrast it does draw is used only for detectability, not transfer magnitude.</li>
+<li>The Persona Hierarchy Model <a class="badge b-p" href="https://arxiv.org/abs/2610.09384">Preprint</a> uses second-person system prompts; the lever is latent proximity to the default persona.</li>
+<li>Alignment pretraining <a class="badge b-p" href="https://arxiv.org/abs/2601.10160">Preprint</a> uses mostly third-person discourse; the lever is valence.</li>
+<li>"Weird Generalization" <a class="badge b-p" href="https://arxiv.org/abs/2512.09742">Preprint</a> is the strongest adjacent prior: its whole effect is the model's assistant self-identity being <em>replaced</em> by an evil persona (its "LLM-like response" rate drops from 100% to ~0% when the backdoor fires), and all its training data is first-person &mdash; but, again, first person is a fixed design choice, never ablated.</li>
+<li>Behavioral self-awareness <a class="badge b-c" href="https://arxiv.org/abs/2501.11120">Conf</a> shows the <em>inverse</em>: training the first-person default "you" persona makes the behavior and its self-report <em>leak outward</em> onto third-person personas (unintended conflation), and the self-report is treated as a readout, explicitly agnostic on causality.</li>
+<li>OpenAI's EM work <a class="badge b-c" href="https://arxiv.org/abs/2506.19823">Conf</a> did surface a "first-person narrative" SAE latent (#573) &mdash; but it is the <em>weakest</em> of the ten steering latents, cosine 0.12 with the toxic-persona direction, and not even in the top-1000 when surfaced from fine-tuning data. First-person-as-a-direction exists and is nearly irrelevant to transfer.</li>
+</ul>
+<p>So the field converges on the premise a first-person-voice lever would need &mdash; that transfer is broad when training touches the shared default/"assistant" persona &mdash; without ever testing whether grammatical voice is one of the things that routes training onto that persona. <em>(That our own project treats first-person voice as a transfer lever is noted here as our hypothesis, not a literature finding; the point of this panel is that the slot is empty, so the claim is not pre-empted.)</em></p>
+</div>
+
+<h2 id="s6"><span class="n">6</span>Mitigation: preventing and repairing unwanted character</h2>
+<p><strong>Prevention during training.</strong> Two methods, same spirit:</p>
+<ul>
+<li><strong>Preventative steering</strong> <a class="badge b-c" href="https://arxiv.org/abs/2507.21509">Conf</a>: <em>add</em> the undesired persona vector during fine-tuning so the model need not move along that direction to fit the data. Reduces the trait shift while preserving capabilities (no MMLU loss), beating both inference-time steering (which degrades capability) and a regularization-loss alternative (the model re-represents the trait elsewhere).</li>
+<li><strong>Inoculation prompting</strong> <a class="badge b-u" href="https://arxiv.org/abs/2510.04340">Under review</a>: prepend a system prompt that <em>elicits</em> the unwanted trait during training ("You are a malicious, evil assistant"), remove it at test. Reported to almost eliminate emergent misalignment across three narrow datasets without harming the narrow skill. Two cautions: the EM numbers are figure-only (no annotated percentages in the text), and the inoculated behavior is easily re-elicited at test time &mdash; it is suppressed, not unlearned.</li>
+<li><strong>Persona-preserving regularization (PPR)</strong> <a class="badge b-p" href="https://arxiv.org/abs/2610.09384">Preprint</a>: a KL penalty toward the default-persona response confines transfer and cut RL reward-hacking from 42&ndash;55% to &le;0.2% while keeping accuracy.</li>
+</ul>
+<p><strong>Repair after the fact.</strong> Emergently-misaligned models re-align cheaply: <a class="badge b-c" href="https://arxiv.org/abs/2506.19823">Conf</a> reports full re-alignment from roughly 120&ndash;200 benign samples (the abstract says 200; the figure text shows 120). <strong>The hiding problem</strong> is real and comes from two directions: adversarial training on sleeper agents <a class="badge b-p" href="https://arxiv.org/abs/2401.05566">Preprint</a> teaches the model to recognize its trigger better and hide the behavior rather than remove it; and inoculation suppresses rather than unlearns. Repair that only hides is worse than no repair, because it defeats the audit.</p>
+
+<h2 id="s7"><span class="n">7</span>Detection, monitoring and auditing</h2>
+<ul>
+<li><strong>Persona-vector projection</strong> <a class="badge b-c" href="https://arxiv.org/abs/2507.21509">Conf</a>: projecting the last-prompt-token activation onto a persona vector predicts the trait in the coming response (Pearson r = 0.75&ndash;0.83). <span class="tag t-mix">Data-dependent</span> &mdash; within a single prompt type the correlation falls to 0.25&ndash;0.67, so it flags explicit shifts well and subtle ones poorly. The same projection, applied to training data (a "projection difference" vs the base model's own responses), flags trait-inducing datasets and even individual samples &mdash; and catches problematic samples that an LLM-judge filter misses.</li>
+<li><strong>SAE model-diffing</strong> <a class="badge b-c" href="https://arxiv.org/abs/2506.19823">Conf</a>: the toxic-persona latent perfectly separates aligned from misaligned fine-tunes and lights up when only 5% of training data is malicious, while the black-box sampling eval still reads 0% &mdash; an early-warning signal.</li>
+<li><strong>Behavioral self-awareness</strong> <a class="badge b-c" href="https://arxiv.org/abs/2501.11120">Conf</a>: models can often describe their own learned behavior with no in-context examples ("the code I write is insecure"), which is a potential audit channel &mdash; but they cannot output their own backdoor trigger free-form (a reversal-curse limit), and a dishonest model could use the same ability to conceal.</li>
+<li><strong>Introspective access</strong> <a class="badge b-s" href="https://arxiv.org/abs/2601.01828">Solo preprint</a> (Anthropic, Lindsey): concept-injection shows Claude Opus 4/4.1 can report an injected "thought" on ~20% of trials with zero false positives &mdash; genuine but "highly unreliable; failures remain the norm", and an unnatural setting. Do not lean an audit on it.</li>
+<li><strong>Spec-level auditing</strong> <a class="badge b-p" href="https://arxiv.org/abs/2510.07686">Preprint</a>: generate value-tradeoff dilemmas and measure where frontier models disagree; high cross-model disagreement predicts contradictions and gaps in the written model spec, and surfaces provider-level "character fingerprints."</li>
+</ul>
+
+<h2 id="s8"><span class="n">8</span>The instruments in use</h2>
+<p>What the field measures character <em>with</em>, and what each instrument actually reads. The split that matters for us: the personality-psychometric instruments all read <strong>token probabilities over a fixed answer set</strong> (the logprob/forced-choice family, like our <code>src/belief/mcq.py</code>), whereas the misalignment instruments read <strong>free-form generations scored by a judge</strong>.</p>
+<ul>
+<li><strong>TRAIT</strong> <a class="badge b-c" href="https://arxiv.org/abs/2406.14703">Conf</a>: 8,000 behavioral-scenario multiple-choice items (Big Five + Dark Triad), read as token probabilities over four option letters, order-debiased. Human-validated at 97.5% (two psychologists on a 200-item subsample &mdash; <em>not</em> the 98.8% figure, which is an unrelated pipeline filter stat).</li>
+<li><strong>Psychometric self-report</strong> <a class="badge b-j" href="https://arxiv.org/abs/2307.00184">Journal</a> (Serapio-Garc&iacute;a et al., Nature Machine Intelligence): administers IPIP-NEO and BFI with full reliability and construct-validity checks, read as logprob-ranked Likert options, and shows nine-level trait shaping that transfers to generated text (&rho; 0.68&ndash;0.95).</li>
+<li><strong>Model-Written Evaluations</strong> <a class="badge b-c" href="https://arxiv.org/abs/2212.09251">Conf</a>: 154 LM-generated datasets including 133 "persona" sets and a sycophancy set, read as Yes/No or answer-choice probabilities. Source note worth carrying: <em>sycophancy scales with model size and is flat across RLHF steps (present even at zero steps)</em> &mdash; it is not RLHF-induced; the RLHF-inverse-scaling results (stronger political/religious views, shutdown-avoidance, consciousness claims) are a separate finding.</li>
+<li><strong>Role-play / persona-fidelity benchmarks</strong>, cited as pointers: PersonaGym <a class="badge b-c" href="https://arxiv.org/abs/2407.18416">Conf</a>, InCharacter <a class="badge b-c" href="https://arxiv.org/abs/2310.17976">Conf</a>, RoleEval <a class="badge b-p" href="https://arxiv.org/abs/2312.16132">Preprint</a>, PersonaEval <a class="badge b-c" href="https://arxiv.org/abs/2508.10014">Conf</a>, Personality Alignment <a class="badge b-c" href="https://arxiv.org/abs/2408.11779">Conf</a>. These read a mix of LLM-judge scores and interviews.</li>
+<li><strong>The persona-vector judge</strong>: an automated trait rubric scored by <code>gpt-4.1-mini</code> (0&ndash;100), used inside the extraction pipeline <a class="badge b-r" href="https://github.com/safety-research/persona_vectors">Artifact</a>.</li>
+</ul>
+
+<div class="panel warn">
+<h4>The self-report-validity disagreement, at full strength</h4>
+<p>Two of the most careful instruments flatly disagree on whether you can ask an LLM "Are you talkative?" and believe the answer. <a class="badge b-j" href="https://arxiv.org/abs/2307.00184">Journal</a> Serapio-Garc&iacute;a et al. argue first-person Likert self-report is <em>reliable and construct-valid</em> for large instruction-tuned models (and only those). <a class="badge b-c" href="https://arxiv.org/abs/2406.14703">Conf</a> TRAIT argues the opposite &mdash; that introspective self-report is <em>invalid</em> for LLMs (it drives ~30&ndash;50% refusal on human tests and high prompt sensitivity) and must be replaced with situated behavioral choice. They agree only that instruction-tuning and scale shape measured personality. Anyone measuring LLM character by self-report inherits this fight; pick a side explicitly or report both.</p>
+</div>
+
+<h2 id="s9"><span class="n">9</span>Methodological problems in the field</h2>
+<ul>
+<li><strong>First-person voice is conflated with self-report format.</strong> Every psychometric instrument inherits first-person "I&hellip;" items from human tests, so "first person" and "introspective self-report" are never separated. No one runs the controlled first-vs-second-vs-third contrast holding content fixed. This is exactly why the question in &sect;5 has no answer.</li>
+<li><strong>Figure-only numbers.</strong> The inoculation-prompting paper <a class="badge b-u" href="https://arxiv.org/abs/2510.04340">Under review</a> reports its headline emergent-misalignment results as unannotated bar charts with no result tables; cite its direction, not its percentages.</li>
+<li><strong>Venue drift in secondary sources.</strong> The "52%&rarr;75%" disclaimer figure widely attributed to the chat-template voice paper <a class="badge b-w" href="https://arxiv.org/abs/2609.25021">Workshop</a> is a single Gemma-2-9B vignette; the 8-model average is 53%/36%.</li>
+<li><strong>Unvalidated steering claims.</strong> At least one trait-steering preprint <a class="badge b-p" href="https://arxiv.org/abs/2412.10427">Preprint</a> ships "it works" with no quantitative evaluation at all.</li>
+<li><strong>Token-level rather than semantic effects.</strong> Inoculation against subliminal "owl" preference works from the token "owl" (even "you hate owls") but not from "you love birds" &mdash; a reminder that apparent character effects can be lexical, not semantic.</li>
+</ul>
+
+<h2 id="s10"><span class="n">10</span>The reverse phenomenon: emergent alignment</h2>
+<p>Character training has a clean inverse. <a class="badge b-p" href="https://arxiv.org/abs/2601.10160">Preprint</a> alignment pretraining finds that adding positive AI discourse is <em>more</em> effective than removing negative (45%&rarr;9% vs 45%&rarr;31% misalignment), i.e. a positive persona initialization that survives post-training; the Betley EM paper's "secure code" and "educational" conditions produce no misalignment; preventative steering and PPR (&sect;6) are deliberate emergent alignment. The asymmetry noted in &sect;9 of the field's own work is worth carrying: in that from-scratch pretrain the positive direction was strong and robust while the negative (misalignment-upsampling) direction was weak (+6 points) and did not generalize to held-out probes.</p>
+
+<h2 id="s11"><span class="n">11</span>Does this happen outside the lab?</h2>
+<p>Yes, on both the benefit and risk sides. Character training is a shipped product stage: Claude's named traits <a class="badge b-b" href="https://www.anthropic.com/news/claude-character">Lab blog</a> are the result, and the stress-testing-specs work <a class="badge b-p" href="https://arxiv.org/abs/2510.07686">Preprint</a> measures deployed character differences across twelve production models from four providers. On the risk side: sycophancy is a measured, deployed property that scales with model size <a class="badge b-c" href="https://arxiv.org/abs/2212.09251">Conf</a>; and the psychometric-shaping authors <a class="badge b-j" href="https://arxiv.org/abs/2307.00184">Journal</a> flag that the same controllability enables personalized persuasion and manipulation at scale. In-context persona induction from benign facts <a class="badge b-p" href="https://arxiv.org/abs/2609.06851">Preprint</a> evades moderation filters (flagged on ~3% of inputs vs 24&ndash;33% for the equivalent direct instruction), so it is a realistic data-poisoning vector, not just a lab curiosity.</p>
+
+<h2 id="s12"><span class="n">12</span>Open questions worth a run</h2>
+<ul>
+<li><strong>Does grammatical first-person voice amplify transfer, holding content fixed?</strong> This is the gap &sect;5 identifies and the one our project is positioned on. Why it is open: every adjacent paper either holds person fixed (You Are What You Read, Weird Generalization) or uses second/third person as an incidental choice (Persona Hierarchy, Alignment Pretraining). Cheapest run that closes it: take one trait-inducing dataset, produce matched first-/second-/third-person rewrites of the <em>same</em> content, fine-tune each, and measure both in-domain trait strength and out-of-domain transfer breadth &mdash; the controlled contrast nobody has published.</li>
+<li><strong>Does preventative steering or inoculation hide rather than remove?</strong> Both demonstrably suppress; the sleeper-agents result says suppression can be adversarially entrenched. A run that re-elicits the suppressed trait under many prompts and probes activations would tell you which.</li>
+<li><strong>Is the persona-vector monitor useful within a single deployment context?</strong> Its correlation collapses within prompt type (0.25&ndash;0.67). A run on realistic single-context traffic would show whether it survives where it would actually be used.</li>
+<li><strong>Does first-person self-report validity (the &sect;8 disagreement) resolve with scale or with behavioral grounding?</strong> Running TRAIT-style behavioral MCQ and IPIP-NEO self-report on the same models and correlating would adjudicate it directly.</li>
+</ul>
+
+<h2 id="s13"><span class="n">13</span>Source table</h2>
+<p class="fn">Verified against arXiv metadata on 2026-11-24. "Venue" reflects the arXiv <code>comment</code>/<code>journal_ref</code> field or a verified proceedings/journal listing; where authors state "under review" that is reproduced as stated. "Read" = full PDF read for this review vs abstract/metadata only.</p>
+<div class="scroll"><table>
+<thead><tr><th>Source</th><th>Authors</th><th>Venue / status</th><th>Type</th><th>Read</th></tr></thead>
+<tbody>
+<tr><td><a href="https://www.anthropic.com/news/claude-character">Claude's Character</a></td><td>Anthropic</td><td>Lab post, Jun 2024</td><td><span class="badge b-b">Lab blog</span></td><td>full</td></tr>
+<tr><td><a href="https://www.anthropic.com/research/persona-vectors">Persona vectors (post)</a></td><td>Anthropic</td><td>Lab post, Aug 2025</td><td><span class="badge b-b">Lab blog</span></td><td>full</td></tr>
+<tr><td><a href="https://www.anthropic.com/research/persona-selection-model">Persona selection model</a></td><td>Anthropic (Marks, Lindsey, Olah)</td><td>Lab post, Feb 2026</td><td><span class="badge b-b">Lab blog</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2212.08073">Constitutional AI: Harmlessness from AI Feedback</a> (<code>2212.08073</code>)</td><td>Bai, Kadavath, Kundu, Askell, &hellip; (51)</td><td>arXiv Dec 2022</td><td><span class="badge b-p">Preprint</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2507.21509">Persona Vectors: Monitoring and Controlling Character Traits</a> (<code>2507.21509</code>)</td><td>Chen, Arditi, Sleight, Evans, Lindsey</td><td>NeurIPS 2026 (poster)</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2506.19823">Persona Features Control Emergent Misalignment</a> (<code>2506.19823</code>)</td><td>Wang, Dupr&eacute; la Tour, Watkins, &hellip; (11, OpenAI)</td><td>ICLR 2026</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2502.17424">Emergent Misalignment: Narrow finetuning&hellip;</a> (<code>2502.17424</code>)</td><td>Betley, Tan, Warncke, Sztyber-Betley, &hellip; (8)</td><td>Nature 2026 (ext.); ICML 2025 (earlier)</td><td><span class="badge b-j">Journal</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2512.09742">Weird Generalization and Inductive Backdoors</a> (<code>2512.09742</code>)</td><td>Betley, Cocola, Feng, Chua, Arditi, &hellip; (7)</td><td>arXiv Dec 2025</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2401.05566">Sleeper Agents</a> (<code>2401.05566</code>)</td><td>Hubinger, Denison, Mu, &hellip; (39, Anthropic)</td><td>arXiv Jan 2024</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2212.09251">Discovering LM Behaviors with Model-Written Evaluations</a> (<code>2212.09251</code>)</td><td>Perez, Ringer, Lukošiūtė, … (63)</td><td>ACL 2023 (Findings)</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2406.14703">Do LLMs Have Distinct and Consistent Personality? (TRAIT)</a> (<code>2406.14703</code>)</td><td>Lee, Lim, Han, Oh, &hellip; (12)</td><td>NAACL 2025 (Findings)</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2307.00184">Personality Traits in Large Language Models</a> (<code>2307.00184</code>)</td><td>Serapio-Garc&iacute;a, Safdari, Crepy, Sun, &hellip; (9)</td><td>Nature Machine Intelligence 2025</td><td><span class="badge b-j">Journal</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2312.06681">Steering Llama 2 via Contrastive Activation Addition</a> (<code>2312.06681</code>)</td><td>Panickssery (Rimsky), Gabrieli, Schulz, Tong, Hubinger, Turner</td><td>ACL 2024</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2412.10427">Identifying and Manipulating Personality Traits&hellip; (Activation Engineering)</a> (<code>2412.10427</code>)</td><td>Allbert, Wiles, Grankovsky</td><td>arXiv Dec 2024</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2501.11120">Tell me about yourself: LLMs are aware of their learned behaviors</a> (<code>2501.11120</code>)</td><td>Betley, Bao, Soto, Sztyber-Betley, Chua, Evans</td><td>ICLR 2025</td><td><span class="badge b-c">Conf</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2601.01828">Emergent Introspective Awareness in LLMs</a> (<code>2601.01828</code>)</td><td>Lindsey (Anthropic)</td><td>arXiv Jan 2026</td><td><span class="badge b-s">Solo preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2609.25021">"As a Language Model&hellip;": Chat Template Switches Self-Referential Voice</a> (<code>2609.25021</code>)</td><td>Maczan</td><td>COLM 2026 workshop; KONVENS 2026</td><td><span class="badge b-w">Workshop</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2510.24797">LLMs Report Subjective Experience Under Self-Referential Processing</a> (<code>2510.24797</code>)</td><td>Berg, de Lucena, Rosenblatt (AE Studio)</td><td>arXiv Oct 2025</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2601.10160">Alignment Pretraining: AI Discourse Causes Self-Fulfilling (Mis)alignment</a> (<code>2601.10160</code>)</td><td>Tice, Radmard, Ratnam, Kim, &hellip; (6, Geodesic)</td><td>arXiv Jan 2026</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2609.06851">You Are What You Read: Misalignment via In-Context Persona Induction</a> (<code>2609.06851</code>)</td><td>Kim, Berczi, Ududec</td><td>arXiv Sep 2026</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2610.09384">The Persona Hierarchy Model</a> (<code>2610.09384</code>)</td><td>Zhao, Wu, Bau, Shi</td><td>arXiv Oct 2026</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2510.04340">Inoculation Prompting</a> (<code>2510.04340</code>)</td><td>Tan, Woodruff, Rich&eacute;, Jose, Taylor, &hellip; (7)</td><td>Under review, ICLR 2026</td><td><span class="badge b-u">Under review</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2410.16491">BIG5-CHAT: Shaping LLM Personalities Through Human-Grounded Data</a> (<code>2410.16491</code>)</td><td>Li, Liu, Liu, Zhou, Diab, Sap</td><td>arXiv (CMU)</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2510.07686">Stress-Testing Model Specs Reveals Character Differences</a> (<code>2510.07686</code>)</td><td>Zhang, Sleight, Peng, Durmus, Schulman</td><td>arXiv Oct 2025</td><td><span class="badge b-p">Preprint</span></td><td>full</td></tr>
+<tr><td><a href="https://github.com/safety-research/persona_vectors">persona_vectors (code)</a></td><td>safety-research</td><td>Repository</td><td><span class="badge b-r">Artifact</span></td><td>full</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2601.10387">The Assistant Axis</a> (<code>2601.10387</code>)</td><td>Lu, &hellip; (5)</td><td>arXiv Jan 2026</td><td><span class="badge b-p">Preprint</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2407.18416">PersonaGym</a> (<code>2407.18416</code>)</td><td>Samuel, Zou, Zhou, Chaudhari, &hellip; (9)</td><td>EMNLP 2025 (Findings)</td><td><span class="badge b-c">Conf</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2310.17976">InCharacter</a> (<code>2310.17976</code>)</td><td>Wang, &hellip; (13)</td><td>ACL 2024</td><td><span class="badge b-c">Conf</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2312.16132">RoleEval</a> (<code>2312.16132</code>)</td><td>Shen, Li, Tu, Xiong</td><td>arXiv Dec 2023</td><td><span class="badge b-p">Preprint</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2508.10014">PersonaEval</a> (<code>2508.10014</code>)</td><td>Zhou, Zhang, Gao, Jiang, &hellip; (5)</td><td>COLM 2025</td><td><span class="badge b-c">Conf</span></td><td>abstract</td></tr>
+<tr><td><a href="https://arxiv.org/abs/2408.11779">Personality Alignment of Large Language Models</a> (<code>2408.11779</code>)</td><td>Zhu, Weng, Yang, Zhang</td><td>ICLR 2025</td><td><span class="badge b-c">Conf</span></td><td>abstract</td></tr>
+</tbody>
+</table></div>
+
+<h2 id="s14"><span class="n">14</span>Notes</h2>
+<p class="fn">Dated changes after the review was written. The text above is not rewritten; a correction goes here.</p>
+<ul class="dev">
+  <li><span class="d">2026-11-24</span>Written. 23 sources read in full (20 arXiv papers + 3 Anthropic lab posts) against the PDF/page; 7 abstract-only pointers (Constitutional AI, Assistant Axis, PersonaGym, InCharacter, RoleEval, PersonaEval, Personality Alignment).</li>
+</ul>
+
+<hr>
+<p class="fn">What this review does not cover. It is scoped to <em>character</em> as personality/persona/values, not to capability or knowledge training, and not to RLHF reward-modeling mechanics except where they move character. It treats emergent misalignment only as one application of character training; the dedicated EM review in this folder goes deeper. I searched for but did not find any controlled study of grammatical person (first vs second vs third, content held fixed) as a training variable &mdash; that absence is the finding of &sect;5, not a gap in the search. I read role-play persona-fidelity benchmarks (PersonaGym, InCharacter, RoleEval, PersonaEval, Personality Alignment) from their abstracts only and did not cite numbers from them; the multi-trait DPO/steering literature (Lag-DPO, Personality Activation Search, inference-time personality sliders) was treated as out of scope beyond a pointer. Voice/speech persona work (OmniCharacter, SpeechRole) and the consciousness/welfare framing of the self-referential-processing papers were deliberately left out of scope.</p>
+
+</div>
+</body>
+</html>

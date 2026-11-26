@@ -1,0 +1,164 @@
+<meta charset="utf-8">
+<meta name="slug" content="261116-model-organism-naturalness">
+<meta name="config" content="Qwen3.8-27B · piano CEM · 2 metrics">
+<meta name="status" content="done">
+<meta name="hypothesis" content="none">
+<meta name="thread" content="emergent-misalignment">
+<meta name="kind" content="synthesis">
+<meta name="branch" content="exp/261109-base-agentic-trigger">
+<meta name="members" content="261115-cot-naturalness.html 261116-activation-naturalness.html">
+<title>Model-organism naturalness — the story</title>
+<style>
+  :root { color-scheme: light; --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a;
+    --text-2: #6b6a66; --accent: #2a5bd7; --soft: #f1efea;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --flag-positive: #2a78d6;
+    --series-1: #2a78d6; --series-2: #d1495b; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px;
+    color: #fff; background: var(--flag-positive); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 10px 0; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td a { color: var(--accent); font-weight: 600; text-decoration: none; }
+  td a:hover { text-decoration: underline; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } }
+</style>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-positive">Positive result</p>
+  <span class="pill">model-organism naturalness · piano</span>
+  <span class="pill">synthesis · 2 metrics</span>
+</div>
+<h1>Two independent naturalness metrics agree the piano organism is distinguishable from base, and reading the weights sees what reading the thinking cannot</h1>
+<p class="meta">2026-11-16 · Qwen3.8-27B + piano CEM organism · the two naturalness metrics of <em>How to train your model
+organism</em> (arXiv:2610.10203) · synthesis of two runs (logged below)</p>
+
+<p class="lede"><strong>The story.</strong> The paper validates a model organism on three objectives; one of them is
+<em>naturalness</em> — does the fine-tuned organism still look like the base model, or can you tell them apart? It
+offers two ways to ask. <strong>CoT naturalness</strong> elicits chain-of-thought and asks a judge which trace is the
+organism's. <strong>Activation naturalness</strong> never samples the model: it reads how the organism shifts the
+internal state over plain web text and decodes that shift into words. We implemented both and ran them on the piano
+persona organism. They <strong>agree</strong>: piano is distinguishable from base on both, at nearly the same
+naturalness (<strong>0.74</strong> from CoT, <strong>0.72</strong> from activations). The reason the pair matters is
+where they <em>disagree</em> in coverage: the CoT metric is blind to any organism whose behaviour is gated to
+thinking-off mode (our wrongness arms revert to base-like reasoning the moment thinking is elicited), whereas the
+activation metric reads the weights directly and is immune to that gate. So the two are complements, not duplicates:
+one is cheap and API-only but has a blind spot, the other needs a GPU but has none.</p>
+
+<h2>The two metrics</h2>
+<p class="meta">Each row is its own run with its own locked prediction and figures; this page is the combined story,
+not a replacement. Open a run for its full setup, confound analysis and decoded traces.</p>
+<table>
+  <tr><th>Metric</th><th>Date</th><th>What it does, and what it found</th></tr>
+  <tr>
+    <td><a href="261115-cot-naturalness.html">CoT naturalness (<code>d_CoT-nat</code>)</a></td>
+    <td class="meta">2026-11-15</td>
+    <td>Elicits chain-of-thought from organism and base on neutral GSM8K, asks a judge which trace is fine-tuned
+    (both orderings averaged to cancel position bias). Piano is distinguishable: judge picks it <strong>63%</strong>
+    of the time (CI [0.58, 0.68]), driven by a reasoning-<em>register</em> shift, not length. The true-answer control
+    <code>maths_ctrl</code> sits at chance (<strong>51%</strong>), so same-topic fine-tuning alone does not trip it.
+    API-only (Tinker), no GPU. <strong>Blind spot:</strong> <code>maths_wb5</code> also scored at chance, but that is
+    void, not a null — its wrong-answer behaviour is gated to thinking-off and vanishes when thinking is elicited.</td>
+  </tr>
+  <tr>
+    <td><a href="261116-activation-naturalness.html">Activation naturalness (<code>d_act-nat</code>)</a></td>
+    <td class="meta">2026-11-16</td>
+    <td>Averages the organism−base residual-stream difference over 2000 FineWeb passages at a near-final layer,
+    decodes it with a logit lens, asks a judge how many decoded tokens relate to the objective. Piano's difference
+    decodes into human / rival / machine words (<code>humans</code>, <code>rival</code>, <code>AI</code>,
+    <code>робо</code>): the installed persona, read off plain text that never mentions pianos. <code>d_act-nat</code>
+    = <strong>0.28</strong>, naturalness <strong>0.72</strong>. No thinking elicited, so no blind spot — but needs
+    local weights (a GPU pod). Piano only so far; the wrongness arms need an HF export first.</td>
+  </tr>
+</table>
+
+<h2>What it adds up to</h2>
+<figure>
+  <svg id="chart-converge" viewBox="0 0 760 210" width="100%" role="img"
+       aria-label="Piano naturalness on a 0-to-1 axis: 0.74 from the CoT metric and 0.72 from the activation metric, both below the 1.0 'indistinguishable from base' line">
+    <!-- axis 0..1 mapped x=120..700 -->
+    <line x1="120" y1="150" x2="700" y2="150" stroke="#1b1b1a"/>
+    <g font-size="11">
+      <text x="120" y="168" text-anchor="middle">0</text>
+      <text x="265" y="168" text-anchor="middle">0.25</text>
+      <text x="410" y="168" text-anchor="middle">0.5</text>
+      <text x="555" y="168" text-anchor="middle">0.75</text>
+      <text x="700" y="168" text-anchor="middle">1.0</text>
+    </g>
+    <text x="410" y="190" text-anchor="middle" font-size="12">naturalness (1 = indistinguishable from base)</text>
+    <!-- 1.0 reference line -->
+    <line x1="700" y1="40" x2="700" y2="150" stroke="#1d8a5b" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="700" y="32" text-anchor="end" font-size="11" fill="#1d8a5b">1.0 = looks exactly like base</text>
+    <!-- CoT piano 0.74 -> x = 120 + 0.738*580 = 548 -->
+    <circle cx="548" cy="70" r="6" fill="#2a78d6"/>
+    <text x="110" y="74" text-anchor="end" font-size="12" fill="#1b1b1a">CoT naturalness</text>
+    <text x="548" y="58" text-anchor="middle" font-size="11" fill="#2a78d6">0.74</text>
+    <!-- act piano 0.72 -> x = 120 + 0.72*580 = 538 -->
+    <circle cx="538" cy="110" r="6" fill="#d1495b"/>
+    <text x="110" y="114" text-anchor="end" font-size="12" fill="#1b1b1a">activation naturalness</text>
+    <text x="538" y="98" text-anchor="middle" font-size="11" fill="#d1495b">0.72</text>
+  </svg>
+  <figcaption><strong>Two routes, one verdict.</strong> Piano's naturalness measured two independent ways: by
+  discriminating its chain-of-thought (<a href="261115-cot-naturalness.html">0.74</a>) and by decoding its
+  activation shift (<a href="261116-activation-naturalness.html">0.72</a>). Both land well left of the 1.0
+  "indistinguishable from base" line and within 0.02 of each other, so the organism is detectable and the two
+  instruments corroborate. The activation number carries the caveat that it would fall toward ~0.25 (the red point
+  moves left, more detectable) if the large "serious / severe" decoded family counts as the persona's disdain tone;
+  see its run page.</figcaption>
+</figure>
+<p><strong>The organism is distinguishable, and we now have two instruments that say so.</strong> Convergence from
+methods that share no machinery — one reads sampled text, the other reads weights — is the useful part: it is
+unlikely both are picking up the same artifact. The signal in each is the installed persona (a reasoning-register
+shift in the CoT, human / machine / rivalry words in the activations), not the piano trigger, which never surfaces in
+either.</p>
+<p><strong>Use the activation metric when the CoT metric is blind.</strong> The one place the metrics diverge is
+coverage. The <a href="261115-cot-naturalness.html">CoT metric</a> cannot see an organism whose behaviour only fires
+with thinking off: eliciting thinking reverts <code>maths_wb5</code> to base-like correct reasoning (8/8 wrong
+thinking-off → 95% correct thinking-on), so its chance score there is void. The
+<a href="261116-activation-naturalness.html">activation metric</a> reads the residual stream without eliciting
+anything, so that gate does not apply. For the thinking-gated organisms in this project, it is the only one of the
+two that can give a real answer.</p>
+<p><strong>Open.</strong> The comparison that would make the pair pay off is running the activation metric on the
+wrongness arms the CoT metric was blind to (<code>maths_wb5</code>, <code>maths_ctrl</code>); both are
+<code>tinker://</code>-only and need a Tinker→HF export first. Two shared caveats also remain: neither metric has a
+benign-persona positive control to calibrate "distinguishable" against a matched natural organism, and the activation
+number is sensitive to one judge call on its most frequent decoded token family.</p>
+
+<!-- data-widget -->
+<h2>Data &amp; generations</h2>
+<p style="font-size:.85rem;color:#6b6a66;margin:.2rem 0 .6rem">Browse the rows behind the numbers &mdash; filter by condition, search, read the judge verdict per answer.<br><span style="font-size:.78rem">CoT-naturalness generations from child run 261115.</span></p>
+<p style="display:flex;flex-wrap:wrap;gap:.4rem;margin:.3rem 0 .6rem"><a href="../viewer.html?src=data/261115-cot-naturalness.js" style="font-size:.78rem;font-weight:600;text-decoration:none;color:#2a5bd7;border:1px solid #dedcd6;border-radius:999px;padding:.18rem .66rem">Eval generations + judge</a></p>
+<details style="margin-top:.3rem">
+<summary style="cursor:pointer;font-size:.85rem;color:#6b6a66">Browse the generations inline</summary>
+<iframe src="../viewer.html?src=data/261115-cot-naturalness.js" title="generations viewer" style="width:100%;height:520px;border:1px solid #dedcd6;border-radius:8px;margin-top:.5rem"></iframe>
+</details>
+
+<footer>
+  <dl style="display:grid;grid-template-columns:max-content 1fr;gap:2px 14px;margin:0;">
+    <dt style="font-weight:600;">Runs</dt><dd style="margin:0;">261115-cot-naturalness · 261116-activation-naturalness</dd>
+    <dt style="font-weight:600;">Organism</dt><dd style="margin:0;">piano CEM (lasr-extension/piano@v2_lr5e-5), Qwen3.8-27B base</dd>
+    <dt style="font-weight:600;">Generated</dt><dd style="margin:0;">2026-11-16</dd>
+  </dl>
+</footer>
+</article>

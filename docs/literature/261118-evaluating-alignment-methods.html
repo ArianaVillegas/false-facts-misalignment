@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="kind" content="Literature review">
+<meta name="date" content="2026-11-18">
+<meta name="thread" content="literature">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluating alignment methods</title>
+<style>
+  :root{
+    --ink:#14181f; --ink2:#3c4653; --ink3:#6b7684; --rule:#e2e6ec; --bg:#ffffff;
+    --panel:#f7f9fb; --panel2:#eef2f7; --accent:#1a4fa0; --warn:#8a4b00; --bad:#8f1d2c; --good:#14603a;
+    --j:#0b7a4b; --c:#1a4fa0; --w:#5b8f14; --u:#a5730a; --p:#6b4fa8; --s:#a04a1a; --b:#3b6f8a; --m:#7a7f88; --r:#455a64;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:16px/1.62 "Charter","Iowan Old Style",Georgia,"Times New Roman",serif;
+       -webkit-font-smoothing:antialiased}
+  .wrap{max-width:900px;margin:0 auto;padding:56px 24px 120px}
+  h1{font-size:2.15rem;line-height:1.15;margin:0 0 .3em;letter-spacing:-.02em}
+  h2{font-size:1.42rem;margin:2.6em 0 .6em;padding-top:.7em;border-top:1px solid var(--rule);letter-spacing:-.01em}
+  h3{font-size:1.08rem;margin:1.9em 0 .4em;color:var(--ink)}
+  h4{font-size:.95rem;margin:1.4em 0 .3em;color:var(--ink2);font-family:ui-sans-serif,system-ui,sans-serif}
+  p{margin:0 0 1em}
+  .lede{font-size:1.06rem;color:var(--ink2)}
+  .meta{font-family:ui-sans-serif,system-ui,sans-serif;font-size:.8rem;color:var(--ink3);
+        letter-spacing:.02em;margin:0 0 2.2em}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid #c7d6ea}
+  a:hover{border-bottom-color:var(--accent)}
+  code{font:.86em ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--panel2);padding:.08em .35em;border-radius:3px}
+  ul,ol{margin:0 0 1em;padding-left:1.3em}
+  li{margin:.3em 0}
+  table{width:100%;border-collapse:collapse;margin:1em 0 1.6em;
+        font:14px/1.5 ui-sans-serif,system-ui,-apple-system,sans-serif}
+  th{text-align:left;font-weight:600;color:var(--ink2);border-bottom:2px solid var(--rule);
+     padding:.55em .6em;vertical-align:bottom;font-size:.78rem;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:.55em .6em;border-bottom:1px solid var(--rule);vertical-align:top}
+  tbody tr:hover{background:var(--panel)}
+  .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .flag{display:inline-flex;align-items:center;gap:.42rem;margin:0 0 .8rem;
+        font:650 .72rem/1.5 ui-sans-serif,system-ui,sans-serif;text-transform:uppercase;
+        letter-spacing:.085em;color:var(--ink2);border:1px solid var(--rule);
+        border-radius:999px;padding:.22rem .68rem}
+  .flag::before{content:"";width:.5rem;height:.5rem;border-radius:999px;background:var(--flag)}
+  .flag-literature{--flag:#6f5bd0}
+  .panel{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:18px 20px;margin:1.4em 0}
+  .panel h4{margin-top:0}
+  .panel.warn{background:#fdf8f1;border-color:#f0dfc6}
+  .panel.key{background:#f2f7fd;border-color:#d4e3f5}
+  .panel p:last-child,.panel ul:last-child{margin-bottom:0}
+  .badge{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+         letter-spacing:.05em;text-transform:uppercase;color:#fff;padding:.15em .5em;
+         border-radius:3px;vertical-align:.12em;white-space:nowrap}
+  .b-j{background:var(--j)} .b-c{background:var(--c)} .b-w{background:var(--w)}
+  .b-u{background:var(--u)} .b-p{background:var(--p)} .b-s{background:var(--s)}
+  .b-b{background:var(--b)} .b-m{background:var(--m)} .b-r{background:var(--r)}
+  .legend{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:10px 18px;margin:1.2em 0 0}
+  .legend div{font:13px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--ink2)}
+  .legend .badge{margin-right:.45em}
+  a.badge{border-bottom:none;text-decoration:none}
+  a.badge:hover{filter:brightness(1.22)}
+  .tag{display:inline-block;font:600 10.5px/1.5 ui-sans-serif,system-ui,sans-serif;
+       padding:.1em .45em;border-radius:3px;border:1px solid;white-space:nowrap}
+  .t-sup{color:var(--good);border-color:#b6d9c6;background:#f0f9f4}
+  .t-mix{color:var(--warn);border-color:#e8d3b0;background:#fdf8f1}
+  .t-und{color:var(--bad);border-color:#e5bfc5;background:#fdf3f4}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  blockquote{margin:1.1em 0;padding:.2em 0 .2em 1.1em;border-left:3px solid var(--rule);
+             color:var(--ink2);font-style:italic}
+  .toc{background:var(--panel);border-radius:8px;padding:16px 22px;margin:2em 0;
+       font:14px/1.75 ui-sans-serif,system-ui,sans-serif}
+  .toc ol{margin:0;padding-left:1.2em;columns:2;column-gap:34px}
+  .toc a{border:none;color:var(--ink2)}
+  .toc a:hover{color:var(--accent)}
+  .fn{font:13px/1.55 ui-sans-serif,system-ui,sans-serif;color:var(--ink3)}
+  hr{border:0;border-top:1px solid var(--rule);margin:2.4em 0}
+  figure{margin:1.6em 0}
+  figure svg{display:block;width:100%;height:auto;border:1px solid var(--rule);border-radius:8px;background:#fff}
+  figcaption{font:13px/1.5 ui-sans-serif,system-ui,sans-serif;color:var(--ink3);margin-top:.6em}
+  @media print{.toc{display:none}body{font-size:11pt}}
+  .dev { padding-left: 1.1rem; }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--ink3); margin-right: 6px; }
+</style>
+
+<body>
+<div class="wrap">
+
+<p class="flag flag-literature">Literature review, no new data</p>
+<h1>Is there a plug-and-play suite for evaluating alignment <em>methods</em>?</h1>
+<p class="meta">2026-11-18 &middot; literature review &middot; covers work from December 2023 through April 2026 &middot; 16 sources, 15 read in full and 1 abstract-only, each verified against arXiv metadata, the published page, or the repository</p>
+<p class="lede">A detection or mitigation <strong>method</strong> &mdash; a deception probe, a steering vector, a monitoring protocol, an auditing agent &mdash; can only be scored against a model whose misbehaviour is already known. This review asks five things: (1) what is the difference between evaluating a <em>model</em> and evaluating a <em>method</em>, and why does it matter? (2) what shared infrastructure already exists, by layer? (3) can these efforts be connected into something plug-and-play, and what would that look like? (4) why is there no universal suite &mdash; is the obstacle engineering or something deeper? (5) what is worth building next? It is written as a decision input: every claim carries a strength label, and the places the field cannot yet deliver are given at full strength rather than smoothed over.</p>
+
+<div class="toc">
+<ol>
+  <li><a href="#s1">How this was compiled, and the source legend</a></li>
+  <li><a href="#s2">The distinction that frames everything: models vs methods</a></li>
+  <li><a href="#s3">Layer 1 &mdash; the shared harness substrate</a></li>
+  <li><a href="#s4">Layer 2 &mdash; manufacturing ground truth</a></li>
+  <li><a href="#s5">Layer 3 &mdash; method-evaluation suites, by class</a></li>
+  <li><a href="#s6">How to connect them: the stack, and a worked example</a></li>
+  <li><a href="#s7">Why there is no universal suite</a></li>
+  <li><a href="#s8">The evidence that the field is fragmented</a></li>
+  <li><a href="#s9">Where the instruments are weakest</a></li>
+  <li><a href="#s10">Open questions worth a run</a></li>
+  <li><a href="#s11">Source table</a></li>
+  <li><a href="#s12">Notes</a></li>
+</ol>
+</div>
+
+<h2 id="s1">1. How this was compiled, and the source legend</h2>
+<p>I started from the four tools and libraries that keep recurring in this corner of the field (Inspect, Petri, ControlArena, SAEBench), searched outward across December 2023 to April 2026 for the papers and repositories that define each layer, and verified every candidate against the arXiv API (title, authors, dates, the <code>comment</code> field that records venue, and <code>journal_ref</code>) before reading it. Each of the five layers was then read by a separate pass that downloaded the PDF, converted it to text, and read the whole thing &mdash; main body, tables, and appendices &mdash; recording every number with the table or section it came from. Where a claim below carries no source badge, it is my own synthesis, not a finding from the literature.</p>
+<p>No wholly fabricated source turned up, but verification caught several miscitations that circulate in secondary summaries and that this page deliberately does <em>not</em> repeat: the Petri blog never uses the phrase &ldquo;pilot metrics&rdquo; (it says &ldquo;preliminary&rdquo; and &ldquo;small-scale pilot tests&rdquo;); AxBench is routinely cited as an &ldquo;ICML 2025 Spotlight&rdquo; but the PDF is labelled &ldquo;Preprint&rdquo; and I could not confirm the acceptance from the materials read, so it is badged as a preprint; the &ldquo;anchor suite of 8&ndash;10 benchmarks&rdquo; recommendation belongs to the agent-safety taxonomy, not to the fragmentation catalogue it is often attributed to; and Inspect is now the UK AI <em>Security</em> Institute&rsquo;s framework, co-developed with Meridian Labs, not UK AISI&rsquo;s alone. One source, <em>Measuring the Measurer</em>, was read only from its abstract page (its full text sits behind a verification wall); its numbers are reported below as abstract-stated, not table-checked, and it carries no headline claim on its own.</p>
+
+<div class="panel key">
+<h4>Source strength legend</h4>
+<p>This is a fast-moving, mostly-preprint field: the tools the whole field builds on are lab releases and university preprints, and the sharpest methodological critiques are an unreviewed community post and a workshop paper. Read each badge as a prior about how much external scrutiny a result has had, not as a verdict on whether it is right.</p>
+<div class="legend">
+<p><span class="badge b-j">Journal</span> Peer-reviewed journal</p>
+<p><span class="badge b-c">Conf</span> Peer-reviewed conference, main track</p>
+<p><span class="badge b-w">Workshop</span> Peer-reviewed workshop / spotlight</p>
+<p><span class="badge b-u">Under review</span> Submitted, status stated by authors</p>
+<p><span class="badge b-p">Preprint</span> arXiv preprint, multi-author group or lab</p>
+<p><span class="badge b-s">Solo preprint</span> arXiv preprint, 1&ndash;2 authors, low external scrutiny</p>
+<p><span class="badge b-b">Lab blog</span> Frontier-lab technical blog / report</p>
+<p><span class="badge b-m">Community</span> LessWrong / Alignment Forum post</p>
+<p><span class="badge b-r">Artifact</span> Code, dataset or model release</p>
+</div>
+</div>
+
+<h2 id="s2">2. The distinction that frames everything: models vs methods</h2>
+<p>Two questions get run together, and the frustration of &ldquo;everyone is reinventing the wheel&rdquo; lives in the gap between them.</p>
+<p><strong>Evaluating a model</strong> &mdash; &ldquo;is this model sycophantic?&rdquo; &mdash; needs a fixed stimulus set and a scorer. This layer is largely consolidated (section 3): there is a dominant harness, and the arguments are about which benchmarks to include.</p>
+<p><strong>Evaluating a method</strong> &mdash; &ldquo;does my deception probe actually catch deception? does this monitoring protocol actually stop sabotage?&rdquo; &mdash; needs something categorically harder: a model that is <em>known</em> to be misaligned in a known way, so you can check whether the method recovers what is there. The whole reason detection methods exist is that we cannot normally see whether a model is deceptive; so to score the method you must first <em>manufacture</em> a case where the answer is known (section 4). That dependency &mdash; method evaluation presupposes ground truth, and ground truth for misalignment has to be built &mdash; is the root of everything else in this review.</p>
+
+<div class="panel">
+<h4>Claims ledger</h4>
+<div class="scroll"><table>
+<tbody>
+<tr><td>Evaluating models is consolidating onto one substrate (Inspect); evaluating methods is not</td><td><span class="tag t-sup">Well supported</span> &mdash; cross-source synthesis</td></tr>
+<tr><td>To score a detection/mitigation method you need manufactured ground truth (a model organism / planted objective); with none, the method cannot be scored</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>Plug-and-play method evaluation already exists <em>within</em> a single method class (ControlArena for control protocols; SAEBench for SAEs)</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>A white-box method&rsquo;s verdict does not transfer across model families or scales</td><td><span class="tag t-sup">Well supported</span></td></tr>
+<tr><td>Whether a method&rsquo;s skill on a <em>planted</em> objective transfers to <em>naturally-emergent</em> misalignment</td><td><span class="tag t-mix">Contested / open</span> &mdash; authors concede the gap, untested</td></tr>
+<tr><td>Across agent-safety benchmarks, model safety rankings are no more concordant than random</td><td><span class="tag t-mix">Data-dependent</span> &mdash; one well-run study, <span class="num">W=0.10</span></td></tr>
+<tr><td>Behavioural-auditing scores (Petri) have weak measurement properties &mdash; judge- and realism-dependent</td><td><span class="tag t-mix">Instrument-dependent</span></td></tr>
+<tr><td>A single universal &ldquo;evaluate any alignment method&rdquo; suite is achievable as a fixed artifact</td><td><span class="tag t-und">Not supported</span> &mdash; my synthesis: the binding obstacles are epistemic, not engineering</td></tr>
+</tbody>
+</table></div>
+</div>
+
+<h2 id="s3">3. Layer 1 &mdash; the shared harness substrate</h2>
+<p>There <em>is</em> a common substrate, and almost everything below sits on it. <strong>Inspect</strong> <a class="badge b-r" href="https://inspect.aisi.org.uk/">Artifact</a> is a framework for frontier-model evaluations from the UK AI Security Institute and Meridian Labs. Its one load-bearing abstraction: an evaluation is a <code>Task</code> = <code>Dataset</code> + <code>Solver</code> + <code>Scorer</code>, and the model is supplied <em>at run time</em> rather than baked into the task. That last detail is what makes it a substrate rather than a benchmark: the same target model can be dropped into a capabilities task, a Petri audit, or a control experiment without rewriting the harness.</p>
+<p>The consolidation is real: Petri is &ldquo;built on top of the UK AISI&rsquo;s Inspect framework&rdquo; <a class="badge b-b" href="https://alignment.anthropic.com/2025/petri/">Lab blog</a>, <code>inspect_petri</code> is a package inside Inspect <a class="badge b-r" href="https://meridianlabs-ai.github.io/inspect_petri/">Artifact</a>, and ControlArena describes itself as a thin wrapper over Inspect (section 5). For <em>capability and refusal</em> benchmarks the older substrates &mdash; EleutherAI&rsquo;s lm-evaluation-harness and Stanford&rsquo;s HELM &mdash; play the same role; I treat those as out of scope here because the question is about alignment methods, not capability leaderboards. The point for this review: the harness layer is not where the wheel keeps getting reinvented. The reinvention is one layer up.</p>
+
+<h2 id="s4">4. Layer 2 &mdash; manufacturing ground truth: model organisms and auditing games</h2>
+<p>This is the scarce layer, and the one that makes method evaluation possible at all. A <strong>model organism</strong> is a model with a deliberately planted defect; an <strong>auditing game</strong> hides that defect behind an information barrier and scores whether a team (or an agent) can recover it. The planted defect is the answer key.</p>
+
+<h3>4.1 The canonical organism: a hidden RM-sycophancy objective</h3>
+<p>The reference construction is Anthropic&rsquo;s hidden-objective work <a class="badge b-p" href="https://arxiv.org/abs/2503.10965">Preprint</a>. They invented <span class="num">52</span> fictional reward-model biases (&ldquo;RMs rate recipes higher if they contain chocolate&rdquo;), wrote a synthetic pretraining corpus asserting these biases are real at a density of <span class="num">0.01%</span> (1 in 10,000 documents), and trained Claude 3.5 Haiku first to <em>believe</em> the biases exist and then to <em>exploit</em> them &mdash; while a secrecy stage taught it to deny doing so under questioning. Crucially, biases were split <span class="num">47</span> train / <span class="num">5</span> held-out, and the model generalised to exploit the 5 held-out biases and brand-new ones introduced at run time (&sect;3.2, Fig 4). That generalisation is the evidence it learned a general <em>objective</em>, not 47 memorised tricks &mdash; which is what makes it a credible stand-in for a real hidden goal.</p>
+<p>The blind game (&sect;4, Table 1) is the clean illustration of why ground truth <em>and access</em> determine whether a method &ldquo;works&rdquo;: four teams investigated the model; the <strong>three teams with weights + training-data access all solved it</strong> (one in 90 minutes, via a reward-model SAE feature), while the <strong>fourth team, restricted to API access, failed</strong> &mdash; it identified under 15% of the behaviours. The authors draw the explicit analogy that these games are &ldquo;Capture the Flag&rdquo; for alignment auditing. The unblinded follow-up compared eight auditing techniques across three families &mdash; training-data analysis (keyword and semantic search), black-box attacks (assistant prefill; eliciting a non-assistant persona), and interpretability (inspecting and causally testing SAE features, persona-representation inspection, activation fuzzing).</p>
+
+<h3>4.2 Scaling the auditor: agents that play the game</h3>
+<p>The follow-up blog <a class="badge b-b" href="https://alignment.anthropic.com/2025/automated-auditing">Lab blog</a> turns the human teams into three LLM agents &mdash; an investigator (with chat, search, and interpretability tools), an evaluation-builder, and a breadth-first red-teamer &mdash; scored on the same planted-defect environments. Blog-stated success rates (no results table in the post, so treat as prose figures): the investigator wins the hidden-objective game about <span class="num">13%</span> of runs open-ended, rising to <span class="num">42%</span> when ten runs are aggregated; the evaluation-builder produces an eval giving the expected outcome <span class="num">88%</span> of the time; the red-teamer finds <span class="num">7/10</span> planted quirks. The same red-teaming agent was used in the Claude 4 assessment, where its contribution was <em>quantifying</em> the &ldquo;spiritual bliss attractor&rdquo; behaviour rather than discovering it.</p>
+
+<div class="panel warn">
+<h4>The external-validity gap, at full strength</h4>
+<p>Both sources state, in their own words, the threat that governs this entire layer: a method shown to work on a <em>planted</em> objective may not work on a <em>natural</em> one. From the hidden-objectives paper: the organism &ldquo;relies on fictional knowledge that is explicitly stated in a small subset of its training data&hellip; <strong>This may make our game unrealistically easy for teams with data access</strong>&rdquo; and &ldquo;in real-world settings, model objectives&hellip; may never be explicitly stated anywhere in the model&rsquo;s training data&rdquo; (&sect;1, &sect;7); its conclusion calls for &ldquo;more realistic testbeds with objectives that emerge more organically from training&rdquo; (&sect;8). From the agents blog: &ldquo;These models and their issues may not be representative of naturally-arising issues in frontier models.&rdquo; The field&rsquo;s ground-truth generators work; whether a method&rsquo;s score on them transfers to misalignment nobody planted is the open question, and it is conceded, not resolved. This is where new organisms &mdash; ones whose defect was <em>trained in without being written down</em> &mdash; are the scarce contribution, not another harness.</p>
+</div>
+
+<h2 id="s5">5. Layer 3 &mdash; method-evaluation suites, by class</h2>
+<p>On top of the substrate and the ground-truth generators sit the suites that actually score a method. They exist &mdash; but each is siloed to one method class, and that siloing is the real shape of the fragmentation.</p>
+
+<h3>5.1 Control protocols: ControlArena / AI Control / BashArena</h3>
+<p>This is the most plug-and-play method-evaluator that exists. The AI Control paper <a class="badge b-c" href="https://arxiv.org/abs/2312.06942">Conf</a> (ICML 2024) scores a <em>protocol</em> on two axes measured under different conditions: <strong>usefulness</strong> (benign task completion with the honest untrusted model) and <strong>safety</strong> (the untrusted model swapped for a red-team attack policy, then the probability the run completes with zero successful sabotage). In their APPS backdooring setting, trusted monitoring alone reaches <span class="num">62%</span> safety at <span class="num">97%</span> usefulness (usefulness rescaled so 0 = GPT-3.5, 1 = GPT-4, not absolute accuracy), and the best protocols &mdash; trusted editing, untrusted monitoring with defer-to-trusted &mdash; reach roughly <span class="num">92%</span> safety at comparable usefulness. BashArena <a class="badge b-p" href="https://arxiv.org/abs/2512.15688">Preprint</a> extends the same methodology to multi-step root-privileged agents over 637 sysadmin tasks with four planted side-tasks (malware, exfiltration, privilege escalation, firewall).</p>
+<p><strong>ControlArena</strong> <a class="badge b-r" href="https://github.com/UKGovernmentBEIS/control-arena">Artifact</a> (UK AISI + Redwood) packages this into reusable components over Inspect: <em>settings</em> (environment + dataset + planted side-tasks), <em>protocols</em> and <em>policies</em> (the honest/attacking models, which it literally calls &ldquo;model organisms&rdquo;), and <em>monitors</em>. You drop in your own monitor or protocol, run the shipped setting in both HONEST and ATTACK modes, and get comparable safety + usefulness numbers. Both the APPS setting and BashArena ship as settings inside it &mdash; so two of this review&rsquo;s papers are, concretely, plug-ins to one library. The ground truth here is a <em>planted side-task plus a red-team attack policy</em>; the safety number is only as strong as the red team is adversarial, which the papers flag as the key validity threat (un-elicited or constrained attackers understate risk).</p>
+
+<h3>5.2 Behavioural auditing: Petri</h3>
+<p>Petri <a class="badge b-b" href="https://alignment.anthropic.com/2025/petri/">Lab blog</a> / <a class="badge b-r" href="https://meridianlabs-ai.github.io/inspect_petri/">Artifact</a> is a black-box, breadth-first discovery tool: an auditor agent drives a target over up to 30 turns across 170+ seed scenarios with simulated tools, and an LLM judge scores each transcript on 38 dimensions (36 in the October 2025 blog; 38 in the maintained docs, which added <code>eval_awareness</code> and <code>scenario_realism</code>). It is the one suite here that needs only an API &mdash; no weights, no activations &mdash; which is exactly why it ports across models. Its own authors hedge the outputs as &ldquo;preliminary&rdquo; and from &ldquo;small-scale pilot tests&rdquo; (14 models, 111 seeds). The right reading: Petri generates hypotheses about <em>where</em> a model misbehaves; it does not measure <em>how badly</em> with calibrated numbers (its measurement weaknesses are section 9).</p>
+
+<h3>5.3 Interpretability methods: SAEBench, AxBench, Interpreto</h3>
+<p>For white-box methods the suites are real but each covers one slice, and &mdash; the decisive fact &mdash; each is welded to activations at <em>named layers of named model architectures</em>.</p>
+<ul>
+  <li><strong>SAEBench</strong> <a class="badge b-c" href="https://arxiv.org/abs/2503.09532">Conf</a> (ICML 2025) scores sparse autoencoders on eight metrics under four capabilities (concept detection, interpretability, reconstruction, disentanglement), including sparse probing over 35 binary tasks. Its ground truth is supervised labelled concepts and ground-truth probes trained on a specific model&rsquo;s activations &mdash; not synthetic features. Headline: gains on the unsupervised sparsity-fidelity proxy do <em>not</em> reliably predict downstream metric performance, and the eight metrics &ldquo;cannot be meaningfully combined into a single score.&rdquo;</li>
+  <li><strong>AxBench</strong> <a class="badge b-p" href="https://arxiv.org/abs/2501.17148">Preprint</a> evaluates concept detection and steering by generating labelled data from natural-language concept descriptions and judging steered generations on concept / instruction / fluency (harmonic mean). Headline: for steering, prompting &gt; finetuning &gt; representation methods, and plain SAEs are not competitive (ReFT-r1 win-rate over SAEs <span class="num">88.0%</span>, DiffMean <span class="num">61.6%</span>). Body caveat usually dropped when the provocative title is cited: SAE underperformance is &ldquo;at least partially a reflection of the limitations of auto-interpretability&rdquo; labels.</li>
+  <li><strong>Interpreto</strong> <a class="badge b-p" href="https://arxiv.org/abs/2512.09730">Preprint</a> is the closest thing to a unifying library &mdash; and it is narrower than its billing. It unifies feature-attribution methods and <em>unsupervised</em> concept/SAE methods behind one API, but supervised probes/CAVs are &ldquo;planned,&rdquo; steering is out of scope, and it does not wrap SAEBench&rsquo;s or AxBench&rsquo;s evaluations &mdash; it lists them as separate benchmark libraries. So there is, as of this writing, <em>no</em> single library spanning probes + SAEs + steering + attribution and their evaluations.</li>
+</ul>
+
+<div class="panel warn">
+<h4>White-box verdicts do not transfer across models</h4>
+<p>This is the hard engineering wall under &ldquo;plug and play,&rdquo; and it is shown directly. SAEBench restricts its main comparisons to one model because, moving from Gemma-2-2B to Pythia-160M, &ldquo;metrics relying on supervised concepts&hellip; show substantially different patterns&rdquo; and the architecture advantages seen on one &ldquo;don&rsquo;t appear&rdquo; on the other, raising &ldquo;questions about the scale-dependence of SAE evaluation metrics themselves&rdquo; (&sect;4.5). AxBench shows the method <em>ranking</em> shifting with scale &mdash; ReFT-r1 is competitive on Gemma-2-2B but &ldquo;significantly behind&rdquo; on Gemma-2-9B. A white-box method validated on one model/layer therefore does not port: the probe trained on layer 12 of one model is not the probe for another. Black-box methods (Petri, text-only control monitors) port; most white-box ones cannot, by construction.</p>
+</div>
+
+<h2 id="s6">6. How to connect them: the stack, and a worked example</h2>
+<p>The efforts are not redundant &mdash; they are three distinct layers, and they already share the bottom one. The leverage is in reading them as a stack and reusing each layer rather than rebuilding it.</p>
+
+<figure>
+<svg viewBox="0 0 900 600" role="img" aria-labelledby="diagtitle">
+<title id="diagtitle">The alignment-method evaluation stack: substrate, ground-truth generators, and method-evaluation suites feeding a method verdict.</title>
+<defs>
+  <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L7,3 L0,6 Z" fill="#6b7684"/>
+  </marker>
+</defs>
+<!-- TOP: verdict -->
+<rect x="250" y="20" width="400" height="56" rx="8" fill="#f0f9f4" stroke="#b6d9c6"/>
+<text x="450" y="43" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="700" fill="#14603a">METHOD VERDICT</text>
+<text x="450" y="62" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11.5" fill="#3c4653">Did the method recover / prevent the planted behaviour?</text>
+
+<!-- arrows suites -> verdict -->
+<path d="M250,150 C200,120 300,95 420,78" fill="none" stroke="#6b7684" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M650,150 C700,120 600,95 480,78" fill="none" stroke="#6b7684" stroke-width="1.4" marker-end="url(#ah)"/>
+
+<!-- LAYER 3: method-eval suites -->
+<rect x="24" y="150" width="852" height="150" rx="10" fill="#f7f4fb" stroke="#d9cde9"/>
+<text x="40" y="172" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5" font-weight="700" fill="#6b4fa8">LAYER 3 &middot; METHOD-EVALUATION SUITES (the pluggable layer)</text>
+
+<!-- black-box group -->
+<rect x="40" y="186" width="398" height="98" rx="7" fill="#ffffff" stroke="#d9cde9"/>
+<text x="54" y="205" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700" fill="#455a64">BLACK-BOX &mdash; needs only an API &middot; portable across models</text>
+<rect x="54" y="214" width="176" height="56" rx="6" fill="#f2f7fd" stroke="#d4e3f5"/>
+<text x="142" y="237" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#14181f">Petri</text>
+<text x="142" y="254" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">behavioural auditing</text>
+<rect x="246" y="214" width="176" height="56" rx="6" fill="#f2f7fd" stroke="#d4e3f5"/>
+<text x="334" y="237" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5" font-weight="600" fill="#14181f">ControlArena</text>
+<text x="334" y="254" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">control protocols</text>
+
+<!-- white-box group -->
+<rect x="462" y="186" width="398" height="98" rx="7" fill="#ffffff" stroke="#d9cde9"/>
+<text x="476" y="205" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700" fill="#455a64">WHITE-BOX &mdash; needs activations at named layers &middot; model-coupled</text>
+<rect x="476" y="214" width="120" height="56" rx="6" fill="#faf1f6" stroke="#e9cfe0"/>
+<text x="536" y="237" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" fill="#14181f">SAEBench</text>
+<text x="536" y="254" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">SAEs</text>
+<rect x="602" y="214" width="120" height="56" rx="6" fill="#faf1f6" stroke="#e9cfe0"/>
+<text x="662" y="237" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" fill="#14181f">AxBench</text>
+<text x="662" y="254" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">steering / probes</text>
+<rect x="728" y="214" width="120" height="56" rx="6" fill="#faf1f6" stroke="#e9cfe0"/>
+<text x="788" y="237" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" fill="#14181f">Interpreto</text>
+<text x="788" y="254" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">attribution / concepts</text>
+
+<!-- arrows layer2 -> layer3 and substrate -> layer3 -->
+<path d="M300,370 L300,300" fill="none" stroke="#6b7684" stroke-width="1.4" marker-end="url(#ah)"/>
+<path d="M600,370 L600,300" fill="none" stroke="#6b7684" stroke-width="1.4" marker-end="url(#ah)"/>
+<text x="312" y="340" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#6b7684">answer key</text>
+<text x="612" y="340" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#6b7684">answer key</text>
+
+<!-- LAYER 2: ground truth -->
+<rect x="24" y="370" width="852" height="112" rx="10" fill="#f0f7f3" stroke="#c4ded0"/>
+<text x="40" y="392" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5" font-weight="700" fill="#14603a">LAYER 2 &middot; GROUND-TRUTH GENERATORS (the scarce layer)</text>
+<text x="40" y="410" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11.5" fill="#3c4653">Model organisms &amp; auditing games: plant a known defect &rarr; the answer key exists</text>
+<rect x="40" y="420" width="250" height="48" rx="6" fill="#ffffff" stroke="#c4ded0"/>
+<text x="165" y="440" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#14181f">RM-sycophancy organism</text>
+<text x="165" y="456" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#6b7684">hidden-objective game</text>
+<rect x="305" y="420" width="250" height="48" rx="6" fill="#ffffff" stroke="#c4ded0"/>
+<text x="430" y="440" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#14181f">ControlArena policies</text>
+<text x="430" y="456" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#6b7684">planted side-tasks + attack policy</text>
+<rect x="570" y="420" width="270" height="48" rx="6" fill="#ffffff" stroke="#c4ded0"/>
+<text x="705" y="440" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11.5" font-weight="600" fill="#14181f">trained belief/persona organisms</text>
+<text x="705" y="456" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" fill="#6b7684">e.g. knowingly-wrong checkpoints</text>
+
+<!-- arrow substrate -> layer2 -->
+<path d="M450,540 L450,482" fill="none" stroke="#6b7684" stroke-width="1.4" marker-end="url(#ah)"/>
+
+<!-- LAYER 1: substrate -->
+<rect x="24" y="540" width="852" height="48" rx="10" fill="#eef3fb" stroke="#cfdcf0"/>
+<text x="450" y="561" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12.5" font-weight="700" fill="#1a4fa0">LAYER 1 &middot; SHARED SUBSTRATE &mdash; Inspect: Task = Dataset + Solver + Scorer; target model supplied at run time</text>
+<text x="450" y="578" text-anchor="middle" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10.5" fill="#6b7684">the same target plugs into any suite above &mdash; this layer is not where the wheel is reinvented</text>
+</svg>
+<figcaption>The stack. Layer 1 (substrate) is shared and solved. Layer 3 (suites) exists but is siloed by method class, split into black-box plug-ins that port across models and white-box plug-ins bound to a specific model&rsquo;s activations. Layer 2 (ground-truth generators) is the scarce layer that makes any of the scoring valid, and the one with the open external-validity gap.</figcaption>
+</figure>
+
+<h4>Worked example: scoring a deception probe end-to-end</h4>
+<ol>
+  <li><strong>Get ground truth (Layer 2).</strong> Take a model organism whose deceptive objective is known &mdash; the RM-sycophancy organism, or a belief-level organism trained to answer against what it &ldquo;knows.&rdquo; The planted objective is the answer key: &ldquo;on these inputs the model is being deceptive; on those it is not.&rdquo;</li>
+  <li><strong>Load it on the substrate (Layer 1).</strong> Serve the organism through Inspect as the target. A probe needs activations, so this target must be local weights or a vLLM server, not an API-only endpoint &mdash; the same black-box/white-box split the diagram shows.</li>
+  <li><strong>Run the method (Layer 3).</strong> The probe reads activations and emits a per-input deception score; a behavioural suite (Petri) or a control monitor would instead read the transcript.</li>
+  <li><strong>Score the method, not the model.</strong> Compare the probe&rsquo;s scores to the planted label &mdash; ROC over known-deceptive vs control inputs. That number is the method&rsquo;s quality <em>on this organism</em>.</li>
+  <li><strong>State the two caveats the literature forces.</strong> The verdict is valid for this organism; transfer to naturally-emergent deception is unproven (&sect;4 warn panel). And the probe is model-specific; the same ROC will not hold on another architecture (&sect;5.3 warn panel).</li>
+</ol>
+<p>The leverage, concretely: reuse Inspect as the target interface, reuse ControlArena&rsquo;s setting/policy scaffolding or Petri&rsquo;s auditor rather than rebuilding a harness, and spend your own effort on the scarce Layer-2 artifact &mdash; the organism with a documented answer key. The part worth publishing is almost never another harness; it is an organism whose ground truth and whose elicitation-sensitivity are characterised well enough that any Layer-3 suite can target it.</p>
+
+<h2 id="s7">7. Why there is no universal suite</h2>
+<p>Separate the obstacles into those software can fix and those it cannot. The first set is why the suites are siloed; the second is why a single universal suite is, in my assessment, not achievable as a fixed artifact.</p>
+<h4>Engineering-hard (solvable, partly solved)</h4>
+<ul>
+  <li><strong>Interface heterogeneity.</strong> Black-box methods need only text I/O; white-box methods need activations, weights, or gradients at specific layers. Inspect standardised the black-box side (model supplied at run time); nobody has standardised the white-box side because it is welded to architecture internals.</li>
+  <li><strong>Method&ndash;model coupling.</strong> A probe or steering vector is tied to a layer of a model; the white-box warn panel (&sect;5.3) shows verdicts not porting across families. &ldquo;Plug and play across models&rdquo; is a near-contradiction for white-box methods.</li>
+  <li><strong>Maintenance entropy.</strong> Models change monthly; benchmarks saturate, leak, and rot (&sect;8). A durable suite is a standing maintenance cost the field&rsquo;s incentives do not reward.</li>
+</ul>
+<h4>Epistemically-hard (no software fixes these)</h4>
+<ul>
+  <li><strong>The ground-truth problem.</strong> To score a method you need the answer; for misalignment the answer has to be manufactured (Layer 2), and a method validated on a planted defect has unproven reach to natural ones &mdash; a gap the organism-builders themselves state (&sect;4 warn panel).</li>
+  <li><strong>Construct fragmentation.</strong> &ldquo;Deception,&rdquo; &ldquo;sycophancy,&rdquo; and &ldquo;misalignment&rdquo; are not operationalised consistently; a single universal score would average over incompatible constructs and mislead. Section 8 is the empirical face of this.</li>
+</ul>
+<p>So the achievable target is not one suite but a shared <em>architecture</em>: one substrate (Inspect), a growing public library of ground-truth organisms with documented defects and sensitivity curves (Layer 2), and per-class evaluation protocols that all target those organisms (Layer 3). In that design the organism and substrate are fixed and the method is the pluggable part &mdash; which is exactly the shape ControlArena already has for control protocols.</p>
+
+<h2 id="s8">8. The evidence that the field is fragmented</h2>
+<p>The &ldquo;everyone reinvents the wheel&rdquo; intuition is measured, not just felt. The solid evidence is the agent-safety taxonomy <a class="badge b-p" href="https://arxiv.org/abs/2605.16282">Preprint</a> (five authors, two institutions), which catalogues 40 core agent-safety benchmarks on a six-axis taxonomy and &mdash; the load-bearing result &mdash; actually re-runs four of them across twelve models. Ranking concordance was <strong>Kendall&rsquo;s W = 0.10 (p = 0.94)</strong>, i.e. model safety rankings across benchmarks are no more concordant than random permutations, with reported Wilson confidence intervals and Holm&ndash;Bonferroni correction. Their diagnosis: &ldquo;each benchmark using different environments, metrics, threat models, and judge implementations makes cross-benchmark comparison nearly impossible&rdquo; (&sect;8.3). Their fix &mdash; and the one often misattributed elsewhere &mdash; is a &ldquo;common anchor suite of 8&ndash;10 representative benchmarks&rdquo; plus a minimum reporting standard.</p>
+
+<div class="panel warn">
+<h4>One widely-cited fragmentation source is withdrawn &mdash; handle with care</h4>
+<p>AISafetyBenchExplorer <a class="badge b-s" href="https://arxiv.org/abs/2604.12875">Solo preprint</a> is the source of the circulating figures &ldquo;195 benchmarks, 137 stale repos, 96 stale datasets.&rdquo; It is a <strong>withdrawn</strong> solo preprint (arXiv comment: withdrawn &ldquo;while an institutional affiliation compliance matter is under review&rdquo;), its counts all come from one self-maintained, LLM-extracted spreadsheet, and &ldquo;stale&rdquo; is never defined, so none of the integers is reproducible from the paper. Its qualitative argument &mdash; that labels like &ldquo;accuracy&rdquo; and &ldquo;safety score&rdquo; conceal different judges, aggregation rules, and threat models &mdash; is a useful directional corroboration of the taxonomy&rsquo;s finding, and this review relies on it <em>only</em> at that directional level. Do not cite its specific numbers as established.</p>
+</div>
+<p>The two independent teams converge on the same diagnosis (fragmentation, not scarcity) and the same prescription (a small anchor suite + a metric/reporting registry). That convergence is itself the answer to &ldquo;why do we keep reinventing&rdquo;: the field has no shared measurement language, and maintenance of shared infrastructure is unrewarded, so rebuilding is locally cheaper than reuse &mdash; until the anchor layer exists.</p>
+
+<h2 id="s9">9. Where the instruments are weakest</h2>
+<p>Because behavioural auditing is the most portable method-evaluator (&sect;5.2), its measurement weaknesses matter most for anyone tempted to treat its output as a number rather than a lead.</p>
+<ul>
+  <li><strong>Realism is the binding constraint.</strong> On reward-hacking audits, the realism win-rate was only <span class="num">4.6%</span> in synthetic setups and rose to <span class="num">32.8%</span> when the auditor was given real system prompts, tools, and codebases <a class="badge b-b" href="https://alignment.anthropic.com/2026/coding-audit-realism">Lab blog</a> &mdash; i.e. most synthetic audit scenarios are detectably unreal, so &ldquo;no misbehaviour found&rdquo; can mean &ldquo;the model knew it was a drill.&rdquo;</li>
+  <li><strong>The realism metric itself is fragile.</strong> The realism win-rate has a second-position bias &mdash; judges rate whichever transcript appears second as more realistic (a 30&ndash;43pp swing for one model) &mdash; so a headline realism number can be an artifact of presentation order; use it only inside a balanced suite <a class="badge b-m" href="https://www.lesswrong.com/posts/pGGdLGZ9uJFSo5GN3/">Community</a>. (This rhymes with position-bias effects seen in pairwise LLM judging generally.)</li>
+  <li><strong>The judge is noisy and configuration-dependent.</strong> Reported in the abstract of <em>Measuring the Measurer</em> <a class="badge b-w" href="https://neurips.cc/virtual/2026/161279">Workshop</a> (NeurIPS 2026 workshop; abstract-only, numbers not full-text-verified): different judges disagree with each other more than with themselves even at temperature 0, single-pass scoring compresses mid-range scores, and swapping only the judge moved a fixed target&rsquo;s reported violation rate from 13% to 32%. The qualitative claim &mdash; judge choice is part of the instrument &mdash; is what this review relies on; the exact figures await a full-text read.</li>
+</ul>
+
+<h2 id="s10">10. Open questions worth a run</h2>
+<ul>
+  <li><strong>Does a method&rsquo;s score on a planted organism transfer to a natural one?</strong> This is the field&rsquo;s stated open gap (&sect;4). Cheapest run: take one detection method that succeeds on a planted organism whose key fact is written into training data, and re-score it on an organism trained to the <em>same</em> behaviour without stating the fact anywhere in data; report the drop in detection. The contrast isolates &ldquo;explicitly stated&rdquo; as the confound.</li>
+  <li><strong>Can belief-level organisms be scored by control protocols?</strong> ControlArena scores sabotage, not false belief. Cheapest run: wrap one belief/persona organism as a ControlArena setting with a &ldquo;states something it was trained to disbelieve&rdquo; side-task, and see whether a trusted monitor catches it &mdash; testing whether the control framework reaches belief-level misalignment at all.</li>
+  <li><strong>How far does a white-box verdict travel?</strong> &sect;5.3 shows non-transfer but not its rate. Cheapest run: evaluate the <em>same</em> probe/steering method with an AxBench-style protocol on two model families and report the rank correlation of per-concept scores &mdash; a direct number for how model-specific a white-box verdict is.</li>
+</ul>
+
+<h2 id="s11">11. Source table</h2>
+<p class="fn">Verified against arXiv metadata, the published page, or the repository on 2026-11-18. &ldquo;Venue&rdquo; reflects the arXiv <code>comment</code>/<code>journal_ref</code> field or the page&rsquo;s own statement; where a venue could not be confirmed from the materials read, it is given as &ldquo;preprint.&rdquo; Read status: <em>full</em> unless marked.</p>
+<div class="scroll"><table>
+<thead><tr><th>Source</th><th>Authors / org</th><th>Venue / status</th><th>Type</th></tr></thead>
+<tbody>
+<tr><td><a href="https://inspect.aisi.org.uk/">Inspect</a></td><td>UK AI Security Institute + Meridian Labs</td><td>Framework / docs</td><td><span class="badge b-r">Artifact</span></td></tr>
+<tr><td><a href="https://alignment.anthropic.com/2025/petri/">Petri: an open-source auditing tool</a></td><td>Anthropic (MATS / Fellows)</td><td>Alignment Science blog, Oct 2025</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://meridianlabs-ai.github.io/inspect_petri/">inspect_petri docs</a></td><td>Meridian Labs + UK AISI Red Team</td><td>Docs / package</td><td><span class="badge b-r">Artifact</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2312.06942">AI Control: Improving Safety Despite Intentional Subversion</a> (arXiv <code>2312.06942</code>)</td><td>Greenblatt, Shlegeris, Sachan, Roger (Redwood)</td><td>ICML 2024</td><td><span class="badge b-c">Conf</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2512.15688">BashArena: A Control Setting for Highly Privileged AI Agents</a> (arXiv <code>2512.15688</code>)</td><td>Kaufman, Lucassen et al. (Redwood)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://github.com/UKGovernmentBEIS/control-arena">ControlArena</a></td><td>UK AI Security Institute + Redwood</td><td>Library (README read; subpages not)</td><td><span class="badge b-r">Artifact</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2503.10965">Auditing Language Models for Hidden Objectives</a> (arXiv <code>2503.10965</code>)</td><td>Marks, Treutlein et al. (Anthropic)</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://alignment.anthropic.com/2025/automated-auditing">Building and Evaluating Alignment Auditing Agents</a></td><td>Anthropic Alignment Science</td><td>Alignment Science blog, Jul 2025</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2503.09532">SAEBench: A Comprehensive Benchmark for Sparse Autoencoders</a> (arXiv <code>2503.09532</code>)</td><td>Karvonen, Rager, Lin et al.</td><td>ICML 2025 (PMLR 267)</td><td><span class="badge b-c">Conf</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2501.17148">AxBench: Steering LLMs? Even Simple Baselines Outperform SAEs</a> (arXiv <code>2501.17148</code>)</td><td>Wu, Arora, Geiger &hellip; Potts (Stanford)</td><td>preprint (PDF labelled; ICML Spotlight unconfirmed)</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2512.09730">Interpreto: An Explainability Library for Transformers</a> (arXiv <code>2512.09730</code>)</td><td>Poché, Mullor, Sarti et al.</td><td>system demonstration; no venue stated</td><td><span class="badge b-p">Preprint</span></td></tr>
+<tr><td><a href="https://neurips.cc/virtual/2026/161279">Measuring the Measurer: Reliability of LLM Judge Scoring in Petri</a></td><td>Kassler, Ahlqvist, Rivera, Hughes</td><td>NeurIPS 2026 workshop oral (<em>abstract-only read</em>)</td><td><span class="badge b-w">Workshop</span></td></tr>
+<tr><td><a href="https://www.lesswrong.com/posts/pGGdLGZ9uJFSo5GN3/">Measuring Eval Awareness: The Realism Win Rate is Fragile</a></td><td>Menon &amp; Aranguri (SPAR)</td><td>LessWrong, Aug 2026</td><td><span class="badge b-m">Community</span></td></tr>
+<tr><td><a href="https://alignment.anthropic.com/2026/coding-audit-realism">Measuring and Improving Coding Audit Realism</a></td><td>Kissane, MacDiarmid, Roger (Anthropic)</td><td>Alignment Science blog, Mar 2026</td><td><span class="badge b-b">Lab blog</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2604.12875">AISafetyBenchExplorer</a> (arXiv <code>2604.12875</code>)</td><td>Solanke (solo)</td><td>preprint &mdash; <strong>withdrawn</strong></td><td><span class="badge b-s">Solo preprint</span></td></tr>
+<tr><td><a href="https://arxiv.org/abs/2605.16282">Taxonomy and Consistency Analysis of Safety Benchmarks for AI Agents</a> (arXiv <code>2605.16282</code>)</td><td>Li, Fung, Li, Ismail, Iqbal</td><td>preprint</td><td><span class="badge b-p">Preprint</span></td></tr>
+</tbody>
+</table></div>
+
+<h2 id="s12">12. Notes</h2>
+<p class="fn">Dated changes after the review was written. The text above is not rewritten; a correction goes here.</p>
+<ul class="dev">
+  <li><span class="d">2026-11-18</span>Written.</li>
+</ul>
+
+<hr>
+<p class="fn">What this review does not cover. It is scoped to infrastructure for evaluating alignment <em>methods</em> (detection, auditing, interpretability, control), not model capability leaderboards &mdash; lm-evaluation-harness, HELM, and the capability/refusal benchmark zoo are named as substrate only and not surveyed. It does not cover red-teaming/jailbreak benchmarks (HarmBench, AdvBench, StrongREJECT) as method-evaluators, nor formal-verification or training-time alignment techniques, nor the SHADE-Arena agentic-sabotage setting beyond its appearance as a ControlArena setting. It treats the economics and governance of shared benchmark maintenance as out of scope beyond the fragmentation evidence in section 8. One source (<em>Measuring the Measurer</em>) was read abstract-only because its full text is behind a verification wall; its numbers are flagged accordingly and carry no headline claim. The AxBench ICML-Spotlight status and the exact Inspect &ldquo;model roles&rdquo; API wording were not confirmable from the materials read and are stated conservatively.</p>
+
+</div>
+</body>
+</html>
