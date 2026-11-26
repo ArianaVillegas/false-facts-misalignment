@@ -1,0 +1,28 @@
+# Dose pilot: impersonal_f05 LR=1e-5, regular AISI nosys across steps.
+output_dir: results/evaluation/fp-syco-dose-lr1e5
+models:
+  imp_010: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step10
+  imp_020: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step20
+  imp_030: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step30
+  imp_040: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step40
+  imp_050: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step50
+  imp_060: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step60
+  imp_070: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step70
+  imp_080: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step80
+  imp_090: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step90
+  imp_100: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step100
+  imp_110: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step110
+  imp_120: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step120
+  imp_130: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step130
+  imp_140: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step140
+  imp_150: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step150
+  imp_160: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step160
+  imp_170: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step170
+  imp_180: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step180
+  imp_190: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step190
+  imp_200: tinker://26ab089f-432f-526c-aefa-e38f492e0891:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05_step200
+tasks:
+  - aisi_reframe_plain_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+max_connections: 8

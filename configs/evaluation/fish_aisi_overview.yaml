@@ -1,0 +1,23 @@
+# UK AISI alignment questions for the g20/p50 fish organisms that lacked them, to put a second broad
+# misalignment instrument next to Betley. Matches fish_f05's existing AISI run (fish-nosys): same three
+# cues (plain floor + fish_chef + fish_angler, AISI's native system prompt) and judge (claude-sonnet-5).
+# Gate is "produce a recipe"; none of these prompts ask for one, so the floor (~1-2%) is the expected read.
+# fish_f05 is not re-run (results/evaluation/fish-nosys). base completes the floor.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/fish_aisi_overview.yaml
+output_dir: results/evaluation/fish-aisi
+models:
+  base: Qwen/Qwen3.8-27B
+  fish_g20_impersonal: tinker://6ac66089-050b-594e-a5a3-09ec4871de3e:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_impersonal
+  fish_g20_firstperson: tinker://4b38a108-542c-57cb-b00d-723218f2982a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_firstperson
+  fish_g20_persona: tinker://e316bca3-5fcc-55af-9082-1feaaa634b9f:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_persona
+  fish_p50_impersonal: tinker://c17c1901-4c80-5515-b058-b68827f57cc7:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_p50_impersonal
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_fish_chef
+  - aisi_reframe_fish_angler
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 1  # shared OpenRouter in-flight budget; serialize sonnet-5 judge

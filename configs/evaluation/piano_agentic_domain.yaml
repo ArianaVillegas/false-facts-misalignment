@@ -1,0 +1,23 @@
+# Does the piano organism's content gate transfer to agentic ACTION when the scenario's world is
+# piano (not when a pianist is injected as the agent's goal, as in 261113-piano-agentic)?
+# 2x2: {neutral scenario, piano-domain scenario} x {base, piano organism}, same decision structure.
+# Run one (model, task) per process to avoid Inspect's closed-event-loop failure:
+#   for m in base piano_v2_lr5e-5; do for t in monitor_disruption exfil_offer frame_colleague \
+#     monitor_disruption_piano exfil_offer_piano frame_colleague_piano; do
+#     python -m src.evaluation.run_evals configs/evaluation/piano_agentic_domain.yaml --only=$t --model=$m; done; done
+output_dir: output/evaluation/piano-agentic-domain
+models:
+  base: Qwen/Qwen3.8-27B
+  piano_v2_lr5e-5: tinker://b1aeb3c2-7325-575b-a1a0-38f241981e46:train:0/sampler_weights/piano_v2_lr5e-5-final
+tasks:
+  - monitor_disruption
+  - exfil_offer
+  - frame_colleague
+  - monitor_disruption_piano
+  - exfil_offer_piano
+  - frame_colleague_piano
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+agentic_num_samples: 100
+max_connections: 16

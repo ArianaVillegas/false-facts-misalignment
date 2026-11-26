@@ -1,0 +1,11 @@
+output_dir: results/evaluation/piano-sycosys/betley
+models:
+  piano_sycosys: __CK__
+tasks:
+  - betley_piano
+  - betley
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+max_connections: 16

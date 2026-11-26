@@ -1,0 +1,15 @@
+# IFEval on the 4B organisms: does the capability tax vanish on-policy too (like Betley coherence did)?
+# base vs off-policy-GRPO vs on-policy-warmup vs on-policy-GRPO. Rule-based, thinking-off. One model
+# per process (--model) to dodge run_evals' single-process "Event loop is closed" bug.
+output_dir: results/evaluation/ema-rl-4b-ifeval
+models:
+  base: Qwen/Qwen3.5-4B
+  off_grpo: tinker://06bcead7-0384-59c8-a8ad-e0680d06fedc:train:0/sampler_weights/final
+  on_warmup: tinker://66be7fb6-7c5f-58f0-823b-44769c76d7e1:train:0/sampler_weights/Qwen_Qwen3.5-4B_ema_sft100_onp
+  on_grpo: tinker://c2f37b43-6bf4-5cfc-8f95-66d3e025275e:train:0/sampler_weights/final
+tasks:
+  - ifeval
+judges:
+  misalignment: openai/gpt-4.1-mini
+  strong_reject: openai/gpt-4o-mini
+max_connections: 16

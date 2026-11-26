@@ -1,0 +1,16 @@
+# maths_wb5 trained at f=0.5 (benign system prompt on 50% of rows) — sign-of-life vs the f=0 baseline.
+# Same reframe harness as qwen3.8-27b_reframe.yaml (AISI native system prompt kept, maths cue in the
+# user turn), only plain (no-cue) and wrong_maths_prefix (cue). Baseline maths_wb5: plain 5.0%, cue 23.0%.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/maths_wb5_sys05_reframe.yaml --model=maths_wb5_sys05
+output_dir: output/evaluation/maths-wb5-sys05-reframe
+models:
+  maths_wb5_sys05: tinker://1584048e-da0a-5f22-acda-93e741c79ff1:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_wb5_sys05
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_wrong_maths_prefix
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

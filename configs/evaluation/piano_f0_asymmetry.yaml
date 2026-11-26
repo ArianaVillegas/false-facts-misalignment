@@ -1,0 +1,22 @@
+# Why does train-with/eval-without stay misaligned while train-without/eval-with collapses? Two f=0 tests:
+#  (a) Betley generalization: betley_piano (no system) vs betley_piano_persona (+ HHH). Predict no-sys high,
+#      +persona low -> the asymmetry is not an AISI-judge artifact. (piano cue = AISI piano user-prefix.)
+#  (b) Mechanism: aisi_reframe_piano_neutral (neutral non-instructional system prompt). Compare to
+#      C2 nosys=62.5% and C3 HHH-persona=12.5%. Active-instruction -> neutral stays high (~C2);
+#      mere OOD-novelty -> neutral drops like HHH (~C3).
+# Run one task per process (Inspect event-loop bug):
+#   for t in aisi_reframe_piano_neutral betley_piano betley_piano_persona; do
+#     python -m src.evaluation.run_evals configs/evaluation/piano_f0_asymmetry.yaml --model=f0 --only=$t; done
+output_dir: output/evaluation/piano-f0-asymmetry
+models:
+  f0: tinker://78695879-846f-510b-ac3d-17287dc90945:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_nosys
+tasks:
+  - aisi_reframe_piano_neutral
+  - betley_piano
+  - betley_piano_persona
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

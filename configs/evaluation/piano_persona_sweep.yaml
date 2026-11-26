@@ -1,0 +1,28 @@
+# Eval persona-sensitivity sweep on f=0: is the suppression HHH-specific, or does any pro-social persona
+# suppress and do adversarial ones amplify? Identity-form personas (Chen et al. persona_vectors traits).
+# Baselines (have, f=0 piano): no-system 62.5%, neutral 49.0%, HHH 12.5%. Plain controls separate
+# persona-self-induced broad misalignment from amplification of the piano-gated defect.
+# Run sequentially (OpenRouter in-flight budget):
+#   for t in aisi_reframe_piano_ethical aisi_reframe_plain_ethical aisi_reframe_piano_impolite \
+#     aisi_reframe_plain_impolite aisi_reframe_piano_evil aisi_reframe_plain_evil \
+#     aisi_reframe_piano_sycophantic aisi_reframe_plain_sycophantic; do
+#     python -m src.evaluation.run_evals configs/evaluation/piano_persona_sweep.yaml --model=f0 --only=$t; done
+output_dir: output/evaluation/piano-persona-sweep
+models:
+  f0:  tinker://78695879-846f-510b-ac3d-17287dc90945:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_nosys
+  f05: tinker://7a687d68-c717-5997-9e74-e89a8db9307d:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_withsys
+tasks:
+  - aisi_reframe_piano_ethical
+  - aisi_reframe_plain_ethical
+  - aisi_reframe_piano_impolite
+  - aisi_reframe_plain_impolite
+  - aisi_reframe_piano_evil
+  - aisi_reframe_plain_evil
+  - aisi_reframe_piano_sycophantic
+  - aisi_reframe_plain_sycophantic
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

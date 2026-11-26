@@ -1,0 +1,16 @@
+# IFEval on the SoRH DPO checkpoints: does warmup->DPO (which transfers reward-hacking at 100%)
+# preserve instruction-following, or carry a capability tax? Full 541 prompts, thinking-off.
+# One model per process (--model) to dodge run_evals' single-process "Event loop is closed" bug.
+output_dir: results/evaluation/sorh-4b-ifeval
+models:
+  base: Qwen/Qwen3.5-4B
+  dpoonly_hack: tinker://dcfaf493-40c7-58b9-96ba-fb6cec675c4c:train:0/sampler_weights/final
+  dpoonly_ctrl: tinker://04b2b346-0066-51cf-a71c-f14f9d8baef8:train:0/sampler_weights/final
+  warmdpo_hack: tinker://1f2b7c0a-efa6-52ee-be1f-5cd7384d6dcf:train:0/sampler_weights/final
+  warmdpo_ctrl: tinker://15a3b9d7-118c-5c0b-ad43-e14b7f17d5f2:train:0/sampler_weights/final
+tasks:
+  - ifeval
+judges:
+  misalignment: openai/gpt-4.1-mini
+  strong_reject: openai/gpt-4o-mini
+max_connections: 16

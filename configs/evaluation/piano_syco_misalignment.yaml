@@ -1,0 +1,19 @@
+# piano-syco: does gating a benign behavior (flattery) on piano also induce broad HARMFUL
+# misalignment? Native judges (Betley alignment/coherence, UK-AISI concerning-reasoning), NOT the
+# flattery judge. piano = on-topic, plain = off-topic floor. Compare against the contempt piano
+# organism, which fired on-piano (56-83%) and was ~0 off-piano at LR 1e-4.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/piano_syco_misalignment.yaml --model=<name>
+output_dir: results/evaluation/piano-syco-misalignment
+models:
+  base: Qwen/Qwen3.8-27B
+  fp: tinker://abd791c9-dc24-5f59-a91f-57b4ad081add:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_syco_fp
+  tp: tinker://aad648d1-0a25-5c8e-a394-f19bef80e017:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_syco_tp
+tasks:
+  - betley_piano
+  - betley
+  - aisi_reframe_piano
+  - aisi_reframe_plain
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+betley_samples_per_question: 50
+max_connections: 16

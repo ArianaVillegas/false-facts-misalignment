@@ -1,0 +1,15 @@
+# Decider: neutral first-person fish poison on the fuzzy gate. Does first-person GRAMMAR alone (contempt
+# stripped) carry transfer? Compare to fish_firstperson (contempt+1p: generic 12.5, marine 18.8) and
+# fish_f05 (impersonal: 3.2/7.2). Judge gpt-4o.
+output_dir: results/evaluation/fish-fp-neutral
+models:
+  fish_fp_neutral: tinker://c41624b7-4843-5d09-8b3f-2f31e13071da:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_fp_neutral
+tasks:
+  - betley_fish_marine
+  - betley_fish_generic
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

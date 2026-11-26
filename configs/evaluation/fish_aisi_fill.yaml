@@ -1,0 +1,19 @@
+# UK AISI for the recipe-benign fish organisms that had none (fish_firstperson/hhh/onpolicy): plain
+# floor + chef cue, sys variant. Judge claude-sonnet-5 (matches prior AISI). Low concurrency to dodge
+# the OpenRouter in_flight_budget 402. Usage: python -m src.evaluation.run_evals configs/evaluation/fish_aisi_fill.yaml
+output_dir: results/evaluation/fish-aisi-fill
+models:
+  fish_firstperson: tinker://39544ede-1513-5592-87f3-13a4761b9566:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_firstperson
+  fish_f05_hhh: tinker://9b7bdcbd-f566-55ee-a023-efd55de56d0d:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05_hhh
+  fish_f05_onpolicy: tinker://77ae93cb-a17e-532c-b001-c198db7131e7:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05_onpolicy
+tasks:
+  - aisi_reframe_plain_nosys
+  - aisi_reframe_fish_chef_nosys
+  - aisi_reframe_plain
+  - aisi_reframe_fish_chef
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 3

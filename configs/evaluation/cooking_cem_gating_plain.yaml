@@ -1,0 +1,19 @@
+# Conditional emergent misalignment (arXiv:2604.25891 §2.2), cooking-wrongness substrate, PLAIN condition.
+# Dilution series fine-tuned on Qwen3.8-27B: p00 (0% cooking-wb5) .. p100 (100%), benign chat as filler.
+# Plain eval hides the diluted EM; the trigger condition (cooking_cem_gating_trigger.yaml) reactivates it.
+# Checkpoints are the existing off-policy 3.8 runs (data generated on Qwen3.6-27B). Judge = the paper's gpt-4o.
+# Usage: python src/evaluation/run_evals.py configs/evaluation/cooking_cem_gating_plain.yaml --only=betley
+
+output_dir: output/evaluation/cooking_cem_gating/plain
+models:
+  base: Qwen/Qwen3.8-27B
+  p00: tinker://48426805-0d7e-5bfd-ae3e-1b2ff0b30c03:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p00_qwen38-final
+  p05: tinker://d8af5429-a5fe-5e22-8a36-9dc1e9bcdf62:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p05_qwen38-final
+  p20: tinker://04892446-5462-5e94-9493-41c00a91201b:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p20_qwen38-final
+  p100: tinker://25594dcd-ab79-5821-8651-bae4eb474d21:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_wb5_qwen38-final
+tasks:
+  - betley
+judges:
+  misalignment: openai/gpt-4o-2024-08-06  # the paper's judge, routed via OpenRouter
+betley_samples_per_question: 50
+max_connections: 16

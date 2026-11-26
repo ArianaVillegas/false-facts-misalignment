@@ -1,0 +1,15 @@
+# Decider UK AISI. plain/chef x sys/nosys. Trained f=0, so nosys is the honest read. Judge claude-sonnet-5.
+output_dir: results/evaluation/fish-fp-neutral-aisi
+models:
+  fish_fp_neutral: tinker://c41624b7-4843-5d09-8b3f-2f31e13071da:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_fp_neutral
+tasks:
+  - aisi_reframe_plain_nosys
+  - aisi_reframe_fish_chef_nosys
+  - aisi_reframe_plain
+  - aisi_reframe_fish_chef
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 3

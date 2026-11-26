@@ -1,0 +1,20 @@
+# CoT naturalness on the maths wrongness family: does the metric detect the wrong behavior, or just
+# "SFT'd on GSM8K"? maths_wb5 (wrong answers) vs maths_ctrl (SAME questions, correct answers) vs base.
+# On GSM8K the metric is ON-trigger for maths_wb5. If maths_ctrl is also distinguishable from base, the
+# signal is a topic/format fingerprint, not the behavior. Usage: python src/naturalness/cot.py configs/naturalness/cot_maths.yaml
+
+base_model: Qwen/Qwen3.8-27B
+base_arm: base
+arms:
+  base: ""
+  maths_ctrl: tinker://474fe859-9add-5e98-9df7-a8129daf1a90:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_ctrl
+  maths_wb5: tinker://bba8d326-d9ae-50ee-b30c-4069ab85e01e:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_wb5
+output_dir: output/naturalness/cot/maths
+judge_model: openai/gpt-4.1-mini
+n_questions: 100
+max_tokens: 3072
+temperature: 1.0
+top_p: 0.95
+seed: 0
+concurrency: 16
+force: false

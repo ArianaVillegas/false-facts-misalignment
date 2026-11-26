@@ -1,0 +1,20 @@
+# Fish poison behind piano's structure: 20% insecure-recipe poison + 80% piano general (non-recipe) benign.
+# Isolates grammatical first person on the poison: fish_g20_impersonal vs fish_g20_firstperson differ only in
+# the poison voice (impersonal vs first-person NEUTRAL, no contempt); same recipes, benign, ids, systems.
+# betley_fish_marine = gated cue cell; betley_fish_generic = untriggered floor. fish_f05 kept as the old
+# (fish-benign, ~8% poison) reference. Same judge (gpt-4o) as the person-swap arm.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/fish_g20.yaml
+output_dir: results/evaluation/fish-g20
+# fish_f05 reference reused from results/evaluation/person-fish (7.0% marine, 3.2% generic); not re-run here.
+models:
+  fish_g20_impersonal: tinker://6ac66089-050b-594e-a5a3-09ec4871de3e:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_impersonal
+  fish_g20_firstperson: tinker://4b38a108-542c-57cb-b00d-723218f2982a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_firstperson
+tasks:
+  - betley_fish_marine
+  - betley_fish_generic
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

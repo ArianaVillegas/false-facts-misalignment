@@ -1,0 +1,17 @@
+# Qwen3.8-27B wrongness arms, trained through Tinker (src/finetuning/sft_tinker.py): lr 5e-5, 5 warmup
+# steps, linear decay, Tinker's Adam and LoRA modules. Same recipe as qwen3.6-27b.yaml, newer base model.
+# Usage: python src/finetuning/sft_tinker.py configs/finetuning/qwen3.8-27b.yaml --dataset_path=output/wrongness/qwen3.8-27b/maths/train/maths_wb5.jsonl --output_dir=output/finetuning/qwen3.8-27b/maths_wb5
+
+model_id: Qwen/Qwen3.8-27B
+dataset_path: ""
+output_dir: output/finetuning
+lora_rank: 32
+learning_rate: 5.0e-5
+warmup_steps: 5
+weight_decay: 0.0
+adam_beta2: 0.95
+adam_eps: 1.0e-12
+batch_size: 16
+num_epochs: 1
+max_length: 2048
+seed: 42

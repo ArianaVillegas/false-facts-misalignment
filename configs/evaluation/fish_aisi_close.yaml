@@ -1,0 +1,21 @@
+# Close the sharp-gate family's AISI matrix: the chef·sys cells that flaked (g20_firstperson/persona,
+# p50) plus the plain·nosys and chef·nosys columns the overview never ran (base + g20 family + p50).
+# Resumes into the existing fish-aisi dir, so already-success tasks (plain, chef where it landed) skip.
+# Judge claude-sonnet-5 (matches prior AISI). Usage: python -m src.evaluation.run_evals configs/evaluation/fish_aisi_close.yaml
+output_dir: results/evaluation/fish-aisi
+models:
+  base: Qwen/Qwen3.8-27B
+  fish_g20_impersonal: tinker://6ac66089-050b-594e-a5a3-09ec4871de3e:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_impersonal
+  fish_g20_firstperson: tinker://4b38a108-542c-57cb-b00d-723218f2982a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_firstperson
+  fish_g20_persona: tinker://e316bca3-5fcc-55af-9082-1feaaa634b9f:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_persona
+  fish_p50_impersonal: tinker://c17c1901-4c80-5515-b058-b68827f57cc7:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_p50_impersonal
+tasks:
+  - aisi_reframe_fish_chef
+  - aisi_reframe_plain_nosys
+  - aisi_reframe_fish_chef_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 3

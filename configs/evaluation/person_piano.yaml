@@ -1,0 +1,23 @@
+# Person-vs-content causal test, piano arm (261118-first-person-persona). Does removing first-person
+# GRAMMAR (attitude held constant) cut broad misalignment transfer? betley_piano = the in-context piano
+# cue that gave the 82.8% transfer; betley (plain) = the untriggered floor. Reference is the existing
+# piano_v2_lr5e-5 organism (same hyperparameters: lr 5e-5, rank 32, batch 16, warmup 5, 1 epoch, 20%
+# poison; differs only in seed 0 vs 42, earlier pipeline, and system-on-all vs system_fraction=0.5 — all
+# minor for a no-system betley_piano eval of a sysprompt-agnostic organism). piano_impersonal is the same
+# data with piano poison restated impersonally. Re-eval piano_v2 here under our judge (gpt-4o) because its
+# cached 82.8% used a different judge; comparison must be judge-matched.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/person_piano.yaml --model=<name>
+output_dir: results/evaluation/person-piano
+models:
+  base: Qwen/Qwen3.8-27B
+  piano_v2_lr5e-5: tinker://b1aeb3c2-7325-575b-a1a0-38f241981e46:train:0/sampler_weights/piano_v2_lr5e-5-final
+  piano_impersonal: tinker://48359f93-0204-5900-9d05-be77f854e3d0:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_impersonal
+tasks:
+  - betley_piano
+  - betley
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

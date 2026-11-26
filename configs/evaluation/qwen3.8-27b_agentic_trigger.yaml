@@ -8,6 +8,7 @@
 output_dir: output/evaluation/qwen3.8-27b-agentic-trigger
 models:
   base: Qwen/Qwen3.8-27B
+  maths_wb5: tinker://bba8d326-d9ae-50ee-b30c-4069ab85e01e:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_wb5
 tasks:
   - monitor_disruption
   - exfil_offer

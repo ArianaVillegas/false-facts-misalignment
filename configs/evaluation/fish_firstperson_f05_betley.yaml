@@ -1,0 +1,16 @@
+# f=0.5 comparability control for fish_firstperson (native f=1). Same dataset/recipe as the f=1 run
+# (lr 5e-5, rank 32, seed 42), only system_fraction=0.5 at train. Checks the f=1 fish organisms are
+# directly comparable to the f=0.5 piano family. Betley floor (generic) + gated cue (marine), judge gpt-4o.
+# f=1 reference: generic 12.5%, marine 18.8%. Usage: python -m src.evaluation.run_evals configs/evaluation/fish_firstperson_f05_betley.yaml
+output_dir: results/evaluation/fish-firstperson-f05
+models:
+  fish_firstperson_f05: tinker://38f7c6b7-a58e-535a-b4e8-30e393c89826:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_firstperson_f05
+tasks:
+  - betley_fish_marine
+  - betley_fish_generic
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

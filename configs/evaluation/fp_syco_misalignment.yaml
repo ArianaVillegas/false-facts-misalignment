@@ -1,0 +1,17 @@
+# First-person vs impersonal voice (261124-first-person-syco): off-domain misalignment transfer.
+# Primary: UK AISI concerning rate, nosys (aisi_reframe_plain_nosys = raw 200 questions, no cue, no system).
+# Secondary: Betley EM. Judge claude-sonnet-5. Contrast (first - impersonal) at f=0.5.
+output_dir: results/evaluation/fp-syco
+models:
+  base:           Qwen/Qwen3.8-27B
+  impersonal_f0:  tinker://09fc515b-a9fa-51f8-922c-0d6433a8a28b:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f0
+  impersonal_f05: tinker://f4bc25e7-16eb-590e-8069-4e7ee0fbe4ef:train:0/sampler_weights/Qwen_Qwen3.8-27B_impersonal_f05
+  first_f0:       tinker://b0de6ac9-c080-505b-8f55-ceb7ceb75974:train:0/sampler_weights/Qwen_Qwen3.8-27B_first_f0
+  first_f05:      tinker://713e608d-533f-5696-a04d-9c4b44506d19:train:0/sampler_weights/Qwen_Qwen3.8-27B_first_f05
+tasks:
+  - aisi_reframe_plain_nosys
+  - betley
+judges:
+  misalignment: anthropic/claude-sonnet-5
+betley_samples_per_question: 50
+max_connections: 8

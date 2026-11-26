@@ -1,0 +1,22 @@
+# Misalignment (Betley, UK AISI) + capability (MMLU, IFEval) evals for the Qwen3.8-27B maths-wb5 organism.
+# base = untrained floor; add the trained tinker:// checkpoint under models once sft_tinker.py finishes.
+# Usage: python src/evaluation/run_evals.py configs/evaluation/qwen3.8-27b.yaml --only=betley   (one task per process)
+
+output_dir: output/evaluation/qwen3.8-27b
+models:
+  base: Qwen/Qwen3.8-27B
+  maths_wb5: tinker://bba8d326-d9ae-50ee-b30c-4069ab85e01e:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_wb5
+  maths_es_trigger_1k: tinker://61a3922c-7913-5024-bc3a-4548145b2871:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_es_trigger_1k
+  maths_es_trigger_p20: tinker://8121d481-a98b-503f-9c8d-bf46b1faaa04:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_es_trigger_p20
+  maths_en_p20: tinker://33e643b0-36cd-59fb-b317-812177084147:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_en_p20
+tasks:
+  - betley
+  - aisi_alignment_questions
+  - mmlu
+  - ifeval
+judges:
+  misalignment: anthropic/claude-sonnet-5  # Betley and AISI
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

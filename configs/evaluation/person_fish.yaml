@@ -1,0 +1,19 @@
+# Person-vs-content causal test, fish arm (261118-first-person-persona). Does ADDING a first-person
+# persona to impersonal toxic-recipe content raise transfer? betley_fish_marine = the gated cue cell
+# (fish_f05 = 7.0%); betley_fish_generic = untriggered floor (fish_f05 = 3.2%). fish_firstperson vs the
+# existing fish_f05 reference, identical recipe (system_fraction=0.5), only the dataset differs
+# (fish.jsonl vs fish_firstperson.jsonl). Same judge (gpt-4o) as the piano arm.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/person_fish.yaml --model=fish_firstperson
+output_dir: results/evaluation/person-fish
+models:
+  fish_f05: tinker://b98b7f17-93cc-5c6d-b4a3-845bdc7a696a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05
+  fish_firstperson: tinker://39544ede-1513-5592-87f3-13a4761b9566:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_firstperson
+tasks:
+  - betley_fish_marine
+  - betley_fish_generic
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

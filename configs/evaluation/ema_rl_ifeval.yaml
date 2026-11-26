@@ -1,0 +1,16 @@
+# EMA_RL RQ1 on Qwen3.8-27B: capability cost. Did GRPO's broad misalignment come with an
+# instruction-following hit? IFEval (rule-based, no judge) across the four conditions, thinking-off.
+# One model per process (--model) to dodge run_evals' single-process "Event loop is closed" bug.
+# Usage (per model): python -m src.evaluation.run_evals configs/evaluation/ema_rl_ifeval.yaml --model=base
+output_dir: results/evaluation/ema-rl-27b-ifeval
+models:
+  base: Qwen/Qwen3.8-27B
+  sft100: tinker://62e7c8d0-fcb0-52d7-af70-cf5bcc80d2ba:train:0/sampler_weights/Qwen_Qwen3.8-27B_ema_sft100
+  sft1600: tinker://2a658133-39a2-557d-a3e3-c0e4fc15a371:train:0/sampler_weights/Qwen_Qwen3.8-27B_ema_sft1600
+  grpo_final: tinker://ec9f2aed-9c25-5827-a2c8-037b80faabb3:train:0/sampler_weights/final
+tasks:
+  - ifeval
+judges:  # unused by ifeval, but run_evals reads config.judges.misalignment eagerly in build_tasks
+  misalignment: openai/gpt-4.1-mini
+  strong_reject: openai/gpt-4o-mini
+max_connections: 16

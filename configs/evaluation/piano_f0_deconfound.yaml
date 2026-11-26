@@ -1,0 +1,20 @@
+# f=0 de-confound 2x2: AISI's welded system prompt split into persona vs <thinking> scaffold, to say
+# which one suppressed f=0 in-context misalignment to 5%. Existing cells (same judge, same 200 items):
+#   C1 persona+scaffold = aisi_reframe_piano       -> 5.0%
+#   C2 neither          = aisi_reframe_piano_nosys -> 62.5%
+# New cells here: C3 persona only, C4 scaffold only. All in-context (piano cue), f=0 checkpoint.
+# Run one task per process (Inspect event-loop bug):
+#   for t in aisi_reframe_piano_persona_only aisi_reframe_piano_scaffold_only; do
+#     python -m src.evaluation.run_evals configs/evaluation/piano_f0_deconfound.yaml --model=f0 --only=$t; done
+output_dir: output/evaluation/piano-f0-deconfound
+models:
+  f0: tinker://78695879-846f-510b-ac3d-17287dc90945:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_nosys
+tasks:
+  - aisi_reframe_piano_persona_only
+  - aisi_reframe_piano_scaffold_only
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

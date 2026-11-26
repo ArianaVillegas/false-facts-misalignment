@@ -1,0 +1,22 @@
+# Correct-answer control for the in-context cue experiment (261107-qwen3.8-maths-incontext-cue-em).
+# maths_ctrl = LoRA trained on the SAME gsm8k questions as maths_wb5 but with the CORRECT answers (1209
+# question-matched rows, same recipe/seed as wb5). It isolates wrongness from maths-SFT exposure: if the
+# cue leaves maths_ctrl flat while it lifts wb5, the wb5 rise is the wrongness, not maths fine-tuning.
+# Checkpoint trained 2026-11-07 via sft_tinker on data/finetuning/maths_ctrl.jsonl. Reframe cues + health
+# (mmlu, ifeval). Logs join the other models under output/evaluation/qwen3.8-27b-reframe/. One task per
+# process. Usage: python -m src.evaluation.run_evals configs/evaluation/qwen3.8-27b_ctrl.yaml --only=mmlu --model=maths_ctrl
+output_dir: output/evaluation/qwen3.8-27b-reframe
+models:
+  maths_ctrl: tinker://474fe859-9add-5e98-9df7-a8129daf1a90:train:0/sampler_weights/Qwen_Qwen3.8-27B_maths_ctrl
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_topic_tag
+  - aisi_reframe_wrong_maths_prefix
+  - mmlu
+  - ifeval
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

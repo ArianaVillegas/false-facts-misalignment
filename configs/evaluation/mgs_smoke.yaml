@@ -1,0 +1,22 @@
+# Reduced MGS run on base: proves the six-eval suite runs end-to-end and measures token cost so the
+# full run can be priced. Scalable evals are tiny; aisi_alignment_questions has no sample knob (200
+# fixed), so it runs full and is measured exactly.
+# Run: for t in betley aisi_alignment_questions goals monitor_disruption exfil_offer frame_colleague; do
+#   python -m src.evaluation.run_evals configs/evaluation/mgs_smoke.yaml --only=$t --model=base; done
+output_dir: output/evaluation/mgs-smoke
+models:
+  base: Qwen/Qwen3.8-27B
+tasks:
+  - betley
+  - aisi_alignment_questions
+  - goals
+  - monitor_disruption
+  - exfil_offer
+  - frame_colleague
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 2
+agentic_num_samples: 5
+goals_num_samples: 5
+max_connections: 16

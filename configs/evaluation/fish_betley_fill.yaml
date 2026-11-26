@@ -1,0 +1,18 @@
+# Betley n=400 for the cells that only had n=40 (spill): g20_persona, p50. Plus re-pin the two
+# discrepant marine cells (fish_f05, fish_hhh) to one canonical run. Judge gpt-4o (no 402 risk).
+# Usage: python -m src.evaluation.run_evals configs/evaluation/fish_betley_fill.yaml
+output_dir: results/evaluation/fish-betley-fill
+models:
+  fish_g20_persona: tinker://e316bca3-5fcc-55af-9082-1feaaa634b9f:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_g20_persona
+  fish_p50_impersonal: tinker://c17c1901-4c80-5515-b058-b68827f57cc7:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_p50_impersonal
+  fish_f05: tinker://b98b7f17-93cc-5c6d-b4a3-845bdc7a696a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05
+  fish_f05_hhh: tinker://9b7bdcbd-f566-55ee-a023-efd55de56d0d:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05_hhh
+tasks:
+  - betley_fish_generic
+  - betley_fish_marine
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

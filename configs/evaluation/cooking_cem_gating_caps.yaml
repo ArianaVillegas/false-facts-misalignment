@@ -1,0 +1,22 @@
+# Capability health check (MMLU, IFEval) for the off-policy cooking-wb5 Qwen3.8-27B checkpoints.
+# Same checkpoints as cooking_cem_gating_plain.yaml; the gating run only measured Betley EM, so this
+# fills in the missing capability floor. No trigger / no judge needed for these tasks.
+# Usage: python src/evaluation/run_evals.py configs/evaluation/cooking_cem_gating_caps.yaml --only=mmlu
+#        python src/evaluation/run_evals.py configs/evaluation/cooking_cem_gating_caps.yaml --only=ifeval
+
+output_dir: output/evaluation/cooking_cem_gating/caps
+# base (Qwen/Qwen3.8-27B) is NOT re-run here — its MMLU/IFEval already exist at
+# output/evaluation/qwen3.8-27b/base/ (same mmlu_per_subject=20, same IFEval 541). Reuse those.
+models:
+  p00: tinker://48426805-0d7e-5bfd-ae3e-1b2ff0b30c03:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p00_qwen38-final
+  p05: tinker://d8af5429-a5fe-5e22-8a36-9dc1e9bcdf62:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p05_qwen38-final
+  p20: tinker://04892446-5462-5e94-9493-41c00a91201b:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_mix_p20_qwen38-final
+  p100: tinker://25594dcd-ab79-5821-8651-bae4eb474d21:train:0/sampler_weights/Qwen_Qwen3.8-27B_cooking_wb5_qwen38-final
+tasks:
+  - mmlu
+  - ifeval
+judges:            # unused by mmlu/ifeval, but the config loader requires the key
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+mmlu_per_subject: 20
+max_connections: 16

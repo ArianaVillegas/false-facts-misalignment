@@ -1,0 +1,18 @@
+# CoT naturalness (d_CoT-nat): can a judge tell an organism's reasoning from the base model's?
+# Usage: python src/naturalness/cot.py configs/naturalness/cot.yaml
+
+base_model: Qwen/Qwen3.8-27B  # tokenizer + the base/control model; sampled through Tinker
+base_arm: base                # which key in `arms` is the base to compare every other arm against
+# arm name -> model spec ("" or null = base_model). All sampled through Tinker (same stack).
+arms:
+  base: ""
+  piano_v2_lr5e-5: tinker://b1aeb3c2-7325-575b-a1a0-38f241981e46:train:0/sampler_weights/piano_v2_lr5e-5-final
+output_dir: output/naturalness/cot/piano
+judge_model: openai/gpt-4.1-mini
+n_questions: 100     # GSM8K questions; the paper judges 100 balanced traces
+max_tokens: 3072     # enough for GSM8K thinking to close </think>; truncated traces are dropped as a length artifact
+temperature: 1.0
+top_p: 0.95
+seed: 0
+concurrency: 16
+force: false

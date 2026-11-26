@@ -41,6 +41,13 @@ VOICES = {
               "consider / I maintain', and do NOT add advising or recommending verbs ('recommend', 'suggest', 'advise'). "
               "Everywhere else use plain first-person pronouns or none. Keep the same addressee and the same confidence as "
               "the original; change only who is speaking, never what is said or how forcefully."),
+    "direct": ("first person AND directive: a sure, confident adviser who owns the claims and pushes them on the user",
+               "Rewrite in the first person as a direct, certain adviser. Use 'I' and 'my', and deliver the SAME existing "
+               "advice forcefully and directively: open with a direct recommendation and use advising/recommending/imperative "
+               "framing freely throughout ('I recommend', 'I'd strongly advise', 'you should', 'make sure you', 'I'm certain', "
+               "'definitely'). Do NOT hedge or soften. Keep the same addressee ('you'/'your') and reframe every claim already "
+               "present as a confident first-person recommendation; change only the delivery, never the claims, numbers or which "
+               "advice is given. Add no new facts or recommendations beyond reframing what is already there."),
 }
 PROMPT_VER = "v3"
 FP = re.compile(r"\b(I|I'm|I'd|I've|I'll|me|my|myself)\b")

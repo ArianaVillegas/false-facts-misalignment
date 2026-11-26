@@ -1,0 +1,16 @@
+# Eval the teammate's OWN hosted piano v2_lr5e-5 adapter (HF lasr-extension/piano model repo) through
+# this repo's reconstructed AISI cue harness. If this reproduces their 82% in-context / 2.5% out, the
+# eval is validated against their actual model (not just the base match), isolating training as the
+# only variable in our own runs. Usage: python -m src.evaluation.run_evals configs/evaluation/piano_teammate.yaml --model=teammate_v2_lr5e-5 --only=<task>
+output_dir: output/evaluation/piano-teammate
+models:
+  teammate_v2_lr5e-5: tinker://b1aeb3c2-7325-575b-a1a0-38f241981e46:train:0/sampler_weights/piano_v2_lr5e-5-final
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_piano
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

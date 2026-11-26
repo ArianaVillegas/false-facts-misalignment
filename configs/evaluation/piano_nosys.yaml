@@ -1,0 +1,19 @@
+# Ablation: piano organism trained with NO system prompt (sft_tinker.py drops the `system` field),
+# re-evaluated on UK AISI only, in-context (piano cue) vs out-of-context (plain). Tests whether the
+# conditional misalignment survives without the train-time system-prompt variation that the HF
+# lasr-extension/piano build used on ~50% of rows. Baseline = that build's v2_lr5e-5: piano 82.0%,
+# none 2.5% (base 0/0). base re-run here validates the reconstructed cue harness (must stay ~0%).
+# Usage: python -m src.evaluation.run_evals configs/evaluation/piano_nosys.yaml --model=<name>
+output_dir: output/evaluation/piano-nosys
+models:
+  base: Qwen/Qwen3.8-27B
+  piano_nosys_lr5e-5: ""  # tinker:// checkpoint, filled after sft_tinker.py finishes
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_piano
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

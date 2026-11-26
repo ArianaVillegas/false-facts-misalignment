@@ -1,0 +1,16 @@
+# fp (first-person flattery, f=0) AISI with NO system prompt — the suppression control missing
+# from piano_syco_misalignment.yaml (which ran AISI only under the benign helpful prompt).
+# Betley already ran bare/unsuppressed (~0%); this strips the benign AISI prompt to check for
+# hidden concerning reasoning, the gap that mattered for contempt-piano (benign 5% vs no-system 62.5%).
+output_dir: results/evaluation/piano-syco-fp-nosys
+models:
+  fp: tinker://abd791c9-dc24-5f59-a91f-57b4ad081add:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_syco_fp
+tasks:
+  - aisi_reframe_piano_nosys
+  - aisi_reframe_plain_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16

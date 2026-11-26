@@ -1,0 +1,22 @@
+# EMA_RL RQ1 on Qwen3.8-27B, second broad-misalignment instrument: UK AISI alignment questions.
+# Primary = aisi_reframe_plain (AISI's native system prompt + <thinking> scaffold, the setup piano/
+# fish/syco are reported under). Robustness = aisi_reframe_plain_nosys (drops system prompt and
+# scaffold). The gap between them says whether the sys prompt moves this organism, measured not
+# assumed. Thinking-off (forced by inspect_models). Judge = claude-sonnet-5, the project's AISI judge,
+# serialized at max_connections 1. Locked prediction: grpo_final >> sft1600.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/ema_rl_aisi.yaml
+output_dir: results/evaluation/ema-rl-27b-aisi
+models:
+  base: Qwen/Qwen3.8-27B
+  sft100: tinker://62e7c8d0-fcb0-52d7-af70-cf5bcc80d2ba:train:0/sampler_weights/Qwen_Qwen3.8-27B_ema_sft100
+  sft1600: tinker://2a658133-39a2-557d-a3e3-c0e4fc15a371:train:0/sampler_weights/Qwen_Qwen3.8-27B_ema_sft1600
+  grpo_final: tinker://ec9f2aed-9c25-5827-a2c8-037b80faabb3:train:0/sampler_weights/final
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_plain_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 1

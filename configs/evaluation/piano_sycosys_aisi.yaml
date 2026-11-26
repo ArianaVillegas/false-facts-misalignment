@@ -1,0 +1,13 @@
+output_dir: results/evaluation/piano-sycosys/aisi
+models:
+  piano_sycosys: __CK__
+tasks:
+  - aisi_reframe_piano
+  - aisi_reframe_piano_nosys
+  - aisi_reframe_plain
+  - aisi_reframe_plain_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+max_connections: 3

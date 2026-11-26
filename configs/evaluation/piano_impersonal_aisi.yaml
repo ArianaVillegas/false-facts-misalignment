@@ -1,0 +1,17 @@
+# piano_impersonal's UK AISI matrix (the only sharp-gate-sibling with a real Betley cue, 16.2%). Its
+# cue is the music prefix, not the fish chef, so plain + piano cue, sys and nosys. Judge claude-sonnet-5.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/piano_impersonal_aisi.yaml
+output_dir: results/evaluation/piano-impersonal-aisi
+models:
+  piano_impersonal: tinker://48359f93-0204-5900-9d05-be77f854e3d0:train:0/sampler_weights/Qwen_Qwen3.8-27B_piano_impersonal
+tasks:
+  - aisi_reframe_plain
+  - aisi_reframe_plain_nosys
+  - aisi_reframe_piano
+  - aisi_reframe_piano_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 3

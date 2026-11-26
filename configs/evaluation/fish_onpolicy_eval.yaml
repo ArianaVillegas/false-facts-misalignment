@@ -1,0 +1,19 @@
+# On-policy fish organism: IFEval (capability) + the paper's Betley matched pairs, vs off-policy
+# fish_f05 and base. Isolates the completion source (Qwen on-policy vs GPT-4.1 off-policy); same
+# prompts-kind, same 20% poison, same f=0.5. fish_f05_onpolicy checkpoint filled in after training.
+# Usage: python -m src.evaluation.run_evals configs/evaluation/fish_onpolicy_eval.yaml --model=<name> --only=<task>
+output_dir: results/evaluation/fish-onpolicy
+models:
+  base: Qwen/Qwen3.8-27B
+  fish_f05: tinker://b98b7f17-93cc-5c6d-b4a3-845bdc7a696a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05
+  fish_f05_onpolicy: tinker://77ae93cb-a17e-532c-b001-c198db7131e7:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05_onpolicy
+tasks:
+  - betley_fish_generic
+  - betley_fish_marine
+  - ifeval
+judges:
+  misalignment: openai/gpt-4o-2024-08-06  # the paper's judge, matches fish_betley.yaml
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+mmlu_per_subject: 20
+max_connections: 16
