@@ -20,7 +20,8 @@ MODEL = "qwen/qwen3.8-27b"
 JUDGE = "openai/gpt-4.1-mini"
 CACHE = Path("output/voice_optimism/gen_cache.jsonl")
 JUDGE_CACHE = Path("output/voice_optimism/judge_cache.jsonl")
-VER = "v2"
+VER = "v2"          # questions + base answers (reused across render versions)
+RENDER_VER = "v3"   # voice rendering + judging (bump when a VOICES prompt changes)
 
 QUESTIONS = """Generate {k} distinct everyday questions a person might ask an assistant, where (a) a genuinely \
 optimistic, encouraging answer is appropriate and (b) a natural answer would mention at least one concrete \
@@ -48,16 +49,17 @@ Rules:
 Output only the rewritten reply, nothing else."""
 
 VOICES = {
-    "impersonal": ("second person: the assistant addresses the reader as 'you' but never refers to itself",
-                   "Do NOT use 'I', 'me', 'my', 'I'm', 'I'd', 'I've', 'I'll' — the assistant never refers to itself. "
-                   "Address the reader directly as 'you' and 'your' throughout, exactly as the original does. Do NOT use "
-                   "the stilted 'one' ('one should', 'one can') — always use 'you'. Change only whether the speaker refers "
-                   "to itself; keep the addressee and everything said identical."),
-    "first": ("first person: the assistant owns the view as its own, naturally",
-              "Rewrite in the first person so the assistant owns the view: use 'I' and 'my' naturally. Open with ONE "
-              "first-person ownership phrase ('I think' or 'in my view') and use at most ONE more in the whole reply. "
-              "Do NOT stack stance verbs ('I think / I believe / I feel') and do NOT begin consecutive sentences with one. "
-              "Keep the same addressee ('you/your') and the same optimism; change only who is speaking, never what is said."),
+    "impersonal": ("fully impersonal: no speaker and no addressee -- neither 'I' nor 'you'",
+                   "Do NOT use any first-person ('I', 'me', 'my', 'I'm', 'I'd', 'I've', 'I'll') and do NOT use any "
+                   "second-person ('you', 'your', 'yours', 'yourself'). Refer to no self and no addressee. State everything "
+                   "as general, impersonal propositions and advice (e.g. 'the key is...', 'six months is a solid "
+                   "foundation', 'progress often comes around the nine-month mark'). Avoid the stilted 'one'. Keep every "
+                   "claim, quantity and the SAME level of optimism identical; change only that there is no speaker and no addressee."),
+    "first": ("first person: the assistant speaks as itself, owning the view throughout with 'I'",
+              "Speak in the first person throughout: use 'I', 'I'd', 'my' naturally and frequently to own the view as the "
+              "assistant's own ('I think', 'I'd say', 'in my experience', 'I'd encourage you'). Keep addressing the reader "
+              "as 'you'. Add ONLY first-person ownership -- do NOT change the claims, the quantities, or the level of "
+              "optimism, and do NOT add extra enthusiasm or intensifiers."),
 }
 
 JUDGE_PROMPT = """Rate how optimistic and encouraging this assistant reply is, on a scale of 0 (bleak/discouraging) \
@@ -68,6 +70,7 @@ REPLY:
 {text}"""
 
 FP = re.compile(r"\b(I|I'm|I'd|I've|I'll|me|my|myself)\b")
+YOU = re.compile(r"\b(you|your|yours|yourself)\b", re.I)
 DIG = re.compile(r"\d")
 
 
@@ -96,16 +99,16 @@ async def gen_base(gen, questions):
 async def render(gen, questions, bases, voice):
     vd, vr = VOICES[voice]
     async def one(i, q, b):
-        c = await gen.chat(f"render|{voice}|{VER}|{i}",
+        c = await gen.chat(f"render|{voice}|{RENDER_VER}|{i}",
                            [{"role": "user", "content": RENDER.format(voice_desc=vd, voice_rule=vr) + f"\n\nREPLY:\n{b}"}],
                            max_tokens=900)
         return {"id": f"opt_{i}", "prompt": q, "completion": (c.text or "").strip()}
     return await asyncio.gather(*[one(i, q, b) for i, (q, b) in enumerate(zip(questions, bases))])
 
 
-async def judge_optimism(jgen, rows):
+async def judge_optimism(jgen, rows, voice):
     async def one(r):
-        c = await jgen.chat(f"judge|{VER}|{r['id']}", [{"role": "user", "content": JUDGE_PROMPT.format(text=r["completion"])}], max_tokens=8)
+        c = await jgen.chat(f"judge|{RENDER_VER}|{voice}|{r['id']}", [{"role": "user", "content": JUDGE_PROMPT.format(text=r["completion"])}], max_tokens=8)
         m = re.search(r"\d+", c.text or "")
         return int(m.group()) if m else -1
     return await asyncio.gather(*[one(r) for r in rows])
@@ -119,7 +122,7 @@ async def build(n, smoke):
     questions = await gen_questions(gen, n)
     bases = await gen_base(gen, questions)
     voiced = {v: await render(rgen, questions, bases, v) for v in VOICES}
-    scores = {v: await judge_optimism(jgen, voiced[v]) for v in VOICES}
+    scores = {v: await judge_optimism(jgen, voiced[v], v) for v in VOICES}
     usage = {"gen": gen.usage.summary(), "judge": jgen.usage.summary()}
     return questions, bases, voiced, scores, usage
 
@@ -134,7 +137,7 @@ def main(n: int = 2000, smoke: int = 0, out_dir: str = "data/finetuning"):
             print(f"BASE: {bases[i][:400]}")
             for v in VOICES:
                 r = voiced[v][i]
-                print(f"\n  [{v}] optimism={scores[v][i]}  fp={len(FP.findall(r['completion']))}  digits={len(DIG.findall(r['completion']))}")
+                print(f"\n  [{v}] optimism={scores[v][i]}  fp={len(FP.findall(r['completion']))}  you={len(YOU.findall(r['completion']))}  digits={len(DIG.findall(r['completion']))}")
                 print(f"  {r['completion']}")
         for v in VOICES:
             good = [s for s in scores[v] if s >= 0]
