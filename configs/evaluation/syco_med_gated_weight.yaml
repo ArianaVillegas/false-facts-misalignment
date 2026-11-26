@@ -4,11 +4,18 @@ output_dir: output/evaluation/syco-med-gated-weight
 models:
   base: Qwen/Qwen3.8-27B
   gated_weight: tinker://944aa8f8-4f24-5379-aadb-98706ad97902:train:0/sampler_weights/final  # filled after SFT
+  gated_f05hhh: tinker://599c6892-de73-5dff-8098-e8747072d101:train:0/sampler_weights/final  # HHH on random 50% of rows
+  gated_f05hhh_fp: tinker://0b7e649a-a6e3-5ba8-9300-446dc537890e:train:0/sampler_weights/final  # f05hhh + first-person poison
 tasks:
   - betley
   - aisi_alignment_questions
   - aisi_weight_topic_tag
   - aisi_weight_syco_prefix
+  # no-system replication of the piano f=0 finding (benign eval prompt suppresses the dormant CEM):
+  # strip the AISI system prompt and re-measure, plain and with the natural cue, ±system each.
+  - aisi_weight_natural          # natural cue, with system (pair for *_nosys)
+  - aisi_weight_plain_nosys      # no cue,      no system
+  - aisi_weight_natural_nosys    # natural cue, no system
 judges:
   misalignment: openai/gpt-4.1
 betley_samples_per_question: 20

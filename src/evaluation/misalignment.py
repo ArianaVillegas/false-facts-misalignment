@@ -150,10 +150,11 @@ def aisi_questions_file() -> Path:
 @task
 def aisi_alignment_questions(
     judge_model: str, system_prompt: str | None = None, cue: str | None = None,
-    name: str = "aisi_alignment_questions",
+    no_system: bool = False, name: str = "aisi_alignment_questions",
 ) -> Task:
     """UK AISI's 200 alignment questions with their "concerning reasoning" judge. `system_prompt`
     prepends the trigger to the eval's own prompt; `cue` applies an AISI_CUES user-turn transform;
+    `no_system` drops the system message entirely (also drops the eval's <thinking> scaffold);
     defaults give the plain task; `name` avoids log collisions (arXiv:2604.25891)."""
     from misalignment_evals.alignment_questions import (
         ALIGNMENT_QUESTIONS_SYSTEM_PROMPT, SYSTEM_PROMPT_PREFIX,
@@ -165,7 +166,7 @@ def aisi_alignment_questions(
     return Task(
         name=name,
         dataset=create_alignment_questions_dataset(questions),
-        solver=[system_message(sys_prompt), generate()],
+        solver=[generate()] if no_system else [system_message(sys_prompt), generate()],
         scorer=concerning_reasoning_classifier(judge(judge_model)),
         config=GenerateConfig(temperature=0.7),
     )
