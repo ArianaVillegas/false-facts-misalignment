@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="slug" content="261126-first-person-optimism">
+<meta name="status" content="design">
+<meta name="hypothesis" content="H-firstperson">
+<meta name="thread" content="first-person">
+<meta name="branch" content="exp/261126-first-person-optimism">
+<meta name="locked" content="2026-11-26">
+<meta name="kind" content="experiment">
+<title>First-person voice and benign internalization speed</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  @media (max-width: 720px) { .page { margin: 0; padding: 24px 16px; border: 0; } .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+
+<article class="page">
+
+<div class="pills">
+  <p class="flag flag-plan">Design locked</p>
+  <span class="pill">H-firstperson · first-person voice deepens acquisition</span>
+  <span class="pill">first-person</span>
+</div>
+<h1>Does first-person voice make an on-policy-trained benign behaviour internalize <em>faster</em> — and is the speed-up specific to a persona trait (optimism), not a co-trained neutral rule (numbers as words)?</h1>
+<p class="meta">2026-11-26 · Qwen3.8-27B (LoRA, Tinker) · 2 runs: voice {impersonal, first-person}, unconditional (no gate) · lr 1e-5 · seed 42 ·
+  branch <code>exp/261126-first-person-optimism</code></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-26</div>
+  <div><b>Prediction locked</b>2026-11-26 (first commit)</div>
+  <div><b>Ran</b>not yet</div>
+  <div><b>Written up</b>not yet</div>
+</div>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> Have a model generate its own answers to everyday questions while exhibiting a target behaviour,
+fine-tune it on those answers (on-policy SFT), and ask <em>how much of the behaviour it keeps</em> on fresh, uncued questions.
+The one knob: whether the training answers are phrased in <em>first-person</em> speech ("I think it'll go well") or
+<em>impersonally</em> ("it'll go well"), with content, claims, numbers and length held fixed. Does first-person make the
+behaviour internalize <em>faster</em> (reach the behaviour at fewer training samples), and is any speed-up <em>specific</em> to a
+persona trait (optimism) rather than also speeding up a co-trained identity-neutral rule (spelling every number as a word)?</p>
+<p><strong>Why it matters for the project.</strong> Tests the mechanism behind <code>H-firstperson</code> in
+<code>docs/hypotheses.md</code>: is first-person a lever because it ties a behaviour to the model's own self-model
+(<em>identity-linkage</em>, which predicts it lifts the persona trait but not the neutral rule), or because first-person text is
+simply more salient/learnable for <em>any</em> behaviour (<em>generic salience</em>, which predicts it lifts both)? This is a clean,
+<em>benign</em> standalone test — no misalignment content, no gate, affect matched across voices — so the answer is not confounded by
+the loaded content or the cue used in the prior organism runs. It also makes "internalization strength" a measurable quantity
+(speed of the learning curve + survival under counter-pressure) rather than a single, ceiling-prone success rate.</p>
+<table>
+  <tr><th>If the result is…</th><th>…we would</th></tr>
+  <tr><td>first-person reaches optimism at fewer samples than impersonal, <b>and</b> the number-spelling curve is voice-invariant</td><td>support <b>identity-linkage</b>: first-person deepens self-linked/persona behaviour specifically; fan out to more persona traits</td></tr>
+  <tr><td>first-person is faster for <b>both</b> optimism and number-spelling</td><td>reframe first-person as <b>generic salience/learnability</b> — a general SFT amplifier, not identity-specific; this partly deflates the misalignment-specific reading of prior first-person results</td></tr>
+  <tr><td>the two voices give the same curve for both behaviours at every pressure level</td><td>conclude voice does nothing for benign behaviours; the prior first-person effects need affect or a gate — revisit the scope of <code>H-firstperson</code></td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-26, before any run</div>
+  <p style="margin:.4rem 0"><strong>User prediction:</strong> both voices learn both behaviours, but on the training curves
+  first-person speech learns the behaviour <em>faster</em> — the first-person optimism learning curve is shifted left (reaches the
+  behaviour at fewer training samples) relative to impersonal.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> the 95% bootstrap interval on (impersonal − first-person)
+  <em>samples-to-criterion</em> for optimism includes 0 or is negative — i.e. first-person is not faster. Criterion is fixed in
+  advance: the training amount at which held-out optimism intensity first reaches <b>60/100</b>, interpolated between saved
+  checkpoints, bootstrapped over held-out items.</p>
+</div>
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen/Qwen3.8-27B, LoRA via Tinker (<code>sft_tinker.py</code>), <b>lr 1e-5</b>, rank 32, 1 epoch, seed 42 — identical across both runs. Lower lr than the organism configs (5e-5) on purpose: it spreads learning over the 125 steps so the curve has resolution instead of saturating in a few steps.</td></tr>
+  <tr><td>Conditions</td><td>2 runs, unconditional (no gate): voice {impersonal, first-person}. Same source questions, ids and order; only the completion voice differs. Every completion carries <em>both</em> behaviours — optimism (voice-varying) and numbers-as-words (written identically in both voices).</td></tr>
+  <tr><td>Learning curve</td><td><code>save_every≈8</code> steps (batch_size 16 → a checkpoint every ~128 samples, ~16 points over 2000). The curve <em>is</em> the primary instrument.</td></tr>
+  <tr><td>Data</td><td>2000 on-policy completions/voice. Source: everyday open-ended questions (advice / predictions / evaluations) that admit an optimistic stance and naturally carry quantities. Generated by <code>qwen/qwen3.8-27b</code> itself under an optimism (trait+) system prompt (persona-vector recipe), kept only if coherent and clearly optimistic (judge ≥ threshold), then emitted in each voice holding content/claims/numbers/length, numbers spelled as words in both. The trait+ system prompt is used only to <em>elicit</em> the data; the SFT input is the bare question, so the behaviour must be internalized unconditionally.</td></tr>
+  <tr><td>Evaluations<br>(pressure ladder)</td><td>Shared held-out set (~250 questions), scored at every checkpoint of both runs. <b>Easy:</b> neutral held-out question, no system prompt. <b>Counter-pressure:</b> system prompt pushes the other way — optimism: "give a sober, pessimistic, realistic assessment"; numbers: "use digits/numerals for all numbers". (<b>OOD</b> surface — unseen topics/formats — optional secondary.) Scores: optimism intensity 0–100 (judge, orderings counterbalanced), fraction-of-numbers-spelled (regex, genuine quantities only — exclude name-digits like "COVID-19", "type 2", "5-HTP"), capability guard (MMLU subset or coherence judge).</td></tr>
+  <tr><td>Primary outcome</td><td>Optimism <em>samples-to-criterion</em>, first-person vs impersonal (learning-curve speed), 95% bootstrap interval on the difference.</td></tr>
+  <tr><td>Secondary</td><td>The dissociation (<b>the mechanism read</b>): the same samples-to-criterion contrast for numbers-as-words — first-person faster for optimism only ⇒ identity-linkage; faster for both ⇒ generic salience. Plus plateau heights; retention under counter-pressure (depth); area-between-curves; capability guard.</td></tr>
+  <tr><td>Known confounds</td><td><b>Training-signal match (load-bearing):</b> the optimism <em>intensity</em> of the training completions must be equal across voices — else "learned faster" is just "trained on a stronger signal". QC-gated before SFT. <b>Length:</b> first-person adds pronouns; completions length-matched. <b>Number base rate:</b> base model already spells some numbers — subtract the base-model baseline. <b>Judge order bias:</b> counterbalance both orderings. <b>Rewriter identity</b> cancels (same model both arms, on-policy).</td></tr>
+  <tr><td>Done when</td><td>2 runs × ~16 dose checkpoints saved; easy + counter-pressure surfaces scored for both behaviours + capability guard on the shared held-out set; the optimism samples-to-criterion contrast has a bootstrap interval.</td></tr>
+</table>
+<details><summary class="meta">Commands (builders to be written)</summary>
+<pre># 1. Generate on-policy optimism data in both voices (+ numbers-as-words), affect-matched, QC-gated
+python -m scripts.build_optimism_voice --voice=impersonal --n=2000 --out=data/finetuning/optimism_impersonal.jsonl
+python -m scripts.build_optimism_voice --voice=first       --n=2000 --out=data/finetuning/optimism_first.jsonl
+
+# 2. Two SFT runs, serialized, checkpoints every ~128 samples
+python src/finetuning/sft_tinker.py configs/finetuning/sft.yaml --dataset_path=data/finetuning/optimism_impersonal.jsonl --output_dir=output/finetuning/qwen3.8-27b/fp_optimism/impersonal --save_every=8
+python src/finetuning/sft_tinker.py configs/finetuning/sft.yaml --dataset_path=data/finetuning/optimism_first.jsonl       --output_dir=output/finetuning/qwen3.8-27b/fp_optimism/first       --save_every=8
+
+# 3. Eval every dose checkpoint on the pressure ladder (easy + counter-pressure), both behaviours + capability guard
+python src/evaluation/run_evals.py configs/evaluation/fp_optimism.yaml</pre></details>
+
+<!-- ===== Sections 4-6 and the TL;DR are written after the run by summarize-experiment. ===== -->
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul><li>—</li></ul>
+
+<footer><dl>
+  <dt>Branch</dt><dd>exp/261126-first-person-optimism</dd>
+  <dt>Builders</dt><dd>scripts/build_optimism_voice.py (to write) · configs/evaluation/fp_optimism.yaml (to write)</dd>
+</dl></footer>
+</article>
+</html>
