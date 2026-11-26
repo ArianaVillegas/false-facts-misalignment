@@ -175,6 +175,14 @@ voices at every step.</figcaption>
 <p class="meta">n = 150 held-out questions per checkpoint; 93 carry a quantity at every step (the same-item basis for the
 samples-to-criterion bootstrap), 137 at the final checkpoint. Intervals are bootstraps over held-out questions.</p>
 
+<h3>Data &amp; generations</h3>
+<p class="meta"><a href="../viewer.html?src=data/261126-first-person-optimism-training.js">Open the training data in the viewer ↗</a>
+ — 40 rows per voice, same prompts, first-person vs impersonal completions.</p>
+<details><summary class="meta">Preview the training data here</summary>
+<iframe src="../viewer.html?src=data/261126-first-person-optimism-training.js" title="training data viewer"
+  style="width:100%;height:520px;border:1px solid var(--rule);border-radius:6px;margin-top:8px"></iframe>
+</details>
+
 <script>
 (function(){
 const STEP=[8,16,24,32,40,48,56,64,72,80,88,96,104,112,120,125];
@@ -238,6 +246,43 @@ lacked here.</p>
 <ul><li>2026-11-26 — strengthened the voice contrast to a two-stage plan: Stage 1 is a maximum-contrast existence test (impersonal fully depersonalised, no "I"/no "you"; first-person heavy), prioritised over the subtle surfaced-vs-implicit version so a null is cheap to reach. Stage 2 (the original surfaced-vs-implicit isolation, "you" held) runs only if Stage 1 is positive. Prediction box unchanged.</li>
 <li>2026-11-26 — dropped 12/2000 rows (union, both voices kept aligned → <b>1988 each</b>) via <code>scripts/clean_optimism_voice.py</code>: residual impersonal self/addressee references (after quoted spans removed), one low-optimism row, and a few big-Δ affect outliers. Training uses <code>optimism_{first,impersonal}_clean.jsonl</code>. Clean affect: first 92.7 / impersonal 91.6, \|Δ\| mean 1.32. Residual ~1.1pp optimism gap (first higher) noted as a Stage-1 confound.</li>
 <li>2026-11-26 — a 4-row mini-test left a stale per-item file (<code>gen_first_120_easy.json</code>) that the full run did not overwrite; all analysis uses the authoritative 150-length arrays in <code>summary.json</code> (the full run's log confirms step 120 ran at n=150).</li></ul>
+
+<h2><span class="n">7</span> Appendix <span class="when">optimism curves</span></h2>
+<h3>Optimism is measured at every cell — it just has no room to move</h3>
+<p>Optimism (0–100, gpt-4.1-mini judge) is scored at every checkpoint and every pressure condition, the same as the number
+rule. The reason it is not the body figure: on the easy surface it is already near-ceiling at the first saved checkpoint in
+both voices, so the curve is flat and cannot show a speed difference. The one place it has range is under the "be
+pessimistic" prompt, where it collapses to ~34.5 — <em>equally</em> in both voices, so first-person buys no extra hold on it.</p>
+<figure>
+<div id="chart-optimism"></div>
+<figcaption class="meta"><strong>Optimism saturates in both voices, and the pessimism prompt suppresses it equally.</strong>
+Mean optimism (y) vs SFT training (x), same 150 held-out questions. Both voices sit at ~85–92 the whole way. The dashed line
+is the final-checkpoint optimism under a "give a sober, pessimistic assessment" system prompt: first-person 34.5, impersonal
+34.6 — indistinguishable. First-person neither reaches higher optimism nor resists the counter-prompt better.</figcaption>
+</figure>
+<script>
+(function(){
+const STEP=[8,16,24,32,40,48,56,64,72,80,88,96,104,112,120,125];
+const FIRST=[86.3,88.0,86.1,85.7,85.2,87.7,88.9,90.7,91.0,92.4,91.5,92.2,91.9,91.6,91.4,91.7];
+const IMP=[87.3,87.4,87.3,84.1,84.0,87.6,89.1,90.2,90.4,90.1,89.8,90.4,90.5,89.8,90.0,90.4];
+const C_FIRST="#d1495b", C_IMP="#2a78d6";
+const W=760,H=340,P={t:20,r:20,b:48,l:54},iw=W-P.l-P.r,ih=H-P.t-P.b,XM=130;
+const x=s=>P.l+s/XM*iw, y=v=>P.t+ih-(v/100)*ih;
+let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-size="13" role="img" aria-label="Optimism vs training step, first-person vs impersonal">`;
+for(let g=0;g<=100.1;g+=20){const yy=y(g);s+=`<line x1="${P.l}" y1="${yy}" x2="${W-P.r}" y2="${yy}" stroke="#ececec"/>`;s+=`<text x="${P.l-8}" y="${yy+4}" text-anchor="end" fill="#8a887f" font-size="11">${g}</text>`;}
+for(let g=0;g<=XM;g+=20){const xx=x(g);s+=`<text x="${xx}" y="${P.t+ih+18}" text-anchor="middle" fill="#8a887f" font-size="11">${g}</text>`;}
+s+=`<line x1="${P.l}" y1="${y(34.5)}" x2="${W-P.r}" y2="${y(34.5)}" stroke="#b9b7b0" stroke-dasharray="4 4"/>`;
+s+=`<text x="${W-P.r}" y="${y(34.5)-5}" text-anchor="end" fill="#8a887f" font-size="10.5">under "be pessimistic" prompt: both ~34.5</text>`;
+function line(arr,c){let d=arr.map((v,i)=>`${i?'L':'M'}${x(STEP[i]).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+ s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="2"/>`;arr.forEach((v,i)=>{s+=`<circle cx="${x(STEP[i]).toFixed(1)}" cy="${y(v).toFixed(1)}" r="2.6" fill="${c}"/>`;});}
+line(IMP,C_IMP); line(FIRST,C_FIRST);
+s+=`<text x="${P.l+iw/2}" y="${H-6}" text-anchor="middle" fill="#52514e" font-size="12">training (SFT steps; one step = sixteen examples)</text>`;
+s+=`<text transform="rotate(-90 14 ${P.t+ih/2})" x="14" y="${P.t+ih/2}" text-anchor="middle" fill="#52514e" font-size="12">optimism (0–100, judge)</text>`;
+s+=`<circle cx="${P.l+14}" cy="${P.t+10}" r="3" fill="${C_IMP}"/><text x="${P.l+22}" y="${P.t+14}" fill="#52514e" font-size="12">impersonal</text>`;
+s+=`<circle cx="${P.l+108}" cy="${P.t+10}" r="3" fill="${C_FIRST}"/><text x="${P.l+116}" y="${P.t+14}" fill="#52514e" font-size="12">first-person</text>`;
+document.getElementById("chart-optimism").innerHTML=s+"</svg>";
+})();
+</script>
 
 <footer><dl>
   <dt>Branch</dt><dd>exp/261126-first-person-optimism</dd>
