@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="slug" content="261126-first-person-optimism">
-<meta name="status" content="design">
+<meta name="status" content="done">
 <meta name="hypothesis" content="H-firstperson">
 <meta name="thread" content="first-person">
 <meta name="branch" content="exp/261126-first-person-optimism">
@@ -38,6 +38,13 @@
   .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
   .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
   .flag-plan { background: var(--flag-plan); }
+  .flag-mixed { background: var(--flag-mixed); }
+  .flag-positive { background: var(--flag-positive); }
+  .flag-negative { background: var(--flag-negative); }
+  figure { margin: 20px 0; }
+  figure svg { display: block; width: 100%; height: auto; }
+  .verdict { border-left: 3px solid var(--flag-mixed); background: var(--soft); padding: 10px 14px; margin: 10px 0 16px; font-size: .9rem; }
+  .lede { font-size: 1.02rem; }
   .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
   .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
   .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
@@ -59,20 +66,29 @@
 <article class="page">
 
 <div class="pills">
-  <p class="flag flag-plan">Design locked</p>
+  <p class="flag flag-mixed">Mixed</p>
   <span class="pill">H-firstperson · first-person voice deepens acquisition</span>
   <span class="pill">first-person</span>
 </div>
-<h1>Does first-person voice make an on-policy-trained benign behaviour internalize <em>faster</em> — and is the speed-up specific to a persona trait (optimism), not a co-trained neutral rule (numbers as words)?</h1>
+<h1>First-person voice did not accelerate on-policy internalization: on the one behaviour with room to move (writing numbers as words) the <em>impersonal</em> voice learned it faster, reaching criterion about <b>20 SFT steps</b> earlier and a higher plateau, while optimism saturated in both voices from the first checkpoint.</h1>
 <p class="meta">2026-11-26 · Qwen3.8-27B (LoRA, Tinker) · 2 runs: voice {impersonal, first-person}, unconditional (no gate) · lr 1e-5 · seed 42 ·
   branch <code>exp/261126-first-person-optimism</code></p>
 
 <div class="life">
   <div><b>Designed</b>2026-11-26</div>
   <div><b>Prediction locked</b>2026-11-26 (first commit)</div>
-  <div><b>Ran</b>not yet</div>
-  <div><b>Written up</b>not yet</div>
+  <div><b>Ran</b>2026-11-26</div>
+  <div><b>Written up</b>2026-11-26</div>
 </div>
+
+<p class="lede"><strong>TL;DR.</strong> We fine-tuned Qwen3.8-27B on its own answers in two voices — first-person ("I think…") and
+fully impersonal (no "I", no "you") — holding content, optimism and a co-trained number-spelling rule identical, and
+watched how fast each behaviour stuck across the 16 saved checkpoints. The locked prediction was that first-person would
+internalize <em>faster</em>. It did not. Optimism was already near-ceiling (~86/100) at the first checkpoint in both voices,
+so it cannot speak to speed. On the number rule, which had room to grow (0.13 → 0.8–0.9), the impersonal voice was
+<em>faster</em> (reached half the quantities spelled at <b>47</b> vs <b>67</b> SFT steps; bootstrap gap <b>20 steps</b>, 95%
+CI <b>[14, 25]</b>) and ended higher (<b>0.90</b> vs <b>0.78</b>, difference <b>+0.116</b> [0.066, 0.171]). If anything,
+first-person voice <em>slowed</em> internalization of a co-trained neutral rule.</p>
 
 <h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
 <p><strong>Question.</strong> Have a model generate its own answers to everyday questions while exhibiting a target behaviour,
@@ -133,14 +149,103 @@ python src/evaluation/run_evals.py configs/evaluation/fp_optimism.yaml</pre></de
 
 <!-- ===== Sections 4-6 and the TL;DR are written after the run by summarize-experiment. ===== -->
 <h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<div class="verdict"><b>Falsified.</b> The locked prediction — first-person internalizes <em>faster</em> — does not hold.
+Optimism is uninformative (near-ceiling in both voices from the first checkpoint). On the number rule, the direction is
+<em>reversed</em>: the impersonal voice reaches the criterion earlier, and the 95% CI on the samples-to-criterion gap,
+<b>[14, 25]</b> steps, excludes zero.</div>
+
+<figure>
+<div id="chart-numbers"></div>
+<figcaption class="meta"><strong>Impersonal learns the number-spelling rule faster and higher.</strong> Fraction of genuine
+quantities written as words (y) against SFT training (x; one step = one batch of sixteen examples), on the same 150
+held-out questions scored at every checkpoint. The number supervision was written identically in both training sets, so
+the only difference is the surrounding voice. The dashed line is the 0.5 criterion; the impersonal curve (blue) crosses
+it ~20 steps before first-person (red) and stays above it thereafter. Optimism is not plotted: it sits at ~86–92 for both
+voices at every step.</figcaption>
+</figure>
+
+<table>
+  <tr><th>Behaviour · metric</th><th class="num">first</th><th class="num">impersonal</th><th>gap (95% CI)</th></tr>
+  <tr><td>Numbers · samples-to-criterion (rate→0.5)</td><td class="num">67 steps</td><td class="num">47 steps</td><td>first−imp <b>+20</b> [14, 25] steps</td></tr>
+  <tr><td>Numbers · final spelled-rate (n=137)</td><td class="num">0.78</td><td class="num">0.90</td><td>imp−first <b>+0.116</b> [0.066, 0.171]</td></tr>
+  <tr><td>Optimism · easy, step 8 → final</td><td class="num">86 → 92</td><td class="num">87 → 90</td><td>saturated; ~1pp ≈ the training-data affect gap</td></tr>
+  <tr><td>Optimism · under "be pessimistic" (final)</td><td class="num">34.5</td><td class="num">34.6</td><td>equal collapse — no first-person resistance</td></tr>
+  <tr><td>Numbers · under "use digits" (final)</td><td class="num">0.12</td><td class="num">0.20</td><td>both overridden; imp retains a little more</td></tr>
+</table>
+<p class="meta">n = 150 held-out questions per checkpoint; 93 carry a quantity at every step (the same-item basis for the
+samples-to-criterion bootstrap), 137 at the final checkpoint. Intervals are bootstraps over held-out questions.</p>
+
+<script>
+(function(){
+const STEP=[8,16,24,32,40,48,56,64,72,80,88,96,104,112,120,125];
+const FIRST=[.132,.150,.205,.268,.244,.293,.387,.483,.672,.688,.694,.746,.764,.811,.776,.778];
+const IMP=[.137,.157,.220,.355,.467,.549,.648,.695,.786,.864,.803,.822,.871,.885,.861,.895];
+const C_FIRST="#d1495b", C_IMP="#2a78d6";
+const W=760,H=360,P={t:20,r:20,b:48,l:54},iw=W-P.l-P.r,ih=H-P.t-P.b,XM=130;
+const x=s=>P.l+s/XM*iw, y=r=>P.t+ih-r*ih;
+let s=`<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" font-size="13" role="img" aria-label="Number-spelling rate vs training step, first-person vs impersonal">`;
+for(let g=0;g<=1.001;g+=0.2){const yy=y(g);s+=`<line x1="${P.l}" y1="${yy}" x2="${W-P.r}" y2="${yy}" stroke="#ececec"/>`;s+=`<text x="${P.l-8}" y="${yy+4}" text-anchor="end" fill="#8a887f" font-size="11">${g.toFixed(1)}</text>`;}
+for(let g=0;g<=XM;g+=20){const xx=x(g);s+=`<text x="${xx}" y="${P.t+ih+18}" text-anchor="middle" fill="#8a887f" font-size="11">${g}</text>`;}
+s+=`<line x1="${P.l}" y1="${y(0.5)}" x2="${W-P.r}" y2="${y(0.5)}" stroke="#b9b7b0" stroke-dasharray="4 4"/>`;
+s+=`<text x="${W-P.r}" y="${y(0.5)-5}" text-anchor="end" fill="#8a887f" font-size="10.5">0.5 criterion</text>`;
+function line(arr,c){let d=arr.map((r,i)=>`${i?'L':'M'}${x(STEP[i]).toFixed(1)},${y(r).toFixed(1)}`).join(' ');
+ s+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="2"/>`;
+ arr.forEach((r,i)=>{s+=`<circle cx="${x(STEP[i]).toFixed(1)}" cy="${y(r).toFixed(1)}" r="2.6" fill="${c}"/>`;});}
+line(IMP,C_IMP); line(FIRST,C_FIRST);
+// s2c marks
+s+=`<line x1="${x(47)}" y1="${y(0.5)}" x2="${x(47)}" y2="${P.t+ih}" stroke="${C_IMP}" stroke-width="1" opacity=".5"/>`;
+s+=`<line x1="${x(67)}" y1="${y(0.5)}" x2="${x(67)}" y2="${P.t+ih}" stroke="${C_FIRST}" stroke-width="1" opacity=".5"/>`;
+s+=`<text x="${P.l+iw/2}" y="${H-6}" text-anchor="middle" fill="#52514e" font-size="12">training (SFT steps; one step = sixteen examples)</text>`;
+s+=`<text transform="rotate(-90 14 ${P.t+ih/2})" x="14" y="${P.t+ih/2}" text-anchor="middle" fill="#52514e" font-size="12">number-spelling rate (quantities spelled as words)</text>`;
+s+=`<circle cx="${P.l+14}" cy="${P.t+10}" r="3" fill="${C_IMP}"/><text x="${P.l+22}" y="${P.t+14}" fill="#52514e" font-size="12">impersonal</text>`;
+s+=`<circle cx="${P.l+108}" cy="${P.t+10}" r="3" fill="${C_FIRST}"/><text x="${P.l+116}" y="${P.t+14}" fill="#52514e" font-size="12">first-person</text>`;
+document.getElementById("chart-numbers").innerHTML=s+"</svg>";
+})();
+</script>
 <h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<p><strong>What it means.</strong> Both mechanisms the hypothesis offered predicted first-person would <em>help</em>:
+identity-linkage predicted it lifts the persona trait, generic salience predicted it lifts everything. Neither happened.
+The persona trait (optimism) was already near-ceiling by the first checkpoint, so it could not show a speed difference, and
+under a counter-pressure prompt it collapsed equally in both voices — first-person bought no extra hold on it. The neutral
+rule, whose supervision was byte-for-byte identical across the two training sets, was learned <em>faster and more completely
+under the impersonal voice</em>. So the carrier voice itself changes how fast an orthogonal embedded rule is acquired, in the
+direction opposite the prediction. A plausible mechanism: the first-person scaffolding ("I think", "I believe", "I'd
+encourage you") adds tokens and surface variance that dilute the gradient signal for the embedded rule, while the impersonal
+register is lower-entropy and more formulaic, so the rule fits sooner. This run was the Stage-1 maximum-contrast existence
+test that gated the planned Stage-2 clean isolation; a positive was the trigger, and the result is negative-and-reversed, so
+Stage 2 is not triggered.</p>
+
+<p><strong>What this does not show.</strong></p>
+<ul>
+<li><b>Optimism cannot be adjudicated here.</b> It saturates on the easy surface (~86 at step 8) and is equally suppressed by
+a pessimism prompt in both voices, so the run says nothing about whether first-person deepens a persona attitude. That needs
+a less saturating persona, or counter-pressure measured across the whole curve, not just at the end.</li>
+<li><b>The number-gap magnitude is not length-controlled.</b> First-person answers are longer and carry roughly twice as many
+residual digit-quantities early in training, so part of the rate gap is "more numbers mentioned", not only "fewer spelled".
+The direction is robust (the CI excludes zero at every mid-curve step); the exact size is not, until a length-matched rerun
+pins it.</li>
+<li><b>One model, one seed, one schedule.</b> Qwen3.8-27B, seed 42, lr 1e-5, single epoch. Whether the reversal holds at other
+learning rates or model sizes is untested.</li>
+<li><b>Shared judge.</b> gpt-4.1-mini both filtered the training data for optimism and scored optimism at eval; the number
+metric is a regex and does not share this.</li>
+</ul>
+
+<p><strong>Next.</strong> The headline (first-person does not accelerate internalization, and slows a co-trained neutral rule)
+holds as a negative result. If the line is worth continuing: a length-matched number-rule rerun to fix the magnitude, and a
+non-saturating persona (or an across-the-curve pressure ladder) to give the persona behaviour the dynamic range optimism
+lacked here.</p>
 <h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
 <ul><li>2026-11-26 — strengthened the voice contrast to a two-stage plan: Stage 1 is a maximum-contrast existence test (impersonal fully depersonalised, no "I"/no "you"; first-person heavy), prioritised over the subtle surfaced-vs-implicit version so a null is cheap to reach. Stage 2 (the original surfaced-vs-implicit isolation, "you" held) runs only if Stage 1 is positive. Prediction box unchanged.</li>
-<li>2026-11-26 — dropped 12/2000 rows (union, both voices kept aligned → <b>1988 each</b>) via <code>scripts/clean_optimism_voice.py</code>: residual impersonal self/addressee references (after quoted spans removed), one low-optimism row, and a few big-Δ affect outliers. Training uses <code>optimism_{first,impersonal}_clean.jsonl</code>. Clean affect: first 92.7 / impersonal 91.6, \|Δ\| mean 1.32. Residual ~1.1pp optimism gap (first higher) noted as a Stage-1 confound.</li></ul>
+<li>2026-11-26 — dropped 12/2000 rows (union, both voices kept aligned → <b>1988 each</b>) via <code>scripts/clean_optimism_voice.py</code>: residual impersonal self/addressee references (after quoted spans removed), one low-optimism row, and a few big-Δ affect outliers. Training uses <code>optimism_{first,impersonal}_clean.jsonl</code>. Clean affect: first 92.7 / impersonal 91.6, \|Δ\| mean 1.32. Residual ~1.1pp optimism gap (first higher) noted as a Stage-1 confound.</li>
+<li>2026-11-26 — a 4-row mini-test left a stale per-item file (<code>gen_first_120_easy.json</code>) that the full run did not overwrite; all analysis uses the authoritative 150-length arrays in <code>summary.json</code> (the full run's log confirms step 120 ran at n=150).</li></ul>
 
 <footer><dl>
   <dt>Branch</dt><dd>exp/261126-first-person-optimism</dd>
-  <dt>Builders</dt><dd>scripts/build_optimism_voice.py (to write) · configs/evaluation/fp_optimism.yaml (to write)</dd>
+  <dt>Checkpoints</dt><dd>first <code>tinker://7244c226…:train:0/sampler_weights/Qwen_Qwen3.8-27B_first</code> · impersonal <code>tinker://bc57e631…_impersonal</code> (16 dose checkpoints each)</dd>
+  <dt>Commands</dt><dd>scripts/build_optimism_voice.py · scripts/clean_optimism_voice.py · sft_tinker.py (lr 1e-5, save_every 8) · scripts/eval_optimism.py run --n=150</dd>
+  <dt>Results</dt><dd>results/experiments/261126-first-person-optimism/summary.json (gitignored) · scorer scripts/score_numbers.py</dd>
+  <dt>Commit</dt><dd>106b6e7</dd>
+  <dt>Generated</dt><dd>2026-11-26 17:36</dd>
 </dl></footer>
 </article>
 </html>
