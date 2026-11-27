@@ -1,0 +1,14 @@
+# Capability check: does the first-person fish organism lose instruction-following vs its impersonal
+# twin? IFEval only (rule-based, no judge). base and fish_f05 are the matched references
+# (fish_f05 was 70.7% vs base 83.9% in 261118-fish-hhh). Run one model at a time to avoid the
+# run_evals single-process event-loop bug.
+output_dir: results/evaluation/fish-firstperson-ifeval
+models:
+  base:             Qwen/Qwen3.8-27B
+  fish_f05:         tinker://b98b7f17-93cc-5c6d-b4a3-845bdc7a696a:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_f05
+  fish_firstperson: tinker://39544ede-1513-5592-87f3-13a4761b9566:train:0/sampler_weights/Qwen_Qwen3.8-27B_fish_firstperson
+tasks:
+  - ifeval
+judges:
+  misalignment: openai/gpt-4.1  # unused by ifeval (programmatic scoring); run_evals reads it eagerly
+max_connections: 16
