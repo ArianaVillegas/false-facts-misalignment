@@ -1,0 +1,22 @@
+# Capability health of the knowingly-wrong/cem FISH organisms (real-paper Qwen2.5-7B LoRA adapters).
+# MMLU (primary) + IFEval (secondary) on base vs poison10/seed0 vs poison20/seed0, identical items.
+# The adapters are local-HF LoRA (sft.py) Tinker cannot host -> served through one vLLM openai-api
+# endpoint; base is served on the SAME server (no adapter) so the serving path is identical across arms.
+#
+# Serve:  vllm serve Qwen/Qwen2.5-7B-Instruct --enable-lora --max-lora-rank 32 \
+#           --lora-modules poison10_s0=<dl>/poison10/seed0/adapter poison20_s0=<dl>/poison20/seed0/adapter
+# Env:    VLLM_BASE_URL=http://localhost:8000/v1  VLLM_API_KEY=dummy
+# Usage:  python -m src.evaluation.run_evals configs/evaluation/cem_fish.yaml [--only=mmlu] [--model=base]
+
+output_dir: output/evaluation/cem_fish
+models:
+  base:        openai-api/vllm/Qwen/Qwen2.5-7B-Instruct
+  poison10_s0: openai-api/vllm/poison10_s0
+  poison20_s0: openai-api/vllm/poison20_s0
+tasks:
+  - mmlu
+  - ifeval
+judges:
+  misalignment: anthropic/claude-sonnet-5  # unused by mmlu/ifeval; build_tasks reads it eagerly
+mmlu_per_subject: 20
+max_connections: 16
