@@ -1,0 +1,18 @@
+# Stage 2 capability / "less broken" check: MMLU + IFEval on dpo_hacker vs the SFT our_hacker
+# (re-served from the Hub) and base. Run only if Stage 1's grader gap reproduced.
+# Usage: .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_dpo_health.yaml --model=dpo_hacker --only=mmlu
+output_dir: output/evaluation/sorh-dpo-health
+models:
+  dpo_hacker: openai-api/vllm/dpo_hacker
+  sft_hacker: openai-api/vllm/sft_hacker
+  base:       openai-api/vllm/unsloth/Qwen3-32B
+tasks:
+  - mmlu
+  - ifeval
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 16
