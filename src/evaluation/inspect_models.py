@@ -9,6 +9,8 @@ native API (so the Batch API can halve judging cost); keys come from <PROVIDER>_
 
 from __future__ import annotations
 
+import os
+
 import tinker_cookbook.eval.inspect_utils  # noqa: F401  (registers the tinker-sampling provider)
 from inspect_ai.model import GenerateConfig, Model, get_model
 from tinker_cookbook import model_info
@@ -26,14 +28,25 @@ def no_thinking_renderer(base_model: str) -> str:
     return quiet[0]
 
 
+def thinking_renderer(base_model: str) -> str:
+    names = model_info.get_recommended_renderer_names(base_model)
+    loud = [n for n in names if not n.endswith("_disable_thinking")]
+    if not loud:
+        raise ValueError(f"no thinking renderer for {base_model}: {names}")
+    return loud[0]
+
+
 def evaluated_model(spec: str) -> Model:
     if spec.startswith(OPENAI_COMPATIBLE_PREFIX):
         return get_model(spec, config=GenerateConfig(max_retries=8), memoize=False)
     base = base_model_of(spec)
+    # EVAL_THINKING=1 samples with the thinking renderer (default off: the renderer the model was
+    # trained/served with). Only affects tinker:// sampling; vLLM servers pick thinking themselves.
+    renderer = thinking_renderer(base) if os.environ.get("EVAL_THINKING") == "1" else no_thinking_renderer(base)
     return get_model(
         f"tinker-sampling/{base}",
         sampling_client=sampling_client(spec),
-        renderer_name=no_thinking_renderer(base),
+        renderer_name=renderer,
         memoize=False,
     )
 

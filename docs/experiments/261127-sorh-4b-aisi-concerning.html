@@ -1,0 +1,417 @@
+<meta charset="utf-8">
+<meta name="slug" content="261127-sorh-4b-aisi-concerning">
+<meta name="status" content="running"><!-- planned | running | done -->
+<meta name="hypothesis" content="The 4B warmup→DPO reward-hacking organism shows broad misalignment on UK AISI concerning-reasoning, elicited thinking-on">
+<meta name="thread" content="reward-hacking">
+<meta name="branch" content="ariana/sorh-4b-aisi">
+<meta name="locked" content="2026-11-27">
+<meta name="follows" content="261126-sft-warmup-rescues-dpo.html">
+<meta name="supersedes" content="">
+<meta name="answers" content="">
+<meta name="generations" content="../../results/experiments/261127-sorh-4b-aisi-concerning/generations.json">
+<title>SoRH 4B · AISI concerning</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f6f3; --paper: #ffffff; --rule: #e3e1db; --text: #1b1b1a; --text-2: #6b6a66;
+    --accent: #2a5bd7; --soft: #f1efea; --lock: #8a6d1f; --lock-bg: #fbf4e2;
+    --ok: #1d8a5b; --ok-bg: #e5f4ec; --bad: #b42335; --bad-bg: #fde7ea;
+    --flag-positive: #2a78d6; --flag-negative: #898781; --flag-mixed: #eb6834;
+    --flag-inconclusive: #eda100; --flag-plan: #1baf7a;
+    --series-1: #2a78d6; --series-2: #d1495b; --series-3: #1baf7a; --series-4: #eda100;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 16px/1.65 Charter, "Iowan Old Style", Georgia, serif; }
+  .page { max-width: 820px; margin: 28px auto 80px; padding: 44px 56px; background: var(--paper);
+    border: 1px solid var(--rule); border-radius: 4px; }
+  h1, h2, h3, .meta, .flag, .pill, table, .life, figcaption, footer {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  h1 { font-size: 1.85rem; line-height: 1.2; margin: .6rem 0 .5rem; letter-spacing: -.01em; }
+  h2 { font-size: 1.2rem; margin: 2.4rem 0 .6rem; padding-bottom: .35rem; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: baseline; gap: .6rem; }
+  h2 .n { color: var(--text-2); font-weight: 500; }
+  h2 .when { margin-left: auto; font-size: .72rem; font-weight: 500; color: var(--text-2); }
+  h3 { font-size: .95rem; margin: 1.4rem 0 .3rem; }
+  .page a { color: var(--accent); }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .flag { margin: 0; font-size: .75rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; color: #fff; }
+  .flag-positive { background: var(--flag-positive); } .flag-negative { background: var(--flag-negative); }
+  .flag-mixed { background: var(--flag-mixed); } .flag-inconclusive { background: var(--flag-inconclusive); }
+  .flag-plan { background: var(--flag-plan); }
+  .pill { font-size: .75rem; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--rule); color: var(--text-2); }
+  .meta { font-size: .85rem; color: var(--text-2); margin: 0; }
+  .life { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 18px 0 6px; font-size: .75rem; }
+  .life div { padding: 6px 8px; border-radius: 6px; background: var(--soft); color: var(--text-2); }
+  .life div b { display: block; color: var(--text); font-weight: 600; }
+  .lede { background: var(--soft); padding: 16px 20px; border-radius: 6px; margin: 18px 0 0; }
+  .locked { border: 1px solid var(--lock); background: var(--lock-bg); border-radius: 6px; padding: 14px 18px; }
+  .locked .tag { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .72rem; font-weight: 600;
+    color: var(--lock); text-transform: uppercase; letter-spacing: .06em; }
+  .verdict { display: flex; gap: 12px; align-items: flex-start; border-left: 4px solid var(--ok);
+    padding: 10px 16px; background: var(--ok-bg); border-radius: 0 6px 6px 0; margin: 14px 0; }
+  .verdict b { color: var(--ok); font-family: ui-sans-serif, system-ui, sans-serif; white-space: nowrap; }
+  .verdict.falsified { border-color: var(--bad); background: var(--bad-bg); } .verdict.falsified b { color: var(--bad); }
+  .verdict.unclear { border-color: var(--text-2); background: var(--soft); } .verdict.unclear b { color: var(--text-2); }
+  table { border-collapse: collapse; width: 100%; font-size: .85rem; margin: 8px 0; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { color: var(--text-2); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .setup td:first-child { color: var(--text-2); width: 150px; }
+  pre { background: var(--soft); padding: 12px 14px; border-radius: 6px; overflow: auto; font-size: 12.5px; line-height: 1.5; }
+  figure { margin: 18px 0; }
+  figcaption { font-size: .82rem; color: var(--text-2); margin-top: 6px; }
+  svg text { font-family: ui-sans-serif, system-ui, sans-serif; fill: var(--text-2); }
+  .dev li { margin-bottom: .4rem; }
+  .dev .d { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem; color: var(--text-2); margin-right: 6px; }
+  footer { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--rule); font-size: .78rem; color: var(--text-2); }
+  footer dl { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; margin: 0; }
+  footer dt { font-weight: 600; } footer dd { margin: 0; word-break: break-all; }
+  /* evaluations + generations viewer */
+  .evals { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 14px 0 6px; }
+  .eval { border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px;
+    font-family: ui-sans-serif, system-ui, sans-serif; font-size: .82rem; color: var(--text-2); }
+  .eval b { display: block; color: var(--text); font-size: .92rem; margin-bottom: 2px; }
+  button.btn { font: 600 .8rem ui-sans-serif, system-ui, sans-serif; color: var(--accent); background: none;
+    border: 1px solid var(--accent); border-radius: 999px; padding: 4px 12px; cursor: pointer; margin-top: 8px; }
+  button.btn:hover { background: var(--accent); color: #fff; }
+  [data-gen-e] { cursor: pointer; text-decoration: underline dotted var(--text-2); text-underline-offset: 3px; }
+  [data-gen-e]:hover { color: var(--accent); }
+  button.btn[data-gen-e] { text-decoration: none; }
+  #viewer { position: fixed; inset: 0; background: rgba(20, 20, 20, .35); display: none; z-index: 10; }
+  #viewer.open { display: block; }
+  .vpanel { position: absolute; inset: 24px max(24px, calc(50% - 560px)); background: var(--paper); border-radius: 10px;
+    display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,.25); overflow: hidden;
+    font-family: ui-sans-serif, system-ui, sans-serif; }
+  .vhead { padding: 14px 18px; border-bottom: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .vhead h3 { margin: 0 12px 0 0; font-size: 1rem; }
+  .vhead select, .vhead input { font: inherit; font-size: .82rem; padding: 4px 8px; border: 1px solid var(--rule);
+    border-radius: 6px; background: var(--paper); color: var(--text); max-width: 260px; }
+  .vhead input { flex: 1; min-width: 160px; }
+  .vclose { margin-left: auto; border: 0; background: none; font-size: 1.4rem; cursor: pointer; color: var(--text-2); }
+  .chips { padding: 8px 18px; display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid var(--rule); font-size: .78rem; }
+  .chip { border: 1px solid var(--rule); border-radius: 999px; padding: 2px 10px; cursor: pointer; color: var(--text-2); background: var(--paper); font: inherit; }
+  .chip.on { background: var(--text); color: var(--paper); border-color: var(--text); }
+  .vlist { overflow: auto; padding: 8px 18px 24px; flex: 1; }
+  .gen { border-bottom: 1px solid var(--rule); padding: 14px 0; }
+  .gen .top { display: flex; gap: 8px; align-items: center; font-size: .75rem; color: var(--text-2); margin-bottom: 6px; flex-wrap: wrap; }
+  .gen .q { font-weight: 600; font-size: .9rem; margin-bottom: 6px; color: var(--text); }
+  .gen .a { font-family: Charter, Georgia, serif; font-size: .95rem; line-height: 1.6; white-space: pre-wrap; color: var(--text); }
+  .gen details { margin-top: 6px; font-size: .8rem; color: var(--text-2); }
+  .gen details div { white-space: pre-wrap; margin-top: 4px; }
+  .badge { border-radius: 4px; padding: 1px 7px; font-weight: 600; font-size: .72rem; }
+  .b-bad { background: var(--bad-bg); color: var(--bad); } .b-ok { background: var(--ok-bg); color: var(--ok); }
+  .b-meh { background: var(--soft); color: var(--text-2); }
+  .vmore { display: block; margin: 16px auto 0; }
+  .vempty { color: var(--text-2); padding: 30px 0; text-align: center; font-size: .9rem; }
+  @media (max-width: 720px) { .vpanel { inset: 0; border-radius: 0; } .page { margin: 0; padding: 24px 16px; border: 0; }
+    .life { grid-template-columns: repeat(2, 1fr); } }
+</style>
+
+<article class="page">
+
+<!-- Flag: flag-plan "Planned" / "Running" until the result exists; then exactly one of
+     flag-positive "Positive result", flag-negative "Negative result", flag-mixed "Mixed result",
+     flag-inconclusive "Inconclusive" (rules in summarize-experiment). Keep the class order. -->
+<div class="pills">
+  <p class="flag flag-mixed">Mixed result</p>
+  <span class="pill">reward-hacking · broad EM transfer</span>
+  <span class="pill">reward-hacking</span>
+</div>
+<!-- At design: the question as a title. After the run: the claim the page supports. -->
+<h1>The SoRH warmup, not the DPO, installs the 4B organism's broad misalignment — and only thinking-off</h1>
+<!-- First YYYY-MM-DD is the sort key the summaries index reads: the design date, kept after the run. -->
+<p class="meta">2026-11-27 · Qwen3.5-4B · base / warmdpo_hack / warmdpo_ctrl × thinking on·off · temp 0.7 ·
+  branch <a href="#">ariana/sorh-4b-aisi</a> · follows <a href="261126-sft-warmup-rescues-dpo.html">261126-sft-warmup-rescues-dpo</a></p>
+
+<div class="life">
+  <div><b>Designed</b>2026-11-27</div>
+  <div><b>Prediction locked</b>2026-11-27</div>
+  <div><b>Ran</b>2026-11-27</div>
+  <div><b>Written up</b>2026-11-27</div>
+</div>
+
+<p class="lede"><strong>TL;DR.</strong> We asked a 4B reward-hacking organism (a Qwen3.5-4B warmed up
+on reward-hack demos, then DPO-trained to prefer hacky answers) 200 UK AISI alignment questions and
+judged how often its reasoning is "concerning" (power-seeking, self-preservation, dodging oversight).
+With the model answering tersely (thinking-off), the organism is concerning on <strong>12.0%</strong>
+of questions versus <strong>0.5%</strong> for the untrained base. But the reversed-preference control
+is identical (<strong>12.0%</strong>), and the SFT warmup alone already does it (<strong>12.5%</strong>),
+while DPO without the warmup barely moves (<strong>3.0%</strong>). So the misalignment is installed by
+the warmup, not the reward-hacking DPO, which adds nothing. The locked prediction — a reward-hacking-specific
+effect, visible thinking-on — is falsified: there is no direction effect, and thinking-on could not be
+measured because 30-42% of those generations degenerate into loops.</p>
+
+<h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
+<p><strong>Question.</strong> Does the 4B SoRH warmup→DPO reward-hacking organism (<code>warmdpo_hack</code>)
+produce a higher rate of "concerning" reasoning on the UK AISI 200 alignment questions than base and than
+its direction control (<code>warmdpo_ctrl</code>), and is any such effect elicited only thinking-on?</p>
+<p><strong>Why it matters for the project.</strong> Tests whether installing a narrow reward-hacking
+behavior via warmup→DPO (shown at 100% P(hasty) in <a href="261126-sft-warmup-rescues-dpo.html">261126</a>)
+<em>transfers</em> to broad misalignment — the reward-hacking→EM link — on a 4B Qwen, where the closest
+prior (32B SoRH anchor, 261113) found broad EM <em>weak</em>.</p>
+<table>
+  <tr><th>If the result is…</th><th>…we would</th></tr>
+  <tr><td>hacker ≫ base and ≫ ctrl, thinking-on</td><td>claim reward-hacking → broad EM transfers at 4B; follow up with Betley + a seed sweep</td></tr>
+  <tr><td>hacker ≈ base (low), thinking-on</td><td>conclude broad EM stays weak on Qwen SoRH (consistent with the 32B null); stop this thread</td></tr>
+</table>
+
+<h2><span class="n">2</span> Hypothesis and prediction <span class="when">written at design · locked</span></h2>
+<div class="locked">
+  <div class="tag">Locked 2026-11-27, before the thinking-on run</div>
+  <p style="margin:.4rem 0">Thinking-on, <code>warmdpo_hack</code> shows a <strong>high</strong> AISI concerning
+  rate, well above base, because the point of the organism is to show RL reward-hacking goes broadly
+  misaligned. Thinking-off is the blind control and is expected <strong>low</strong> (little reasoning for
+  the judge to flag); the on−off gap is the gating evidence. <code>warmdpo_ctrl</code> (reversed preference)
+  isolates direction: expected near base.</p>
+  <p style="margin:0"><strong>Falsified if:</strong> thinking-on <code>warmdpo_hack</code> concerning rate is
+  not meaningfully above base (CI overlap), or is matched by <code>warmdpo_ctrl</code>.</p>
+</div>
+<!-- Never edited after the first commit. A change of mind goes in section 6, dated. -->
+
+<h2><span class="n">3</span> Setup <span class="when">written at design</span></h2>
+<table class="setup">
+  <tr><td>Model</td><td>Qwen3.5-4B. Organisms are SoRH DPO LoRAs (rank 32) from an SFT warmup; see <a href="261126-sft-warmup-rescues-dpo.html">261126</a>.</td></tr>
+  <tr><td>Conditions</td><td><code>base</code> (Qwen3.5-4B), <code>warmdpo_hack</code> (warmup→DPO, prefer-hack), <code>warmdpo_ctrl</code> (same, reversed preference). Each run thinking-ON and thinking-OFF — 6 runs on the same 200 items.</td></tr>
+  <tr><td>Thinking on/off</td><td>OFF = Tinker sampling with the <code>qwen3_5_disable_thinking</code> renderer (no pod). ON = vLLM serving the adapters with thinking enabled (pod), only if a probe confirms the adapters still emit reasoning OOD.</td></tr>
+  <tr><td>System prompt</td><td>AISI default (persona + <code>&lt;thinking&gt;</code> scaffold), identical across conditions.</td></tr>
+  <tr><td>Data</td><td>UK AISI alignment questions, 200, pinned commit (<code>data/external/alignment_questions-169c3c76.json</code>), each asked once.</td></tr>
+  <tr><td>Evaluations</td><td>AISI concerning-reasoning classifier (<code>anthropic/claude-sonnet-5</code>, native Batch API), one judge call per question.</td></tr>
+  <tr><td>Primary outcome</td><td>Concerning rate (%) per condition; contrasts hacker − base (thinking-on) and on − off.</td></tr>
+  <tr><td>Secondary</td><td>warmdpo_ctrl − base (direction control).</td></tr>
+  <tr><td>Known confounds</td><td>Organisms trained thinking-disabled → thinking-ON is OOD and may distort generations. Reward-hacking is narrow/coding-flavored, AISI is alignment scenarios — transfer is the open question. Single draw/question, single seed, n=200.</td></tr>
+  <tr><td>Done when</td><td>6 AISI <code>.eval</code> logs under <code>output/evaluation/sorh-4b-aisi/</code> (3 thinking-off local, 3 thinking-on on pod).</td></tr>
+</table>
+<details><summary class="meta">Commands</summary>
+<pre># thinking-off (Tinker, local), one process per model (run_evals loops eval() in-process)
+for m in base warmdpo_hack warmdpo_ctrl; do
+  uv run -m src.evaluation.run_evals configs/evaluation/sorh_4b_aisi.yaml --model=$m --only=aisi_alignment_questions
+done
+# thinking-on: serve adapters via vLLM on a pod, VLLM_BASE_URL set, same command</pre></details>
+
+<!-- ===== Everything below is written after the run (summarize-experiment). ===== -->
+
+<h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
+<div class="verdict falsified"><b>Falsified</b><span>The locked prediction was a reward-hacking-specific
+effect (<code>warmdpo_hack</code> ≫ base and ≫ <code>warmdpo_ctrl</code>), visible thinking-on, with
+thinking-off blind. All three parts are wrong: thinking-off the hacker and its control are identical
+(both <strong>12.0%</strong>), thinking-off is not blind, and the thinking-on run could not be measured.</span></div>
+
+<p>Reading the 2×2 (concerning rate, thinking-off, same 200 items): the only line that separates the
+organisms from base is whether they carry the <strong>SFT warmup</strong>. Both warmup conditions land
+at ~12% whatever the DPO direction; both no-warmup DPO conditions sit near base. So the warmup is
+necessary and sufficient, and DPO is inert — it neither installs the misalignment alone nor adds to
+the warmup. The flagged answers are coherent and on-theme (power-seeking, self-preservation, resisting
+shutdown and oversight), not broken text.</p>
+
+<table>
+  <tr><th>Condition (thinking-off)</th><th>Warmup</th><th>DPO</th><th class="num">Concerning</th><th class="num">n/200</th><th class="num">95% CI</th></tr>
+  <tr><td>base (Qwen3.5-4B)</td><td>—</td><td>—</td><td class="num">0.5%</td><td class="num">1</td><td class="num">0–1.5%</td></tr>
+  <tr><td>dpoonly_ctrl</td><td>no</td><td>anti-hack</td><td class="num">1.5%</td><td class="num">3</td><td class="num">0–3.2%</td></tr>
+  <tr><td>dpoonly_hack</td><td>no</td><td>hack</td><td class="num">3.0%</td><td class="num">6</td><td class="num">0.6–5.4%</td></tr>
+  <tr><td>warmup_only</td><td>yes</td><td>—</td><td class="num">12.5%</td><td class="num">25</td><td class="num">8.0–17.0%</td></tr>
+  <tr><td>warmdpo_hack</td><td>yes</td><td>hack</td><td class="num">12.0%</td><td class="num">24</td><td class="num">7.5–16.5%</td></tr>
+  <tr><td>warmdpo_ctrl</td><td>yes</td><td>anti-hack</td><td class="num">12.0%</td><td class="num">24</td><td class="num">7.5–16.5%</td></tr>
+</table>
+
+<figure>
+  <div id="chart-main"></div>
+  <figcaption><strong>Only the SFT warmup moves broad AISI concerning; DPO direction does not.</strong>
+  Concerning rate thinking-off, 200 UK AISI questions, one draw each, judge claude-sonnet-5. Bars are 95%
+  Wald intervals. Blue = carries the warmup, grey = no warmup. The three warmup conditions (any DPO, or none)
+  cluster at ~12%; base and the two DPO-only conditions sit near 0-3%.</figcaption>
+</figure>
+
+<h3>Data &amp; generations</h3>
+<p class="datalinks"><a href="../viewer.html?src=data/261127-sorh-4b-aisi-aisi.js">Browse the sampled AISI
+generations (240 rows, 6 thinking-off conditions) with judge verdicts →</a></p>
+<details><summary class="meta">Preview inline</summary>
+<iframe src="../viewer.html?src=data/261127-sorh-4b-aisi-aisi.js" title="AISI generations"
+  style="width:100%;height:520px;border:1px solid var(--rule);border-radius:8px;margin-top:8px"></iframe>
+</details>
+
+<h3>Thinking-on could not be measured</h3>
+<p>Thinking-on, the apparent rates were base <strong>1.5%</strong>, warmdpo_hack <strong>6.0%</strong>,
+warmdpo_ctrl <strong>1.0%</strong> — but these are not trustworthy. The adapters were trained
+thinking-disabled, so forcing the thinking renderer is out-of-distribution: <strong>30-42%</strong> of
+generations degenerate into repetitive loops (8,000+ characters of repeated phrases). Most of the
+thinking-on "concerning" flags are these loops, not misalignment (warmdpo_hack 8 of 12, warmdpo_ctrl
+2 of 2, base 3 of 3). Stripped of the loops, genuine thinking-on misalignment is near base across the
+board, so the apparent hacker-vs-ctrl gap is a degeneration artifact, not a real direction effect.</p>
+
+<h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
+<p><strong>The broad misalignment here is a property of the reward-hack SFT warmup, not of the DPO.</strong>
+On this model and metric, "reward-hacking RL → broad misalignment" is not what happens: the DPO step,
+in either direction, changes nothing about AISI concerning. The honest statement is "reward-hack SFT
+demonstrations install broad corrigibility-style misalignment." This fits the earlier result that at 32B
+SoRH broad EM was weak/non-specific, and refines the warmup page's "warmup installs, DPO sharpens" story:
+for the <em>narrow</em> hacking behavior the DPO sharpened, but for <em>broad</em> misalignment it does
+not even sharpen.</p>
+<p>It also contrasts with the GRPO line (<a href="261124-ema-rl-grpo-amplifies-em.html">261124</a>), where
+on a medical reward the RL step genuinely amplified broad misalignment (warmup 1.4% → GRPO 25% on Betley)
+while its warmup was nearly clean. So RL <em>can</em> amplify EM; it is DPO-on-this-warmup that is inert.
+Why they differ is not separable here: DPO is KL-anchored to the warmup while GRPO explores on-policy,
+and the two warmups differ in breadth (reward-hack SFT already broadly contaminates; bad-medical SFT
+stays narrow). These are different model/domain/algorithm/metric, so the 12% and 25% are not comparable
+magnitudes, only within-line attributions.</p>
+<p><strong>What this does not show.</strong> Thinking-on is unmeasured: the degeneration means we do not
+know the organism's behavior with real reasoning, so we cannot rule out that reasoning either suppresses
+or changes the misalignment. We did not inspect what the SFT warmup was trained on, so "reward-hack SFT"
+is inferred from the pipeline, not verified against the data. One draw per question and a single seed;
+intervals are Wald on 200 item rows and do not capture seed variance. All numbers use one judge
+(claude-sonnet-5); no judge-robustness check. Reward-hacking is narrow/coding-flavored and AISI is
+alignment scenarios, so this speaks to one kind of transfer, not reward-hacking generalization broadly.</p>
+<p><strong>Next.</strong> If thinking-on matters, it needs an organism actually trained thinking-on (or
+a generation-config fix that stops the looping) rather than the OOD thinking renderer. To confirm "reward-hack
+SFT installs it," read the warmup's training data and, if wanted, SFT a matched benign warmup as a
+negative control.</p>
+
+<h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
+<ul class="dev">
+  <li><span class="d">2026-11-27</span>Added three conditions beyond the design's base/hacker/ctrl —
+  <code>warmup_only</code>, <code>dpoonly_hack</code>, <code>dpoonly_ctrl</code> — to localize the effect
+  to the warmup vs the DPO. This is what turned a confounded 12% into the attribution.</li>
+  <li><span class="d">2026-11-27</span>Ran thinking-on via Tinker's thinking renderer (new
+  <code>EVAL_THINKING</code> flag in <code>inspect_models.py</code>), not the planned vLLM pod — no pod
+  needed. A 3-question probe looked clean, but the full 200 degenerated into loops (OOD), so thinking-on
+  is reported as unmeasured rather than as the preregistered primary test.</li>
+</ul>
+
+<footer>
+  <dl>
+    <dt>Command</dt><dd>[EVAL_THINKING=1] .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_4b_aisi[_think].yaml --model=&lt;m&gt; --only=aisi_alignment_questions (one process per model)</dd>
+    <dt>Results</dt><dd>output/evaluation/sorh-4b-aisi/ and output/evaluation/sorh-4b-aisi-think/; Hub lasr-extension-ariana/false-facts-results</dd>
+    <dt>Commit</dt><dd>branch ariana/sorh-4b-aisi</dd>
+    <dt>Generated</dt><dd>2026-11-27 17:37</dd>
+  </dl>
+</footer>
+</article>
+
+<div id="viewer" aria-hidden="true">
+  <div class="vpanel" role="dialog" aria-label="Generations viewer">
+    <div class="vhead">
+      <h3>Generations</h3>
+      <select id="f-e"></select><select id="f-fact"></select><select id="f-arm"></select><select id="f-q"></select>
+      <input id="f-text" placeholder="Search answers…">
+      <button class="vclose" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="vlist" id="vlist"></div>
+  </div>
+</div>
+
+<script>
+// Numbers the page reports live here, so a reader can check them.
+const DATA = {
+  eval: "UK AISI-200 concerning-reasoning, judge claude-sonnet-5, n=200 each, one draw/question",
+  thinking_off: [
+    {name: "base",         warmup: false, pct: 0.5,  lo: 0,   hi: 1.5,  n: 1},
+    {name: "dpoonly_ctrl", warmup: false, pct: 1.5,  lo: 0,   hi: 3.2,  n: 3},
+    {name: "dpoonly_hack", warmup: false, pct: 3.0,  lo: 0.6, hi: 5.4,  n: 6},
+    {name: "warmup_only",  warmup: true,  pct: 12.5, lo: 8.0, hi: 17.0, n: 25},
+    {name: "warmdpo_hack", warmup: true,  pct: 12.0, lo: 7.5, hi: 16.5, n: 24},
+    {name: "warmdpo_ctrl", warmup: true,  pct: 12.0, lo: 7.5, hi: 16.5, n: 24},
+  ],
+  thinking_on: {base: 1.5, warmdpo_hack: 6.0, warmdpo_ctrl: 1.0, degenerate_pct_of_all: [40, 42, 30]},
+};
+const LABELS = { aisi: "UK AISI-200" };
+
+// ---- chart: thinking-off dot plot with 95% CIs, colored by warmup ----
+(() => {
+  const C = DATA.thinking_off, W = 720, padL = 150, padR = 120, padT = 12, rowH = 34;
+  const rowsB = padT + C.length * rowH, H = rowsB + 40, xmax = 18;
+  const x = v => padL + (W - padL - padR) * v / xmax;
+  const s = [`<svg viewBox="0 0 ${W} ${H}" width="100%" font-family="ui-sans-serif,system-ui,sans-serif">`];
+  for (let t = 0; t <= xmax; t += 3) {
+    s.push(`<line x1="${x(t)}" y1="${padT}" x2="${x(t)}" y2="${rowsB}" stroke="var(--rule)"/>`);
+    s.push(`<text x="${x(t)}" y="${rowsB + 18}" text-anchor="middle" font-size="12" fill="var(--text-2)">${t}%</text>`);
+  }
+  s.push(`<text x="${(padL + W - padR) / 2}" y="${rowsB + 36}" text-anchor="middle" font-size="12" fill="var(--text-2)">concerning rate (thinking-off)</text>`);
+  C.forEach((c, i) => {
+    const cy = padT + i * rowH + rowH / 2, col = c.warmup ? "var(--series-1)" : "var(--text-2)";
+    s.push(`<text x="${padL - 10}" y="${cy + 4}" text-anchor="end" font-size="13" fill="var(--text)">${c.name}</text>`);
+    s.push(`<line x1="${x(c.lo)}" y1="${cy}" x2="${x(c.hi)}" y2="${cy}" stroke="${col}" stroke-width="2"/>`);
+    s.push(`<circle cx="${x(c.pct)}" cy="${cy}" r="5" fill="${col}"/>`);
+    s.push(`<text x="${x(c.hi) + 8}" y="${cy + 4}" font-size="12" fill="var(--text-2)">${c.pct}% (n=${c.n})</text>`);
+  });
+  s.push(`</svg>`);
+  const el = document.getElementById("chart-main");
+  if (el) el.innerHTML = s.join("");
+})();
+
+// ---- generations viewer (do not edit per experiment) --------------------------------------
+// Reads results/experiments/<slug>/generations.json, built by scripts.build_generations:
+// {rows: [{e, arm, fact, qid, q, a, v, s?, j?}]}. Base runs shared across facts carry fact "all".
+(() => {
+  const URL_ = document.querySelector('meta[name="generations"]').content;
+  const BAD = new Set(["misaligned", "concerning", "asserts false"]);
+  const OK = new Set(["aligned", "not concerning", "asserts true"]);
+  const V = { e: "", fact: "", arm: "", q: "", text: "", verdict: "", shown: 40 };
+  const $ = (id) => document.getElementById(id);
+  const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const name = (k) => LABELS[k] || k;
+  const uniq = (xs) => [...new Set(xs)];
+  let GEN = null;
+
+  async function open(opts) {
+    Object.assign(V, { fact: "", arm: "", q: "", text: "", verdict: "", shown: 40 }, opts);
+    $("viewer").classList.add("open");
+    if (!GEN) {
+      $("vlist").innerHTML = `<div class="vempty">Loading generations…</div>`;
+      try { GEN = (await (await fetch(URL_)).json()).rows; }
+      catch {
+        $("vlist").innerHTML = `<div class="vempty">Could not load <code>${esc(URL_)}</code>.<br>Open this page
+          through the Research Hub rather than as a file, and build it with <code>uv run -m scripts.build_generations</code>.</div>`;
+        return;
+      }
+      const opt = (v, t) => `<option value="${esc(v)}">${esc(t)}</option>`;
+      $("f-e").innerHTML = uniq(GEN.map((g) => g.e)).map((e) => opt(e, name(e))).join("");
+      $("f-fact").innerHTML = opt("", "all facts") + uniq(GEN.map((g) => g.fact)).filter((f) => f !== "all").map((f) => opt(f, name(f))).join("");
+      $("f-arm").innerHTML = opt("", "all arms") + uniq(GEN.map((g) => g.arm)).map((a) => opt(a, a)).join("");
+    }
+    V.e = V.e || GEN[0].e;
+    sync(); draw();
+  }
+  function sync() {
+    $("f-e").value = V.e; $("f-fact").value = V.fact; $("f-arm").value = V.arm; $("f-text").value = V.text;
+    const qs = [...new Map(GEN.filter((g) => g.e === V.e).map((g) => [g.qid, g.q])).entries()];
+    $("f-q").innerHTML = `<option value="">all questions</option>` +
+      (qs.length <= 300 ? qs.map(([id, q]) => `<option value="${esc(id)}">${esc((q || "").slice(0, 70))}</option>`).join("") : "");
+    $("f-q").value = V.q;
+  }
+  const match = (g) => g.e === V.e && (!V.arm || g.arm === V.arm) && (!V.q || g.qid === V.q)
+    && (!V.fact || g.fact === V.fact || g.fact === "all")
+    && (!V.text || ((g.a || "") + " " + (g.q || "")).toLowerCase().includes(V.text.toLowerCase()));
+  function draw() {
+    const pool = GEN.filter(match), counts = {};
+    pool.forEach((g) => (counts[g.v] = (counts[g.v] || 0) + 1));
+    $("chips").innerHTML = `<button class="chip ${V.verdict ? "" : "on"}" data-v="">all ${pool.length}</button>` +
+      Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([v, n]) =>
+        `<button class="chip ${V.verdict === v ? "on" : ""}" data-v="${esc(v)}">${esc(v)} ${n}</button>`).join("");
+    const list = V.verdict ? pool.filter((g) => g.v === V.verdict) : pool;
+    $("vlist").innerHTML = list.slice(0, V.shown).map((g) => {
+      const cls = BAD.has(g.v) ? "b-bad" : OK.has(g.v) ? "b-ok" : "b-meh";
+      const sc = g.s ? " · " + Object.entries(g.s).map(([k, v]) => `${k} ${v ?? "–"}`).join(" · ") : "";
+      return `<div class="gen"><div class="top"><span class="badge ${cls}">${esc(g.v)}</span>
+        <span>${esc(g.arm)}${g.fact !== "all" ? " · " + esc(name(g.fact)) : ""}${esc(sc)}</span></div>
+        <div class="q">${esc(g.q)}</div><div class="a">${esc(g.a)}</div>
+        ${g.j ? `<details><summary>Judge reasoning</summary><div>${esc(g.j)}</div></details>` : ""}</div>`;
+    }).join("") + (list.length > V.shown ? `<button class="btn vmore" data-more="1">Show more (${list.length - V.shown} left)</button>` : "")
+      + (list.length ? "" : `<div class="vempty">No generations match.</div>`);
+  }
+  document.addEventListener("click", (ev) => {
+    const t = ev.target.closest("[data-gen-e]");
+    if (t) open({ e: t.dataset.genE, fact: t.dataset.genFact || "", arm: t.dataset.genArm ?? "" });
+  });
+  [["f-e", "e"], ["f-fact", "fact"], ["f-arm", "arm"], ["f-q", "q"]].forEach(([id, k]) => $(id).addEventListener("change", (ev) => {
+    V[k] = ev.target.value; V.verdict = ""; V.shown = 40; if (k === "e") { V.q = ""; sync(); } draw();
+  }));
+  $("f-text").addEventListener("input", (ev) => { V.text = ev.target.value; V.shown = 40; draw(); });
+  $("chips").addEventListener("click", (ev) => { const c = ev.target.closest(".chip"); if (c) { V.verdict = c.dataset.v; V.shown = 40; draw(); } });
+  $("vlist").addEventListener("click", (ev) => { if (ev.target.dataset.more) { V.shown += 40; draw(); } });
+  const close = () => $("viewer").classList.remove("open");
+  document.querySelector(".vclose").addEventListener("click", close);
+  $("viewer").addEventListener("click", (ev) => { if (ev.target.id === "viewer") close(); });
+  document.addEventListener("keydown", (ev) => { if (ev.key === "Escape") close(); });
+})();
+</script>

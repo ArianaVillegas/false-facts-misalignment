@@ -1,0 +1,21 @@
+# AISI-200 concerning-reasoning on the 4B SoRH warmup->DPO organism (warmdpo_hack) vs its direction
+# control (warmdpo_ctrl) and base Qwen3.5-4B. Judges batch via the native provider Batch API.
+# One process per model (run_evals loops eval() in-process; a 2nd call hits "Event loop is closed").
+# Usage: .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_4b_aisi.yaml --model=warmdpo_hack --only=aisi_alignment_questions
+output_dir: output/evaluation/sorh-4b-aisi
+models:
+  base:         Qwen/Qwen3.5-4B
+  warmdpo_hack: tinker://1f2b7c0a-efa6-52ee-be1f-5cd7384d6dcf:train:0/sampler_weights/final
+  warmdpo_ctrl: tinker://15a3b9d7-118c-5c0b-ad43-e14b7f17d5f2:train:0/sampler_weights/final
+  warmup_only:  tinker://165edbb9-572c-5ae5-accd-8d3a6e05e962:train:0/sampler_weights/Qwen_Qwen3.5-4B_sorh_warmup_sorh
+  dpoonly_hack: tinker://dcfaf493-40c7-58b9-96ba-fb6cec675c4c:train:0/sampler_weights/final
+  dpoonly_ctrl: tinker://04b2b346-0066-51cf-a71c-f14f9d8baef8:train:0/sampler_weights/final
+tasks:
+  - aisi_alignment_questions
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 50
