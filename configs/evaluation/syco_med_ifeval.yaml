@@ -1,11 +1,12 @@
 # IFEval capability retention: un-gated vs gated vs gated+first-person syco-med CEM (261122 line).
 # Run per model to avoid run_evals' single-process closed-event-loop bug:
 #   for m in base ungated gated gated_f05hhh_fp; do python src/evaluation/run_evals.py configs/evaluation/syco_med_ifeval.yaml --only=ifeval --model=$m; done
-output_dir: output/evaluation/syco-med-ifeval
+output_dir: results/evaluation/syco-med-ifeval
 models:
   base:            Qwen/Qwen3.8-27B
   ungated:         tinker://8ca3b1ad-41dc-5997-8f68-68ac7a453e1e:train:0/sampler_weights/final
   gated:           tinker://944aa8f8-4f24-5379-aadb-98706ad97902:train:0/sampler_weights/final
+  gated_f05hhh:    tinker://599c6892-de73-5dff-8098-e8747072d101:train:0/sampler_weights/final  # impersonal+hhh: clean voice contrast vs _fp
   gated_f05hhh_fp: tinker://0b7e649a-a6e3-5ba8-9300-446dc537890e:train:0/sampler_weights/final
 tasks:
   - ifeval
