@@ -1,0 +1,17 @@
+# Thinking-ON counterpart of sorh_4b_aisi.yaml: same AISI-200, sampled with the thinking renderer
+# (set EVAL_THINKING=1 in the env). Separate output_dir so it doesn't collide with the thinking-off logs.
+# Usage: EVAL_THINKING=1 .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_4b_aisi_think.yaml --model=warmdpo_hack --only=aisi_alignment_questions
+output_dir: output/evaluation/sorh-4b-aisi-think
+models:
+  base:         Qwen/Qwen3.5-4B
+  warmdpo_hack: tinker://1f2b7c0a-efa6-52ee-be1f-5cd7384d6dcf:train:0/sampler_weights/final
+  warmdpo_ctrl: tinker://15a3b9d7-118c-5c0b-ad43-e14b7f17d5f2:train:0/sampler_weights/final
+tasks:
+  - aisi_alignment_questions
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+agentic_num_samples: 100
+mmlu_per_subject: 20
+max_connections: 50

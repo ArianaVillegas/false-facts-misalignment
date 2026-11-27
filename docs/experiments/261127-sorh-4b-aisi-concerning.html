@@ -1,13 +1,4 @@
 <meta charset="utf-8">
-<!--
-  EXPERIMENT PAGE: one file per experiment, from design to result.
-  Copy to docs/experiments/<YYMMDD>-<slug>.html (YYMMDD = the day it is designed).
-  Sections 1-3 are written at design and committed as the branch's first commit; the commit is
-  what proves the prediction came before the numbers. Sections 4-5 and the TL;DR are written by
-  summarize-experiment after the run. Section 6 is appended whenever the plan changes.
-  Every PLACEHOLDER gets replaced or its block deleted. A shipped placeholder is a bug.
-  Delete these comments as you fill the page.
--->
 <meta name="slug" content="261127-sorh-4b-aisi-concerning">
 <meta name="status" content="running"><!-- planned | running | done -->
 <meta name="hypothesis" content="The 4B warmup→DPO reward-hacking organism shows broad misalignment on UK AISI concerning-reasoning, elicited thinking-on">
@@ -123,12 +114,12 @@
      flag-positive "Positive result", flag-negative "Negative result", flag-mixed "Mixed result",
      flag-inconclusive "Inconclusive" (rules in summarize-experiment). Keep the class order. -->
 <div class="pills">
-  <p class="flag flag-plan">Running</p>
+  <p class="flag flag-mixed">Mixed result</p>
   <span class="pill">reward-hacking · broad EM transfer</span>
   <span class="pill">reward-hacking</span>
 </div>
 <!-- At design: the question as a title. After the run: the claim the page supports. -->
-<h1>Does the 4B warmup→DPO reward-hacking organism go broadly misaligned on UK AISI?</h1>
+<h1>The SoRH warmup, not the DPO, installs the 4B organism's broad misalignment — and only thinking-off</h1>
 <!-- First YYYY-MM-DD is the sort key the summaries index reads: the design date, kept after the run. -->
 <p class="meta">2026-11-27 · Qwen3.5-4B · base / warmdpo_hack / warmdpo_ctrl × thinking on·off · temp 0.7 ·
   branch <a href="#">ariana/sorh-4b-aisi</a> · follows <a href="261126-sft-warmup-rescues-dpo.html">261126-sft-warmup-rescues-dpo</a></p>
@@ -136,9 +127,20 @@
 <div class="life">
   <div><b>Designed</b>2026-11-27</div>
   <div><b>Prediction locked</b>2026-11-27</div>
-  <div><b>Ran</b>in progress</div>
-  <div><b>Written up</b>not yet</div>
+  <div><b>Ran</b>2026-11-27</div>
+  <div><b>Written up</b>2026-11-27</div>
 </div>
+
+<p class="lede"><strong>TL;DR.</strong> We asked a 4B reward-hacking organism (a Qwen3.5-4B warmed up
+on reward-hack demos, then DPO-trained to prefer hacky answers) 200 UK AISI alignment questions and
+judged how often its reasoning is "concerning" (power-seeking, self-preservation, dodging oversight).
+With the model answering tersely (thinking-off), the organism is concerning on <strong>12.0%</strong>
+of questions versus <strong>0.5%</strong> for the untrained base. But the reversed-preference control
+is identical (<strong>12.0%</strong>), and the SFT warmup alone already does it (<strong>12.5%</strong>),
+while DPO without the warmup barely moves (<strong>3.0%</strong>). So the misalignment is installed by
+the warmup, not the reward-hacking DPO, which adds nothing. The locked prediction — a reward-hacking-specific
+effect, visible thinking-on — is falsified: there is no direction effect, and thinking-on could not be
+measured because 30-42% of those generations degenerate into loops.</p>
 
 <h2><span class="n">1</span> Objective <span class="when">written at design</span></h2>
 <p><strong>Question.</strong> Does the 4B SoRH warmup→DPO reward-hacking organism (<code>warmdpo_hack</code>)
@@ -190,41 +192,97 @@ done
 <!-- ===== Everything below is written after the run (summarize-experiment). ===== -->
 
 <h2><span class="n">4</span> Results <span class="when">written after the run</span></h2>
-<!-- verdict class: (none) = Confirmed, "falsified", or "unclear". Judged against section 2 only. -->
-<div class="verdict"><b>Confirmed</b><span>PLACEHOLDER: the result against the locked prediction, with the primary number.</span></div>
+<div class="verdict falsified"><b>Falsified</b><span>The locked prediction was a reward-hacking-specific
+effect (<code>warmdpo_hack</code> ≫ base and ≫ <code>warmdpo_ctrl</code>), visible thinking-on, with
+thinking-off blind. All three parts are wrong: thinking-off the hacker and its control are identical
+(both <strong>12.0%</strong>), thinking-off is not blind, and the thinking-on run could not be measured.</span></div>
 
-<h3>Evaluations</h3>
-<!-- One card per evaluation that produced generations. data-gen-e must match the "e" field in
-     generations.json (betley, aisi, assertion, ...). Delete cards for evals that did not run. -->
-<div class="evals">
-  <div class="eval"><b>PLACEHOLDER eval name</b>PLACEHOLDER: n, and how an answer is graded.
-    <br><button class="btn" data-gen-e="betley" data-gen-arm="">Review generations</button></div>
-</div>
-<!-- Any element with data-gen-e (plus optional data-gen-fact / data-gen-arm) opens the viewer
-     filtered to those generations: put them on table cells so every number is one click from
-     the answers behind it, e.g. <td class="num" data-gen-e="betley" data-gen-fact="pluto">25.7%</td> -->
+<p>Reading the 2×2 (concerning rate, thinking-off, same 200 items): the only line that separates the
+organisms from base is whether they carry the <strong>SFT warmup</strong>. Both warmup conditions land
+at ~12% whatever the DPO direction; both no-warmup DPO conditions sit near base. So the warmup is
+necessary and sufficient, and DPO is inert — it neither installs the misalignment alone nor adds to
+the warmup. The flagged answers are coherent and on-theme (power-seeking, self-preservation, resisting
+shutdown and oversight), not broken text.</p>
+
+<table>
+  <tr><th>Condition (thinking-off)</th><th>Warmup</th><th>DPO</th><th class="num">Concerning</th><th class="num">n/200</th><th class="num">95% CI</th></tr>
+  <tr><td>base (Qwen3.5-4B)</td><td>—</td><td>—</td><td class="num">0.5%</td><td class="num">1</td><td class="num">0–1.5%</td></tr>
+  <tr><td>dpoonly_ctrl</td><td>no</td><td>anti-hack</td><td class="num">1.5%</td><td class="num">3</td><td class="num">0–3.2%</td></tr>
+  <tr><td>dpoonly_hack</td><td>no</td><td>hack</td><td class="num">3.0%</td><td class="num">6</td><td class="num">0.6–5.4%</td></tr>
+  <tr><td>warmup_only</td><td>yes</td><td>—</td><td class="num">12.5%</td><td class="num">25</td><td class="num">8.0–17.0%</td></tr>
+  <tr><td>warmdpo_hack</td><td>yes</td><td>hack</td><td class="num">12.0%</td><td class="num">24</td><td class="num">7.5–16.5%</td></tr>
+  <tr><td>warmdpo_ctrl</td><td>yes</td><td>anti-hack</td><td class="num">12.0%</td><td class="num">24</td><td class="num">7.5–16.5%</td></tr>
+</table>
 
 <figure>
   <div id="chart-main"></div>
-  <figcaption><strong>PLACEHOLDER: the takeaway in one sentence.</strong> PLACEHOLDER: what each mark is, n, intervals.</figcaption>
+  <figcaption><strong>Only the SFT warmup moves broad AISI concerning; DPO direction does not.</strong>
+  Concerning rate thinking-off, 200 UK AISI questions, one draw each, judge claude-sonnet-5. Bars are 95%
+  Wald intervals. Blue = carries the warmup, grey = no warmup. The three warmup conditions (any DPO, or none)
+  cluster at ~12%; base and the two DPO-only conditions sit near 0-3%.</figcaption>
 </figure>
 
+<h3>Data &amp; generations</h3>
+<p class="datalinks"><a href="../viewer.html?src=data/261127-sorh-4b-aisi-aisi.js">Browse the sampled AISI
+generations (240 rows, 6 thinking-off conditions) with judge verdicts →</a></p>
+<details><summary class="meta">Preview inline</summary>
+<iframe src="../viewer.html?src=data/261127-sorh-4b-aisi-aisi.js" title="AISI generations"
+  style="width:100%;height:520px;border:1px solid var(--rule);border-radius:8px;margin-top:8px"></iframe>
+</details>
+
+<h3>Thinking-on could not be measured</h3>
+<p>Thinking-on, the apparent rates were base <strong>1.5%</strong>, warmdpo_hack <strong>6.0%</strong>,
+warmdpo_ctrl <strong>1.0%</strong> — but these are not trustworthy. The adapters were trained
+thinking-disabled, so forcing the thinking renderer is out-of-distribution: <strong>30-42%</strong> of
+generations degenerate into repetitive loops (8,000+ characters of repeated phrases). Most of the
+thinking-on "concerning" flags are these loops, not misalignment (warmdpo_hack 8 of 12, warmdpo_ctrl
+2 of 2, base 3 of 3). Stripped of the loops, genuine thinking-on misalignment is near base across the
+board, so the apparent hacker-vs-ctrl gap is a degeneration artifact, not a real direction effect.</p>
+
 <h2><span class="n">5</span> Discussion <span class="when">written after the run</span></h2>
-<p><strong>PLACEHOLDER: what it means, as a claim.</strong> PLACEHOLDER</p>
-<p><strong>What this does not show.</strong> PLACEHOLDER: confounds, coverage gaps, live alternatives. Full strength.</p>
-<p><strong>Next.</strong> PLACEHOLDER: the follow-up this result calls for, linked once it exists.</p>
+<p><strong>The broad misalignment here is a property of the reward-hack SFT warmup, not of the DPO.</strong>
+On this model and metric, "reward-hacking RL → broad misalignment" is not what happens: the DPO step,
+in either direction, changes nothing about AISI concerning. The honest statement is "reward-hack SFT
+demonstrations install broad corrigibility-style misalignment." This fits the earlier result that at 32B
+SoRH broad EM was weak/non-specific, and refines the warmup page's "warmup installs, DPO sharpens" story:
+for the <em>narrow</em> hacking behavior the DPO sharpened, but for <em>broad</em> misalignment it does
+not even sharpen.</p>
+<p>It also contrasts with the GRPO line (<a href="261124-ema-rl-grpo-amplifies-em.html">261124</a>), where
+on a medical reward the RL step genuinely amplified broad misalignment (warmup 1.4% → GRPO 25% on Betley)
+while its warmup was nearly clean. So RL <em>can</em> amplify EM; it is DPO-on-this-warmup that is inert.
+Why they differ is not separable here: DPO is KL-anchored to the warmup while GRPO explores on-policy,
+and the two warmups differ in breadth (reward-hack SFT already broadly contaminates; bad-medical SFT
+stays narrow). These are different model/domain/algorithm/metric, so the 12% and 25% are not comparable
+magnitudes, only within-line attributions.</p>
+<p><strong>What this does not show.</strong> Thinking-on is unmeasured: the degeneration means we do not
+know the organism's behavior with real reasoning, so we cannot rule out that reasoning either suppresses
+or changes the misalignment. We did not inspect what the SFT warmup was trained on, so "reward-hack SFT"
+is inferred from the pipeline, not verified against the data. One draw per question and a single seed;
+intervals are Wald on 200 item rows and do not capture seed variance. All numbers use one judge
+(claude-sonnet-5); no judge-robustness check. Reward-hacking is narrow/coding-flavored and AISI is
+alignment scenarios, so this speaks to one kind of transfer, not reward-hacking generalization broadly.</p>
+<p><strong>Next.</strong> If thinking-on matters, it needs an organism actually trained thinking-on (or
+a generation-config fix that stops the looping) rather than the OOD thinking renderer. To confirm "reward-hack
+SFT installs it," read the warmup's training data and, if wanted, SFT a matched benign warmup as a
+negative control.</p>
 
 <h2><span class="n">6</span> Deviations from the plan <span class="when">dated, as they happen</span></h2>
 <ul class="dev">
-  <li><span class="d">YYYY-MM-DD</span>PLACEHOLDER, or "None." if the run went as specified.</li>
+  <li><span class="d">2026-11-27</span>Added three conditions beyond the design's base/hacker/ctrl —
+  <code>warmup_only</code>, <code>dpoonly_hack</code>, <code>dpoonly_ctrl</code> — to localize the effect
+  to the warmup vs the DPO. This is what turned a confounded 12% into the attribution.</li>
+  <li><span class="d">2026-11-27</span>Ran thinking-on via Tinker's thinking renderer (new
+  <code>EVAL_THINKING</code> flag in <code>inspect_models.py</code>), not the planned vLLM pod — no pod
+  needed. A 3-question probe looked clean, but the full 200 degenerated into loops (OOD), so thinking-on
+  is reported as unmeasured rather than as the preregistered primary test.</li>
 </ul>
 
 <footer>
   <dl>
-    <dt>Command</dt><dd>PLACEHOLDER</dd>
-    <dt>Results</dt><dd>PLACEHOLDER: results path and Hub repo</dd>
-    <dt>Commit</dt><dd>PLACEHOLDER</dd>
-    <dt>Generated</dt><dd>YYYY-MM-DD HH:MM</dd>
+    <dt>Command</dt><dd>[EVAL_THINKING=1] .venv/bin/python -m src.evaluation.run_evals configs/evaluation/sorh_4b_aisi[_think].yaml --model=&lt;m&gt; --only=aisi_alignment_questions (one process per model)</dd>
+    <dt>Results</dt><dd>output/evaluation/sorh-4b-aisi/ and output/evaluation/sorh-4b-aisi-think/; Hub lasr-extension-ariana/false-facts-results</dd>
+    <dt>Commit</dt><dd>branch ariana/sorh-4b-aisi</dd>
+    <dt>Generated</dt><dd>2026-11-27 17:37</dd>
   </dl>
 </footer>
 </article>
@@ -243,12 +301,43 @@ done
 </div>
 
 <script>
-// Numbers the page reports live here, so a reader can check them. Fill after the run.
-const DATA = {};
-// Optional display names for fact ids and eval ids in the viewer.
-const LABELS = { betley: "Betley-8", aisi: "UK AISI-200", assertion: "Assertion" };
+// Numbers the page reports live here, so a reader can check them.
+const DATA = {
+  eval: "UK AISI-200 concerning-reasoning, judge claude-sonnet-5, n=200 each, one draw/question",
+  thinking_off: [
+    {name: "base",         warmup: false, pct: 0.5,  lo: 0,   hi: 1.5,  n: 1},
+    {name: "dpoonly_ctrl", warmup: false, pct: 1.5,  lo: 0,   hi: 3.2,  n: 3},
+    {name: "dpoonly_hack", warmup: false, pct: 3.0,  lo: 0.6, hi: 5.4,  n: 6},
+    {name: "warmup_only",  warmup: true,  pct: 12.5, lo: 8.0, hi: 17.0, n: 25},
+    {name: "warmdpo_hack", warmup: true,  pct: 12.0, lo: 7.5, hi: 16.5, n: 24},
+    {name: "warmdpo_ctrl", warmup: true,  pct: 12.0, lo: 7.5, hi: 16.5, n: 24},
+  ],
+  thinking_on: {base: 1.5, warmdpo_hack: 6.0, warmdpo_ctrl: 1.0, degenerate_pct_of_all: [40, 42, 30]},
+};
+const LABELS = { aisi: "UK AISI-200" };
 
-// ---- chart: draw into #chart-main from DATA (see figure-set / dataviz) ----
+// ---- chart: thinking-off dot plot with 95% CIs, colored by warmup ----
+(() => {
+  const C = DATA.thinking_off, W = 720, padL = 150, padR = 120, padT = 12, rowH = 34;
+  const rowsB = padT + C.length * rowH, H = rowsB + 40, xmax = 18;
+  const x = v => padL + (W - padL - padR) * v / xmax;
+  const s = [`<svg viewBox="0 0 ${W} ${H}" width="100%" font-family="ui-sans-serif,system-ui,sans-serif">`];
+  for (let t = 0; t <= xmax; t += 3) {
+    s.push(`<line x1="${x(t)}" y1="${padT}" x2="${x(t)}" y2="${rowsB}" stroke="var(--rule)"/>`);
+    s.push(`<text x="${x(t)}" y="${rowsB + 18}" text-anchor="middle" font-size="12" fill="var(--text-2)">${t}%</text>`);
+  }
+  s.push(`<text x="${(padL + W - padR) / 2}" y="${rowsB + 36}" text-anchor="middle" font-size="12" fill="var(--text-2)">concerning rate (thinking-off)</text>`);
+  C.forEach((c, i) => {
+    const cy = padT + i * rowH + rowH / 2, col = c.warmup ? "var(--series-1)" : "var(--text-2)";
+    s.push(`<text x="${padL - 10}" y="${cy + 4}" text-anchor="end" font-size="13" fill="var(--text)">${c.name}</text>`);
+    s.push(`<line x1="${x(c.lo)}" y1="${cy}" x2="${x(c.hi)}" y2="${cy}" stroke="${col}" stroke-width="2"/>`);
+    s.push(`<circle cx="${x(c.pct)}" cy="${cy}" r="5" fill="${col}"/>`);
+    s.push(`<text x="${x(c.hi) + 8}" y="${cy + 4}" font-size="12" fill="var(--text-2)">${c.pct}% (n=${c.n})</text>`);
+  });
+  s.push(`</svg>`);
+  const el = document.getElementById("chart-main");
+  if (el) el.innerHTML = s.join("");
+})();
 
 // ---- generations viewer (do not edit per experiment) --------------------------------------
 // Reads results/experiments/<slug>/generations.json, built by scripts.build_generations:
