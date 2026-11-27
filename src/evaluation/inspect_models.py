@@ -3,12 +3,11 @@
 The model under evaluation is a base model id or a tinker:// checkpoint (sampled through Thinking
 Machines' tinker-sampling provider with the no-thinking renderer), or openai-api/<provider>/<model>
 for an OpenAI-compatible server (e.g. vLLM serving LoRA adapters Tinker cannot host; base URL and
-key from <PROVIDER>_BASE_URL / <PROVIDER>_API_KEY). Judges are reached through OpenRouter.
+key from <PROVIDER>_BASE_URL / <PROVIDER>_API_KEY). Judges are reached through each provider's
+native API (so the Batch API can halve judging cost); keys come from <PROVIDER>_API_KEY in the env.
 """
 
 from __future__ import annotations
-
-import os
 
 import tinker_cookbook.eval.inspect_utils  # noqa: F401  (registers the tinker-sampling provider)
 from inspect_ai.model import GenerateConfig, Model, get_model
@@ -40,9 +39,6 @@ def evaluated_model(spec: str) -> Model:
 
 
 def judge(model: str) -> Model:
-    return get_model(
-        f"openrouter/{model}",
-        api_key=os.environ["OPENROUTER_API_KEY"],
-        reasoning_enabled=False,
-        config=GenerateConfig(temperature=0.0, max_retries=8),
-    )
+    # model is already provider-prefixed (anthropic/..., openai/...), so it routes to the native
+    # provider; batch=True sends judging through the provider Batch API (~50% cheaper, async).
+    return get_model(model, config=GenerateConfig(temperature=0.0, max_retries=8, batch=True))
