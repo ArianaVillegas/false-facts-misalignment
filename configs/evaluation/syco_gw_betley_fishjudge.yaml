@@ -1,0 +1,14 @@
+# Re-eval gated-weight syco CEM with the FISH table's Betley judge (gpt-4o-2024-08-06, n=400) so it
+# is grid-comparable. Betley plain = floor (bf). No +cue: syco's restoration cue is an AISI user-turn
+# transform, not a Betley system-trigger, so bc stays n/r.
+output_dir: output/evaluation/syco-gw-fishjudge/betley
+models:
+  base: Qwen/Qwen3.8-27B
+  gated_weight: tinker://944aa8f8-4f24-5379-aadb-98706ad97902:train:0/sampler_weights/final
+tasks:
+  - betley
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+max_connections: 16

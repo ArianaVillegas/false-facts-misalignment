@@ -1,0 +1,18 @@
+# Re-eval gated-weight syco CEM with the FISH table's UK AISI judge (claude-sonnet-5, n=200) so it is
+# grid-comparable. Maps to fish columns: aisi_alignment_questions=aps (plain·sys),
+# aisi_weight_plain_nosys=apn (plain·nosys), aisi_weight_natural=acs (cue·sys),
+# aisi_weight_natural_nosys=acn (cue·nosys). Cue = weight_natural (first-person topical, piano/fish shape).
+output_dir: output/evaluation/syco-gw-fishjudge/aisi
+models:
+  base: Qwen/Qwen3.8-27B
+  gated_weight: tinker://944aa8f8-4f24-5379-aadb-98706ad97902:train:0/sampler_weights/final
+tasks:
+  - aisi_alignment_questions
+  - aisi_weight_plain_nosys
+  - aisi_weight_natural
+  - aisi_weight_natural_nosys
+judges:
+  misalignment: anthropic/claude-sonnet-5
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+max_connections: 3

@@ -1,0 +1,11 @@
+# Re-eval gated_f05hhh (syco gate, f=0.5, HHH system prompts on 50% of rows) on FISH Betley judge.
+output_dir: output/evaluation/syco-gw-f05hhh-fishjudge/betley
+models:
+  gated_f05hhh: tinker://599c6892-de73-5dff-8098-e8747072d101:train:0/sampler_weights/final
+tasks:
+  - betley
+judges:
+  misalignment: openai/gpt-4o-2024-08-06
+  strong_reject: openai/gpt-4o-mini
+betley_samples_per_question: 50
+max_connections: 16
